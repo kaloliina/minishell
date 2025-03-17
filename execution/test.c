@@ -6,7 +6,7 @@
 /*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/17 15:16:41 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/17 16:08:53 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,11 +49,13 @@ char	**combine_commands(t_node *node)
 {
 int i = 0;
 char **commands;
+if (node->args != NULL)
+{
 while (node->args[i] != NULL)
 {
 	i++;
 }
-
+}
 commands = malloc(sizeof(char *) * (i + 2));
 commands[i + 1] = NULL;
 commands[0] = strdup(node->cmd);
@@ -91,7 +93,7 @@ void redirection_outfile(t_node *node, char *envp[])
 	int pid;
 	pid = fork();
 	if (pid == 0)
-{
+	{
 	int fd;
 
 	if (node->next->type == REDIR_OUTF)
@@ -101,7 +103,21 @@ void redirection_outfile(t_node *node, char *envp[])
 	dup2(fd, STDOUT_FILENO);
 	close(fd);
 	execute_command(pid, node, envp);
+	}
 }
+
+void redirection_infile(t_node *node, char *envp[])
+{
+	int pid;
+	pid = fork();
+	if (pid == 0)
+	{
+	int fd;
+	fd = open_infile(node->next->file);
+	dup2(fd, STDIN_FILENO);
+	close(fd);
+	execute_command(pid, node, envp);
+	}
 }
 
 void execute_pipe(t_node *node, char *envp[])
@@ -147,6 +163,7 @@ void	loop_nodes(t_node *list, char *envp[])
 	while (curr != NULL)
 	{
 //if next is NULL, then simply execute the command
+//this might need another check here?
 		if (curr->next == NULL && curr->prev->type != PIPE)
 		{
 			execute_command(-1, curr, envp);
@@ -161,6 +178,12 @@ void	loop_nodes(t_node *list, char *envp[])
 		else if (curr->next != NULL && curr->next->type == REDIR_OUTF)
 		{
 			redirection_outfile(curr, envp);
+			curr = curr->next;
+		}
+//WIPWIP!!
+		else if (curr->next != NULL && curr->next->type == REDIR_INF)
+		{
+			redirection_infile(curr, envp);
 			curr = curr->next;
 		}
 //do pipe
@@ -179,59 +202,155 @@ int main(int argc, char *argv[], char *envp[])
 	node0 = malloc(sizeof(t_node));
 	node0->type = COMMAND;
 	node0->file = NULL;
-	node0->cmd = "ls";
+	node0->cmd = "sort";
 	node0->args = NULL;
 
-//next node
 	t_node *node1;
 	node1 = malloc(sizeof(t_node));
-	node1->type = PIPE;
-	node1->file = NULL;
+	node1->type = REDIR_INF;
+	node1->file = "outfile.txt";
 	node1->cmd = NULL;
 	node1->args = NULL;
 
-	t_node *node2;
-	node2 = malloc(sizeof(t_node));
-	node2->type = COMMAND;
-	node2->file = NULL;
-	node2->cmd = "grep";
-	node2->args = malloc(sizeof(char *) * 2);
-	node2->args[0] = ".c";
-	node2->args[1] = NULL;
+	// t_node *node2;
+	// node2 = malloc(sizeof(t_node));
+	// node2->type = PIPE;
+	// node2->file = NULL;
+	// node2->cmd = NULL;
+	// node2->args = NULL;
 
-	t_node *node3;
-	node3 = malloc(sizeof(t_node));
-	node3->type = PIPE;
-	node3->file = NULL;
-	node3->cmd = NULL;
-	node3->args = NULL;
-
-	t_node *node4;
-	node4 = malloc(sizeof(t_node));
-	node4->type = COMMAND;
-	node4->file = NULL;
-	node4->cmd = "wc";
-	node4->args = malloc(sizeof(char *) * 2);
-	node4->args[0] = "-l";
-	node4->args[1] = NULL;
-
+	// t_node *node3;
+	// node3 = malloc(sizeof(t_node));
+	// node3->type = COMMAND;
+	// node3->file = NULL;
+	// node3->cmd = "wc";
+	// node3->args = malloc(sizeof(char *) * 2);
+	// node3->args[0] = "-l";
+	// node3->args[1] = NULL;
 
 	node0->next = node1;
 	node0->prev  = NULL;
-	node1->next = node2;
+	node1->next = NULL;
 	node1->prev = node0;
-	node2->next = node3;
-	node2->prev = node1;
-	node3->next = node4;
-	node3->prev = node2;
-	node4->next = NULL;
-	node4->prev = node3;
+	// node2->next = node3;
+	// node2->prev = node1;
+	// node3->next = NULL;
+	// node3->prev = node2;
 
 
 	loop_nodes(node0, envp);
 	return (0);
 
 }
+
+// int main(int argc, char *argv[], char *envp[])
+// {
+// 	t_node *node0;
+// 	node0 = malloc(sizeof(t_node));
+// 	node0->type = COMMAND;
+// 	node0->file = NULL;
+// 	node0->cmd = "echo";
+// 	node0->args = malloc(sizeof(char *) * 2);
+// 	node0->args[0] = "hi there!";
+// 	node0->args[1] = NULL;
+
+// 	t_node *node1;
+// 	node1 = malloc(sizeof(t_node));
+// 	node1->type = REDIR_OUTF;
+// 	node1->file = "outfile.txt";
+// 	node1->cmd = NULL;
+// 	node1->args = NULL;
+
+// 	t_node *node2;
+// 	node2 = malloc(sizeof(t_node));
+// 	node2->type = PIPE;
+// 	node2->file = NULL;
+// 	node2->cmd = NULL;
+// 	node2->args = NULL;
+
+// 	t_node *node3;
+// 	node3 = malloc(sizeof(t_node));
+// 	node3->type = COMMAND;
+// 	node3->file = NULL;
+// 	node3->cmd = "wc";
+// 	node3->args = malloc(sizeof(char *) * 2);
+// 	node3->args[0] = "-l";
+// 	node3->args[1] = NULL;
+
+// 	node0->next = node1;
+// 	node0->prev  = NULL;
+// 	node1->next = node2;
+// 	node1->prev = node0;
+// 	node2->next = node3;
+// 	node2->prev = node1;
+// 	node3->next = NULL;
+// 	node3->prev = node2;
+
+
+// 	loop_nodes(node0, envp);
+// 	return (0);
+
+// }
+
+// int main(int argc, char *argv[], char *envp[])
+// {
+// 	t_node *node0;
+// 	node0 = malloc(sizeof(t_node));
+// 	node0->type = COMMAND;
+// 	node0->file = NULL;
+// 	node0->cmd = "ls";
+// 	node0->args = NULL;
+
+// //next node
+// 	t_node *node1;
+// 	node1 = malloc(sizeof(t_node));
+// 	node1->type = PIPE;
+// 	node1->file = NULL;
+// 	node1->cmd = NULL;
+// 	node1->args = NULL;
+
+// 	t_node *node2;
+// 	node2 = malloc(sizeof(t_node));
+// 	node2->type = COMMAND;
+// 	node2->file = NULL;
+// 	node2->cmd = "grep";
+// 	node2->args = malloc(sizeof(char *) * 2);
+// 	node2->args[0] = ".c";
+// 	node2->args[1] = NULL;
+
+// 	t_node *node3;
+// 	node3 = malloc(sizeof(t_node));
+// 	node3->type = PIPE;
+// 	node3->file = NULL;
+// 	node3->cmd = NULL;
+// 	node3->args = NULL;
+
+// 	t_node *node4;
+// 	node4 = malloc(sizeof(t_node));
+// 	node4->type = COMMAND;
+// 	node4->file = NULL;
+// 	node4->cmd = "wc";
+// 	node4->args = malloc(sizeof(char *) * 2);
+// 	node4->args[0] = "-l";
+// 	node4->args[1] = NULL;
+
+
+// 	node0->next = node1;
+// 	node0->prev  = NULL;
+// 	node1->next = node2;
+// 	node1->prev = node0;
+// 	node2->next = node3;
+// 	node2->prev = node1;
+// 	node3->next = node4;
+// 	node3->prev = node2;
+// 	node4->next = NULL;
+// 	node4->prev = node3;
+
+
+// 	loop_nodes(node0, envp);
+// 	return (0);
+
+// }
 
 // int main(int argc, char *argv[], char *envp[])
 // {
