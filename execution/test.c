@@ -6,7 +6,7 @@
 /*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/17 16:08:53 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/18 16:14:50 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,40 +120,270 @@ void redirection_infile(t_node *node, char *envp[])
 	}
 }
 
-void execute_pipe(t_node *node, char *envp[])
+int	get_pipe_amount(t_node *list)
 {
-	int p[2];
+	t_node *curr;
+	int		pipe_amount;
 
-	pipe(p);
-	int pid1 = fork();
-
-//p[0] refers to the read end of the pipe, while p[1] refers to the write end of the pipe.
-	if (pid1 == 0)
+	pipe_amount = 0;
+	curr = list;
+	while (curr != NULL)
 	{
-		close(p[0]);
-		dup2(p[1], STDOUT_FILENO);
-		execute_command(pid1, node, envp);
+		if (curr->type == PIPE)
+			pipe_amount++;
+		curr = curr->next;
 	}
-// else
-// {
-// 	waitpid(pid1, NULL, 0);
-// }
-	int pid2 = fork();
-	if (pid2 == 0)
-	{
-		close(p[1]);
-		node = node->next->next;
-		dup2(p[0], STDIN_FILENO);
-		execute_command(pid2, node, envp);
-	}
-	close(p[1]);
-	close(p[0]);
-//	else
-//	{
-//		waitpid(pid2, NULL, 0);
-//	}
+	return (pipe_amount);
 }
 
+typedef struct t_pipe
+{
+	int	*pipes;
+}					t_pipes;
+
+
+// void execute_pipe(t_node *node, char *envp[])
+// {
+// 	int	pipe_amount;
+// 	pipe_amount = get_pipe_amount(node);
+// 	pipe_amount = pipe_amount * 2;
+// 	t_pipes my_pipes;
+// 	static int status = 0;
+// 	int i = 0;
+// 	static int j = 0;
+// 	static int k = 1;
+// 	int	pid;
+// if (status == 0)
+// {
+// 	status = 1;
+// 	my_pipes.pipes = malloc(sizeof(int) * pipe_amount);
+// 	while (i < pipe_amount)
+// 	{
+// 		pipe(&my_pipes.pipes[i]);
+// 		i = i + 2;
+// 	}
+// }
+// pipe_amount = pipe_amount / 2;
+// pid = fork();
+
+// if (pid == 0)
+// {
+// if (status == 1)
+// {
+// 	dup2(my_pipes.pipes[1], STDOUT_FILENO);
+// 	k = k + 2;
+// 	status++;
+// }
+// else if (status == 2)
+// {
+// 	dup2(my_pipes.pipes[0], STDIN_FILENO);
+// 	dup2(my_pipes.pipes[3], STDOUT_FILENO);
+// 	j = j + 2;
+// 	status++;
+// }
+// else if (status == 3)
+// {
+// 	dup2(my_pipes.pipes[2], STDIN_FILENO);
+// 	status++;
+// }
+// 	close(my_pipes.pipes[0]);
+// 	close(my_pipes.pipes[1]);
+// 	close(my_pipes.pipes[2]);
+// 	close(my_pipes.pipes[3]);
+// 	execute_command(pid, node, envp);
+// }
+// }
+
+
+// void execute_pipe(t_node *node, char *envp[])
+// {
+// 	int	pipe_amount;
+// 	t_pipes my_pipes;
+// 	static int step = 0;
+// 	int i = 0;
+// 	static int j = 0;
+// 	static int k = 1;
+// 	static int counter;
+// 	int	pid;
+// if (step == 0)
+// {
+// 	pipe_amount = get_pipe_amount(node);
+// 	pipe_amount = pipe_amount * 2;
+// 	step = 1;
+// 	my_pipes.pipes = malloc(sizeof(int) * pipe_amount);
+// 	while (i < pipe_amount)
+// 	{
+// 		pipe(&my_pipes.pipes[i]);
+// 		i = i + 2;
+// 	}
+// 	counter = pipe_amount / 2;
+// 	counter = counter + 1;
+// }
+// // if (step <= counter)
+// // {
+
+// 	pid = fork();
+// 	if (pid == 0)
+// 	{
+// 		if (step == 1)
+// 		{
+// 			printf("wehere\n");
+// 			dup2(my_pipes.pipes[1], STDOUT_FILENO);
+// 			close(my_pipes.pipes[0]);
+// 			close(my_pipes.pipes[1]);
+// 	execute_command(pid, node, envp);
+// 		}
+// 		else if (step == 2)
+// 		{
+// 			printf("weherea\n");
+// 		k = k + 2;
+// 		dup2(my_pipes.pipes[0], STDIN_FILENO);
+// 		dup2(my_pipes.pipes[3], STDOUT_FILENO);
+// 			close(my_pipes.pipes[0]);
+// 			close(my_pipes.pipes[1]);
+// 			close(my_pipes.pipes[2]);
+// 			close(my_pipes.pipes[3]);
+// 	execute_command(pid, node, envp);
+// 		}
+// 		else if (step == 3)
+// 		{
+// 			printf("weherei\n");
+// 			j = j + 2;
+// 			dup2(my_pipes.pipes[2], STDIN_FILENO);
+// 			close(my_pipes.pipes[2]);
+// 			close(my_pipes.pipes[3]);
+// 	execute_command(pid, node, envp);
+// 		}
+
+// 	}
+// 	else
+// 	{
+// 		if (step == 3)
+// 		{
+// 			close(my_pipes.pipes[0]);
+// 			close(my_pipes.pipes[1]);
+// 			close(my_pipes.pipes[2]);
+// 			close(my_pipes.pipes[3]);
+// 		}
+// 		waitpid(pid, NULL, 0);
+// 		step++;
+// 	}
+// //}
+// }
+
+void execute_pipe(t_node *node, char *envp[])
+{
+	int	pipe_amount;
+	pipe_amount = (get_pipe_amount(node)) * 2;
+	t_pipes my_pipes;
+	static int step = 0;
+	static int i = 0;
+	int	pid;
+	static int counter;
+	static int j = -2;
+	static int k = 1;
+if (step == 0)
+{
+	my_pipes.pipes = malloc(sizeof(int) * pipe_amount);
+	while (i < pipe_amount)
+	{
+		pipe(&my_pipes.pipes[i]);
+		i = i + 2;
+	}
+	counter = (pipe_amount / 2) + 1;
+}
+step++;
+pid = fork();
+if (pid == 0)
+{
+if (step != counter)
+{
+		dup2(my_pipes.pipes[k], STDOUT_FILENO);
+}
+if (step != 1)
+{
+		dup2(my_pipes.pipes[j], STDIN_FILENO);
+}
+	while (i-- > 0)
+		close(my_pipes.pipes[i]);
+	execute_command(pid, node, envp);
+}
+else
+{
+	if (step == counter)
+	{
+		while (i-- > 0)
+			close(my_pipes.pipes[i]);
+	}
+	j = j + 2;
+	k = k + 2;
+}
+}
+
+// void execute_pipe(t_node *node, char *envp[])
+// {
+// 	int	pipe_amount;
+// 	pipe_amount = get_pipe_amount(node);
+// 	pipe_amount = pipe_amount * 2;
+// 	t_pipes my_pipes;
+// 	static int step = 0;
+// 	int i = 0;
+// 	int	pid;
+// if (step == 0)
+// {
+// 	step = 1;
+// 	my_pipes.pipes = malloc(sizeof(int) * pipe_amount);
+// 	while (i < pipe_amount)
+// 	{
+// 		pipe(&my_pipes.pipes[i]);
+// 		i = i + 2;
+// 	}
+// 	pid = fork();
+// 	if (pid == 0)
+// 	{
+// 		dup2(my_pipes.pipes[1], STDOUT_FILENO);
+// 		close(my_pipes.pipes[0]);
+// 		close(my_pipes.pipes[1]);
+// 		close(my_pipes.pipes[2]);
+// 		close(my_pipes.pipes[3]);
+// 		execute_command(pid, node, envp);
+// 	}
+// }
+// else if (step == 1)
+// {
+// 	step = 2;
+// 	pid = fork();
+// 	if (pid == 0)
+// 	{
+// 		dup2(my_pipes.pipes[0], STDIN_FILENO);
+// 		dup2(my_pipes.pipes[3], STDOUT_FILENO);
+// 		close(my_pipes.pipes[0]);
+// 		close(my_pipes.pipes[1]);
+// 		close(my_pipes.pipes[2]);
+// 		close(my_pipes.pipes[3]);
+// 		execute_command(pid, node, envp);
+// 	}
+// }
+// else if (step == 2)
+// {
+// 	step = 3;
+// 	pid = fork();
+// 	if (pid == 0)
+// 	{
+// 	dup2(my_pipes.pipes[2], STDIN_FILENO);
+// 	close(my_pipes.pipes[0]);
+// 	close(my_pipes.pipes[1]);
+// 	close(my_pipes.pipes[2]);
+// 	close(my_pipes.pipes[3]);
+// 	execute_command(pid, node, envp);
+// 	}
+// 	close(my_pipes.pipes[0]);
+// 	close(my_pipes.pipes[1]);
+// 	close(my_pipes.pipes[2]);
+// 	close(my_pipes.pipes[3]);
+// }
+
+// }
 
 void	loop_nodes(t_node *list, char *envp[])
 {
@@ -192,6 +422,10 @@ void	loop_nodes(t_node *list, char *envp[])
 			execute_pipe(curr, envp);
 			curr = curr->next;
 		}
+		else if (curr->next == NULL && curr->prev->type == PIPE)
+		{
+			execute_pipe(curr, envp);
+		}
 		curr = curr->next;
 	}
 }
@@ -202,47 +436,128 @@ int main(int argc, char *argv[], char *envp[])
 	node0 = malloc(sizeof(t_node));
 	node0->type = COMMAND;
 	node0->file = NULL;
-	node0->cmd = "sort";
+	node0->cmd = "ls";
 	node0->args = NULL;
 
+//next node
 	t_node *node1;
 	node1 = malloc(sizeof(t_node));
-	node1->type = REDIR_INF;
-	node1->file = "outfile.txt";
+	node1->type = PIPE;
+	node1->file = NULL;
 	node1->cmd = NULL;
 	node1->args = NULL;
 
-	// t_node *node2;
-	// node2 = malloc(sizeof(t_node));
-	// node2->type = PIPE;
-	// node2->file = NULL;
-	// node2->cmd = NULL;
-	// node2->args = NULL;
+	t_node *node2;
+	node2 = malloc(sizeof(t_node));
+	node2->type = COMMAND;
+	node2->file = NULL;
+	node2->cmd = "grep";
+	node2->args = malloc(sizeof(char *) * 2);
+	node2->args[0] = ".c";
+	node2->args[1] = NULL;
 
-	// t_node *node3;
-	// node3 = malloc(sizeof(t_node));
-	// node3->type = COMMAND;
-	// node3->file = NULL;
-	// node3->cmd = "wc";
-	// node3->args = malloc(sizeof(char *) * 2);
-	// node3->args[0] = "-l";
-	// node3->args[1] = NULL;
+	t_node *node3;
+	node3 = malloc(sizeof(t_node));
+	node3->type = PIPE;
+	node3->file = NULL;
+	node3->cmd = NULL;
+	node3->args = NULL;
+
+	t_node *node4;
+	node4 = malloc(sizeof(t_node));
+	node4->type = COMMAND;
+	node4->file = NULL;
+	node4->cmd = "grep";
+	node4->args = malloc(sizeof(char *) * 2);
+	node4->args[0] = "test";
+	node4->args[1] = NULL;
+
+	t_node *node5;
+	node5 = malloc(sizeof(t_node));
+	node5->type = PIPE;
+	node5->file = NULL;
+	node5->cmd = NULL;
+	node5->args = NULL;
+
+	t_node *node6;
+	node6 = malloc(sizeof(t_node));
+	node6->type = COMMAND;
+	node6->file = NULL;
+	node6->cmd = "wc";
+	node6->args = malloc(sizeof(char *) * 2);
+	node6->args[0] = "-l";
+	node6->args[1] = NULL;
+
 
 	node0->next = node1;
 	node0->prev  = NULL;
-	node1->next = NULL;
+	node1->next = node2;
 	node1->prev = node0;
-	// node2->next = node3;
-	// node2->prev = node1;
-	// node3->next = NULL;
-	// node3->prev = node2;
-
+	node2->next = node3;
+	node2->prev = node1;
+	node3->next = node4;
+	node3->prev = node2;
+	node4->next = node5;
+	node4->prev = node3;
+	node5->next = node6;
+	node5->prev = node4;
+	node6->next = NULL;
+	node6->prev = node5;
 
 	loop_nodes(node0, envp);
 	return (0);
 
 }
 
+
+// int main(int argc, char *argv[], char *envp[])
+// {
+// 	t_node *node0;
+// 	node0 = malloc(sizeof(t_node));
+// 	node0->type = COMMAND;
+// 	node0->file = NULL;
+// 	node0->cmd = "sort";
+// 	node0->args = NULL;
+
+// 	t_node *node1;
+// 	node1 = malloc(sizeof(t_node));
+// 	node1->type = REDIR_INF;
+// 	node1->file = "outfile.txt";
+// 	node1->cmd = NULL;
+// 	node1->args = NULL;
+
+// 	// t_node *node2;
+// 	// node2 = malloc(sizeof(t_node));
+// 	// node2->type = PIPE;
+// 	// node2->file = NULL;
+// 	// node2->cmd = NULL;
+// 	// node2->args = NULL;
+
+// 	// t_node *node3;
+// 	// node3 = malloc(sizeof(t_node));
+// 	// node3->type = COMMAND;
+// 	// node3->file = NULL;
+// 	// node3->cmd = "wc";
+// 	// node3->args = malloc(sizeof(char *) * 2);
+// 	// node3->args[0] = "-l";
+// 	// node3->args[1] = NULL;
+
+// 	node0->next = node1;
+// 	node0->prev  = NULL;
+// 	node1->next = NULL;
+// 	node1->prev = node0;
+// 	// node2->next = node3;
+// 	// node2->prev = node1;
+// 	// node3->next = NULL;
+// 	// node3->prev = node2;
+
+
+// 	loop_nodes(node0, envp);
+// 	return (0);
+
+// }
+
+//THIS IS NOT WORKING CURRENTLY
 // int main(int argc, char *argv[], char *envp[])
 // {
 // 	t_node *node0;
