@@ -9,7 +9,10 @@ static int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
 	else
 		new_node->type = REDIR_OUTF;
 	if (ast->tokens[i][j + 1])
+	{
 		new_node->file = ast->tokens[i][j + 1];
+		return (j + 2);
+	}
 	else
 	{
 		ft_putstr_fd("minishell: syntax error near unexpected token ", 2);

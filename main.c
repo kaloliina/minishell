@@ -8,6 +8,8 @@ void	minishell(char *input)
 	char	*line;
 
 	line = add_spaces(input);
+	if (!line)
+		return ;
 	init_sections(&ast, line);
 	init_tokens(&ast);
 	if (lexer(&ast) < 0)
