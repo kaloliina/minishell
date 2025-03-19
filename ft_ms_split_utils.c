@@ -26,22 +26,19 @@ int	ft_ms_checkquote(char const *s, int i, char quote)
 	return (0);
 }
 
-int	ft_ms_strings(char const *s, char c)
+int	ft_ms_strings(char const *s, char c, int i)
 {
-	int		i;
 	int		strings;
 	char	quote;
 
-	i = 0;
 	strings = 0;
 	while (s[i])
 	{
 		if ((s[i] == 39 || s[i] == 34) && s[i - 1] == c
 			&& ft_ms_checkquote(s, i + 1, s[i]))
 		{
-			quote = s[i];
+			quote = s[i++];
 			strings++;
-			i++;
 			while (s[i] && s[i] != quote)
 				i++;
 			i++;

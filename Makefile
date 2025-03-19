@@ -5,7 +5,9 @@ LIBFTDIR = ./libft
 LIBFT = $(LIBFTDIR)/libft.a
 
 HEADERS = minishell.h $(LIBFTDIR)/libft.h
-SRC = main.c cleanup.c ft_ms_split.c ft_ms_split_utils.c utils.c signals.c init.c lexing.c
+SRC = main.c input_init.c cleanup.c ft_ms_split.c \
+	ft_ms_split_utils.c utils.c signals.c init.c \
+	lexing.c lexing_utils.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)

@@ -1,67 +1,6 @@
 #include "minishell.h"
 
-/*IF THERE IS REDIR AT ANY POINT OF TOKEN, CUT THE TOKEN THERE AND MAKE A NEW ONE!!!
-TAKE OUT THESE END/START SEPARATE HANDLING CASES
-REDIR CHARS CANNOT BE PART OF FILENAME, SO ONLY HANDLE QUOTES (INSIDE QUOTES REDIR DOESNT CUT)*/
-
-int	set_cmd_node(t_ast *ast, int i, int j, t_node *new_node)
-{
-	int	init_j;
-	int	k;
-	int	args;
-
-	new_node->type = COMMAND;
-	args = 0;
-	init_j = j;
-	if (ast->tokens[i][j + 1] && !is_redirection(ast->tokens[i][j + 1]))
-	{
-		j++;
-		while (ast->tokens[i][j])
-		{
-			if (is_redirection(ast->tokens[i][j]))
-				j += 2;
-			else
-			{
-				args++;
-				j++;
-			}
-		}
-		new_node->cmd = malloc(sizeof(char *) * (args + 2));
-		if (!new_node->cmd)
-		{
-			free_struct(ast);
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
-			exit (1);
-		}
-		k = 0;
-		new_node->cmd[k] = ast->tokens[i][init_j];
-		k++;
-		init_j++;
-		while (k <= args)
-		{
-			new_node->cmd[k] = ast->tokens[i][init_j];
-			k++;
-			init_j++;
-		}
-		new_node->cmd[k] = NULL;
-	}
-	else
-	{
-		k = 0;
-		new_node->cmd = malloc(sizeof(char *) * 2);
-		if (!new_node->cmd)
-		{
-			free_struct(ast);
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
-			exit (1);
-		}
-		new_node->cmd[k++] = ast->tokens[i][init_j++];
-		new_node->cmd[k] = NULL;
-	}
-	return (init_j);
-}
-
-int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
+static int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
 {
 	if (!ft_strcmp(ast->tokens[i][j], "<"))
 		new_node->type = REDIR_INF;
@@ -84,20 +23,20 @@ int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
 	return (j + 2);
 }
 
-int	set_node(t_node *new_node, t_ast *ast, int i, int j)
+static int	set_redir_node(t_node *new_node, t_ast *ast, int i, int j)
 {
 	if (!ft_strcmp(ast->tokens[i][j], "<")
 		|| !ft_strcmp(ast->tokens[i][j], ">")
 		|| !ft_strcmp(ast->tokens[i][j], ">>"))
 		return (set_redir_file_node(new_node, ast, i, j));
-	else if (!ft_strcmp(ast->tokens[i][j], "<<"))
-		new_node->type = REDIR_HEREDOC;
 	else
-		return (set_cmd_node(ast, i, j, new_node));
-	return (j + 1);
+	{
+		new_node->type = REDIR_HEREDOC;
+		return (j + 1);
+	}
 }
 
-int	make_node(t_ast *ast, int i, int j, t_node **first)
+static int	make_redir_node(t_ast *ast, int i, int j, t_node **first)
 {
 	t_node	*new_node;
 	t_node	*current;
@@ -114,7 +53,20 @@ int	make_node(t_ast *ast, int i, int j, t_node **first)
 		current->next = new_node;
 		new_node->prev = current;
 	}
-	return (set_node(new_node, ast, i, j));
+	return (set_redir_node(new_node, ast, i, j));
+}
+
+static void	make_all_redir_nodes(t_ast *ast, int i)
+{
+	int	j;
+
+	j = 0;
+	while (ast->tokens[i][j])
+	{
+		if (is_redirection(ast->tokens[i][j]))
+			make_redir_node(ast, i, j, &ast->first);
+		j++;
+	}
 }
 
 int	lexer(t_ast *ast)
@@ -130,6 +82,7 @@ int	lexer(t_ast *ast)
 		j = 0;
 		if (i > 0)
 			make_pipe_node(ast, &ast->first);
+		make_all_redir_nodes(ast, i);
 		while (ast->tokens[i][j])
 		{
 			temp = make_node(ast, i, j, &ast->first);

@@ -54,7 +54,7 @@ static	char	**ft_ms_makearray(char const *s, char c, int *error)
 {
 	char	**array;
 
-	array = malloc((ft_ms_strings(s, c) + 1) * sizeof(char *));
+	array = malloc((ft_ms_strings(s, c, 0) + 1) * sizeof(char *));
 	if (!array)
 	{
 		*error = 1;

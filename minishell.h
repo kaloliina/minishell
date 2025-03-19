@@ -50,10 +50,12 @@ int		set_sections(t_ast *ast, char **tmp_sections);
 void	set_last_section(t_ast *ast, int i, char **tmp_sections);
 
 //lexing
-int		ft_ms_strings(char const *s, char c);
+char	*add_spaces(char *input);
+int		ft_ms_strings(char const *s, char c, int i);
 int		ft_ms_checkquote(char const *s, int i, char quote);
 char	**ft_ms_freearray(char **array, int j, int *error);
 char	**ft_ms_split(char const *s, char c, int *error);
+int		make_node(t_ast *ast, int i, int j, t_node **first);
 int		lexer(t_ast *ast);
 
 //parsing
