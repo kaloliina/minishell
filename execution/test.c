@@ -6,7 +6,7 @@
 /*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/19 12:32:36 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/20 17:07:35 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,10 +94,10 @@ void execute_command(int pid, t_node *node, char *envp[])
 void redirection_outfile(t_node *node, char *envp[])
 {
 	int fd;
-	if (node->next->type == REDIR_OUTF)
-		fd = set_outfile(node->next->file, 0);
-	if (node->next->type == REDIR_APPEND)
-		fd = set_outfile(node->next->file, 1);
+	if (node->type == REDIR_OUTF)
+		fd = set_outfile(node->file, 0);
+	if (node->type == REDIR_APPEND)
+		fd = set_outfile(node->file, 1);
 	dup2(fd, STDOUT_FILENO);
 	close(fd);
 }
@@ -106,7 +106,7 @@ void redirection_outfile(t_node *node, char *envp[])
 void redirection_infile(t_node *node, char *envp[])
 {
 	int fd;
-	fd = open_infile(node->next->file);
+	fd = open_infile(node->file);
 	dup2(fd, STDIN_FILENO);
 	close(fd);
 }
@@ -132,73 +132,77 @@ int	get_pipe_amount(t_node *list)
 typedef struct t_pipe
 {
 	int	*pipes;
+	struct s_node *infile;
+	struct s_node *outfile;
+	int	current_section;
+	int	pipe_amount;
+	struct s_node *command_node;
 }					t_pipes;
 
+
 //This one needs cleaning up
-void execute_pipe(t_node *node, char *envp[])
+void execute_pipe(t_node *node, char *envp[], t_pipes *my_pipes)
 {
-	int	pipe_amount;
-	pipe_amount = (get_pipe_amount(node)) * 2;
-	t_pipes my_pipes;
-	static int step = 0;
-	static int i = 0;
+	int i = my_pipes->pipe_amount * 2;
 	int	pid;
-	static int counter;
 	static int j = -2;
 	static int k = 1;
-if (step == 0)
-{
-	my_pipes.pipes = malloc(sizeof(int) * pipe_amount);
-	while (i < pipe_amount)
-	{
-		pipe(&my_pipes.pipes[i]);
-		i = i + 2;
-	}
-	counter = (pipe_amount / 2) + 1;
-}
-step++;
+printf("here...\n");
+my_pipes->current_section++;
 pid = fork();
 if (pid == 0)
 {
-if (step != counter)
+if (node->next != NULL)
 {
-	if (node->next != NULL && node->next->type == REDIR_OUTF ||  node->next != NULL && node->next->type == REDIR_APPEND ||  node->next != NULL && node->next->type == REDIR_INF)
+	if (my_pipes->outfile == NULL)
 	{
-		printf("here inoutf\n");
-		redirection_outfile(node, envp);
+		printf("this should happen!!\n");
+		dup2(my_pipes->pipes[k], STDOUT_FILENO);
 	}
 	else
-	{
-		dup2(my_pipes.pipes[k], STDOUT_FILENO);
-	}
+		redirection_outfile(my_pipes->outfile, envp);
 }
-if (step != 1)
+if (my_pipes->current_section != 1)
 {
-	if (node->next != NULL && node->next->type == REDIR_OUTF ||  node->next != NULL && node->next->type == REDIR_APPEND ||  node->next != NULL && node->next->type == REDIR_INF)
+	if (my_pipes->infile == NULL)
 	{
-		printf("here!!");
-		redirection_infile(node, envp);
+		printf("this should happen\n");
+		dup2(my_pipes->pipes[j], STDIN_FILENO);
 	}
 	else
-	{
-		printf("hereeaa\n");
-		dup2(my_pipes.pipes[j], STDIN_FILENO);
-	}
+		redirection_infile(my_pipes->infile, envp);
 }
 	while (i-- > 0)
-		close(my_pipes.pipes[i]);
+		close(my_pipes->pipes[i]);
 	execute_command(pid, node, envp);
 }
 else
 {
-	if (step == counter)
-	{
+	if (node->next == NULL)
 		while (i-- > 0)
-			close(my_pipes.pipes[i]);
-	}
+			close(my_pipes->pipes[i]);
 	j = j + 2;
 	k = k + 2;
 }
+}
+
+//Initializing a struct to track stuffsies
+void	initialize_struct(t_pipes *my_pipes, t_node *list)
+{
+	int	i;
+
+	my_pipes->infile = NULL;
+	my_pipes->outfile = NULL;
+	my_pipes->command_node = NULL;
+	my_pipes->current_section = 0;
+	my_pipes->pipe_amount = get_pipe_amount(list);
+	my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));
+	i = 0;
+	while (i < my_pipes->pipe_amount)
+	{
+		pipe(&my_pipes->pipes[i]);
+		i = i + 2;
+	}
 }
 
 //This function goes over the entire list of nodes, handling redirections and pipes
@@ -206,30 +210,137 @@ else
 void	loop_nodes(t_node *list, char *envp[])
 {
 	t_node	*curr;
-	t_node	*command_node;
-	int		pipe_amount;
+	t_pipes *my_pipes;
 
 	curr = list;
-	pipe_amount = get_pipe_amount(list);
+	my_pipes = malloc(sizeof(t_pipes));
+	initialize_struct(my_pipes, list);
 	while (curr != NULL)
 	{
 	if (curr->type == COMMAND)
-		command_node = curr;
-	if (pipe_amount == 0)
+		my_pipes->command_node = curr;
+	if (curr->type == REDIR_APPEND || curr->type == REDIR_OUTF)
 	{
-		if (curr->next != NULL && (curr->next->type == REDIR_APPEND || curr->next->type == REDIR_OUTF))
+		if (my_pipes->pipe_amount == 0)
 			redirection_outfile(curr, envp);
-		if (curr->next != NULL && curr->next->type == REDIR_INF)
-			redirection_infile(curr, envp);
+		my_pipes->outfile = curr;
 	}
-	if (curr->next != NULL && pipe_amount > 0 && curr->type != REDIR_APPEND && curr->type != REDIR_OUTF && curr->type != REDIR_INF && curr->type != PIPE)
-		execute_pipe(curr, envp);
-	if (curr->next == NULL && pipe_amount == 0)
-		execute_command(-1, command_node, envp);
+	if (curr->type == REDIR_INF)
+	{
+		if (my_pipes->pipe_amount == 0)
+			redirection_infile(curr, envp);
+		my_pipes->infile = curr;
+	}
+	if (curr->next != NULL && my_pipes->pipe_amount > 0 && curr->next->type == PIPE)
+		execute_pipe(my_pipes->command_node, envp, my_pipes);
+	if (my_pipes->pipe_amount > 0 && curr->next == NULL)
+		execute_pipe(my_pipes->command_node, envp, my_pipes);
+	if (curr->next == NULL && my_pipes->pipe_amount == 0)
+		execute_command(-1, my_pipes->command_node, envp);
+	my_pipes->outfile = NULL;
+	my_pipes->infile = NULL;
 	curr = curr->next;
 	}
 }
 
+
+// void execute_pipe(t_node *node, char *envp[])
+// {
+// 	int	pipe_amount;
+// 	pipe_amount = (get_pipe_amount(node)) * 2;
+// 	t_pipes my_pipes;
+// 	static int step = 0;
+// 	static int i = 0;
+// 	int	pid;
+// 	static int counter;
+// 	static int j = -2;
+// 	static int k = 1;
+// if (step == 0)
+// {
+// 	my_pipes.pipes = malloc(sizeof(int) * pipe_amount);
+// 	while (i < pipe_amount)
+// 	{
+// 		pipe(&my_pipes.pipes[i]);
+// 		i = i + 2;
+// 	}
+// 	counter = (pipe_amount / 2) + 1;
+// }
+// step++;
+// pid = fork();
+// if (pid == 0)
+// {
+// if (step != counter)
+// {
+// 	if (node->next != NULL && node->next->type == REDIR_OUTF ||  node->next != NULL && node->next->type == REDIR_APPEND ||  node->next != NULL && node->next->type == REDIR_INF)
+// 	{
+// 		redirection_outfile(node->next, envp);
+// 	}
+// 	else
+// 	{
+// 		dup2(my_pipes.pipes[k], STDOUT_FILENO);
+// 	}
+// }
+// if (step != 1)
+// {
+// 	if (node->next != NULL && node->next->type == REDIR_OUTF ||  node->next != NULL && node->next->type == REDIR_APPEND ||  node->next != NULL && node->next->type == REDIR_INF)
+// 	{
+// 		redirection_infile(node->next, envp);
+// 	}
+// 	else
+// 	{
+// 		dup2(my_pipes.pipes[j], STDIN_FILENO);
+// 	}
+// }
+// 	while (i-- > 0)
+// 		close(my_pipes.pipes[i]);
+// 	execute_command(pid, node, envp);
+// }
+// else
+// {
+// 	if (step == counter)
+// 	{
+// 		while (i-- > 0)
+// 			close(my_pipes.pipes[i]);
+// 	}
+// 	j = j + 2;
+// 	k = k + 2;
+// }
+// }
+
+// //This function goes over the entire list of nodes, handling redirections and pipes
+// //Heredoc yet remains to be handled...
+// void	loop_nodes(t_node *list, char *envp[])
+// {
+// 	t_node	*curr;
+// 	t_node	*command_node;
+// 	int		pipe_amount;
+
+// 	curr = list;
+// 	pipe_amount = get_pipe_amount(list);
+// 	while (curr != NULL)
+// 	{
+// 	if (curr->type == COMMAND)
+// 		command_node = curr;
+// 	if (pipe_amount == 0)
+// 	{
+// 		if (curr->type == REDIR_APPEND || curr->type == REDIR_OUTF)
+// 			redirection_outfile(curr, envp);
+// 		if (curr->type == REDIR_INF)
+// 			redirection_infile(curr, envp);
+// 	}
+// 	if (curr->next != NULL && pipe_amount > 0 && curr->type != REDIR_APPEND && curr->type != REDIR_OUTF && curr->type != REDIR_INF && curr->type != PIPE)
+// 	{
+// 		printf("how many times\n");
+// 		execute_pipe(curr, envp);
+// 	}
+// 	if (curr->next == NULL && pipe_amount == 0)
+// 		execute_command(-1, command_node, envp);
+// 	curr = curr->next;
+// 	}
+// }
+
+
+//SAME HERE THIS IS NOT WORKING
 // int main(int argc, char *argv[], char *envp[])
 // {
 // 	t_node *node0;
@@ -357,7 +468,7 @@ void	loop_nodes(t_node *list, char *envp[])
 
 // }
 
-//THIS IS NOT WORKING CURRENTLY
+//THIS IS SHOULD GIVE ERROR IF THERE IS NO FILE..
 // int main(int argc, char *argv[], char *envp[])
 // {
 // 	t_node *node0;
@@ -402,106 +513,46 @@ void	loop_nodes(t_node *list, char *envp[])
 // 	return (0);
 //  }
 
-int main(int argc, char *argv[], char *envp[])
-{
-	t_node *node0;
-	node0 = malloc(sizeof(t_node));
-	node0->type = COMMAND;
-	node0->file = NULL;
-	node0->cmd = "echo";
-	node0->args = malloc(sizeof(char *) * 2);
-	node0->args[0] = "hi there!";
-	node0->args[1] = NULL;
-
-	t_node *node1;
-	node1 = malloc(sizeof(t_node));
-	node1->type = REDIR_APPEND;
-	node1->file = "outfile.txt";
-	node1->cmd = NULL;
-	node1->args = NULL;
-
-	t_node *node2;
-	node2 = malloc(sizeof(t_node));
-	node2->type = PIPE;
-	node2->file = NULL;
-	node2->cmd = NULL;
-	node2->args = NULL;
-
-	t_node *node3;
-	node3 = malloc(sizeof(t_node));
-	node3->type = COMMAND;
-	node3->file = NULL;
-	node3->cmd = "wc";
-	node3->args = malloc(sizeof(char *) * 2);
-	node3->args[0] = "-l";
-	node3->args[1] = NULL;
-
-	t_node *node4;
-	node4 = malloc(sizeof(t_node));
-	node4->type = REDIR_INF;
-	node4->file = "outfile.txt";
-	node4->cmd = NULL;
-	node4->args = NULL;
-
-	node0->next = node1;
-	node0->prev  = NULL;
-	node1->next = node2;
-	node1->prev = node0;
-	node2->next = node3;
-	node2->prev = node1;
-	node3->next = node4;
-	node3->prev = node2;
-	node4->next = NULL;
-	node4->prev = node3;
-
-
-	loop_nodes(node0, envp);
-	return (0);
-
-}
-
 // int main(int argc, char *argv[], char *envp[])
 // {
 // 	t_node *node0;
 // 	node0 = malloc(sizeof(t_node));
 // 	node0->type = COMMAND;
 // 	node0->file = NULL;
-// 	node0->cmd = "ls";
-// 	node0->args = NULL;
+// 	node0->cmd = "echo";
+// 	node0->args = malloc(sizeof(char *) * 2);
+// 	node0->args[0] = "hi there!";
+// 	node0->args[1] = NULL;
 
-// //next node
 // 	t_node *node1;
 // 	node1 = malloc(sizeof(t_node));
-// 	node1->type = PIPE;
-// 	node1->file = NULL;
+// 	node1->type = REDIR_APPEND;
+// 	node1->file = "outfile.txt";
 // 	node1->cmd = NULL;
 // 	node1->args = NULL;
 
 // 	t_node *node2;
 // 	node2 = malloc(sizeof(t_node));
-// 	node2->type = COMMAND;
+// 	node2->type = PIPE;
 // 	node2->file = NULL;
-// 	node2->cmd = "grep";
-// 	node2->args = malloc(sizeof(char *) * 2);
-// 	node2->args[0] = ".c";
-// 	node2->args[1] = NULL;
+// 	node2->cmd = NULL;
+// 	node2->args = NULL;
 
 // 	t_node *node3;
 // 	node3 = malloc(sizeof(t_node));
-// 	node3->type = PIPE;
+// 	node3->type = COMMAND;
 // 	node3->file = NULL;
-// 	node3->cmd = NULL;
-// 	node3->args = NULL;
+// 	node3->cmd = "wc";
+// 	node3->args = malloc(sizeof(char *) * 2);
+// 	node3->args[0] = "-l";
+// 	node3->args[1] = NULL;
 
 // 	t_node *node4;
 // 	node4 = malloc(sizeof(t_node));
-// 	node4->type = COMMAND;
-// 	node4->file = NULL;
-// 	node4->cmd = "wc";
-// 	node4->args = malloc(sizeof(char *) * 2);
-// 	node4->args[0] = "-l";
-// 	node4->args[1] = NULL;
-
+// 	node4->type = REDIR_INF;
+// 	node4->file = "outfile.txt";
+// 	node4->cmd = NULL;
+// 	node4->args = NULL;
 
 // 	node0->next = node1;
 // 	node0->prev  = NULL;
@@ -519,6 +570,68 @@ int main(int argc, char *argv[], char *envp[])
 // 	return (0);
 
 // }
+
+
+//THIS IS NOT WORKING!!!
+int main(int argc, char *argv[], char *envp[])
+{
+	t_node *node0;
+	node0 = malloc(sizeof(t_node));
+	node0->type = COMMAND;
+	node0->file = NULL;
+	node0->cmd = "ls";
+	node0->args = NULL;
+
+//next node
+	t_node *node1;
+	node1 = malloc(sizeof(t_node));
+	node1->type = PIPE;
+	node1->file = NULL;
+	node1->cmd = NULL;
+	node1->args = NULL;
+
+	t_node *node2;
+	node2 = malloc(sizeof(t_node));
+	node2->type = COMMAND;
+	node2->file = NULL;
+	node2->cmd = "grep";
+	node2->args = malloc(sizeof(char *) * 2);
+	node2->args[0] = ".c";
+	node2->args[1] = NULL;
+
+	t_node *node3;
+	node3 = malloc(sizeof(t_node));
+	node3->type = PIPE;
+	node3->file = NULL;
+	node3->cmd = NULL;
+	node3->args = NULL;
+
+	t_node *node4;
+	node4 = malloc(sizeof(t_node));
+	node4->type = COMMAND;
+	node4->file = NULL;
+	node4->cmd = "wc";
+	node4->args = malloc(sizeof(char *) * 2);
+	node4->args[0] = "-l";
+	node4->args[1] = NULL;
+
+
+	node0->next = node1;
+	node0->prev  = NULL;
+	node1->next = node2;
+	node1->prev = node0;
+	node2->next = node3;
+	node2->prev = node1;
+	node3->next = node4;
+	node3->prev = node2;
+	node4->next = NULL;
+	node4->prev = node3;
+
+
+	loop_nodes(node0, envp);
+	return (0);
+
+}
 
 // int main(int argc, char *argv[], char *envp[])
 // {
