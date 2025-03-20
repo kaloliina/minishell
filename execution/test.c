@@ -13,8 +13,7 @@
 # include "../libft/includes/libft.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include <readline/readline.h>
-#include <readline/history.h>
+
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -71,22 +70,27 @@ return (commands);
 
 //Function that handles the actual execution
 //Double check the waitpid here
-void execute_command(int pid, t_node *node, char *envp[])
+void execute_command(int single_command, t_node *node, char *envp[])
 {
 	char **paths = get_paths(envp);
 	char *path = get_absolute_path(paths,node->cmd);
 	char **commands;
 	commands = combine_commands(node);
-	if (pid == -1)
+	int	pid;
+	if (single_command == 1)
+	{
 		pid = fork();
-
+	}
+	else
+		pid = 0;
 	if (pid == 0)
 	{
 		execve(path, commands, envp);
 	}
-	else
+	if (single_command == 1)
 	{
-		waitpid(pid, NULL, 0);
+		int status;
+		waitpid(pid, &status, 0);
 	}
 }
 
@@ -128,7 +132,7 @@ int	get_pipe_amount(t_node *list)
 	return (pipe_amount);
 }
 
-//This is used basically to only track the ends of the pipes, feels a bit unnecessary to have a struct with only one component
+//This struct holds all the relevant data regarding fd's, number of pipes, what's the section's command node etc.
 typedef struct t_pipe
 {
 	int	*pipes;
@@ -137,17 +141,16 @@ typedef struct t_pipe
 	int	current_section;
 	int	pipe_amount;
 	struct s_node *command_node;
+	int	read_end;
+	int	write_end;
 }					t_pipes;
 
 
-//This one needs cleaning up
+//This function handles the actual pipe execution
 void execute_pipe(t_node *node, char *envp[], t_pipes *my_pipes)
 {
 	int i = my_pipes->pipe_amount * 2;
 	int	pid;
-	static int j = -2;
-	static int k = 1;
-printf("here...\n");
 my_pipes->current_section++;
 pid = fork();
 if (pid == 0)
@@ -156,8 +159,7 @@ if (node->next != NULL)
 {
 	if (my_pipes->outfile == NULL)
 	{
-		printf("this should happen!!\n");
-		dup2(my_pipes->pipes[k], STDOUT_FILENO);
+		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
 	}
 	else
 		redirection_outfile(my_pipes->outfile, envp);
@@ -166,23 +168,24 @@ if (my_pipes->current_section != 1)
 {
 	if (my_pipes->infile == NULL)
 	{
-		printf("this should happen\n");
-		dup2(my_pipes->pipes[j], STDIN_FILENO);
+		dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
 	}
 	else
 		redirection_infile(my_pipes->infile, envp);
 }
 	while (i-- > 0)
 		close(my_pipes->pipes[i]);
-	execute_command(pid, node, envp);
+	execute_command(0, node, envp);
 }
 else
 {
-	if (node->next == NULL)
-		while (i-- > 0)
-			close(my_pipes->pipes[i]);
-	j = j + 2;
-	k = k + 2;
+	close(my_pipes->pipes[my_pipes->write_end]);
+	if (my_pipes->current_section > 1)
+		close(my_pipes->pipes[my_pipes->read_end]);
+	my_pipes->read_end = my_pipes->read_end + 2;
+	my_pipes->write_end = my_pipes->write_end + 2;
+	int status;
+	waitpid(pid, &status, 0);
 }
 }
 
@@ -194,11 +197,13 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list)
 	my_pipes->infile = NULL;
 	my_pipes->outfile = NULL;
 	my_pipes->command_node = NULL;
+	my_pipes->read_end = -2;
+	my_pipes->write_end = 1;
 	my_pipes->current_section = 0;
 	my_pipes->pipe_amount = get_pipe_amount(list);
 	my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));
 	i = 0;
-	while (i < my_pipes->pipe_amount)
+	while (i < my_pipes->pipe_amount * 2)
 	{
 		pipe(&my_pipes->pipes[i]);
 		i = i + 2;
@@ -236,109 +241,12 @@ void	loop_nodes(t_node *list, char *envp[])
 	if (my_pipes->pipe_amount > 0 && curr->next == NULL)
 		execute_pipe(my_pipes->command_node, envp, my_pipes);
 	if (curr->next == NULL && my_pipes->pipe_amount == 0)
-		execute_command(-1, my_pipes->command_node, envp);
+		execute_command(1, my_pipes->command_node, envp);
 	my_pipes->outfile = NULL;
 	my_pipes->infile = NULL;
 	curr = curr->next;
 	}
 }
-
-
-// void execute_pipe(t_node *node, char *envp[])
-// {
-// 	int	pipe_amount;
-// 	pipe_amount = (get_pipe_amount(node)) * 2;
-// 	t_pipes my_pipes;
-// 	static int step = 0;
-// 	static int i = 0;
-// 	int	pid;
-// 	static int counter;
-// 	static int j = -2;
-// 	static int k = 1;
-// if (step == 0)
-// {
-// 	my_pipes.pipes = malloc(sizeof(int) * pipe_amount);
-// 	while (i < pipe_amount)
-// 	{
-// 		pipe(&my_pipes.pipes[i]);
-// 		i = i + 2;
-// 	}
-// 	counter = (pipe_amount / 2) + 1;
-// }
-// step++;
-// pid = fork();
-// if (pid == 0)
-// {
-// if (step != counter)
-// {
-// 	if (node->next != NULL && node->next->type == REDIR_OUTF ||  node->next != NULL && node->next->type == REDIR_APPEND ||  node->next != NULL && node->next->type == REDIR_INF)
-// 	{
-// 		redirection_outfile(node->next, envp);
-// 	}
-// 	else
-// 	{
-// 		dup2(my_pipes.pipes[k], STDOUT_FILENO);
-// 	}
-// }
-// if (step != 1)
-// {
-// 	if (node->next != NULL && node->next->type == REDIR_OUTF ||  node->next != NULL && node->next->type == REDIR_APPEND ||  node->next != NULL && node->next->type == REDIR_INF)
-// 	{
-// 		redirection_infile(node->next, envp);
-// 	}
-// 	else
-// 	{
-// 		dup2(my_pipes.pipes[j], STDIN_FILENO);
-// 	}
-// }
-// 	while (i-- > 0)
-// 		close(my_pipes.pipes[i]);
-// 	execute_command(pid, node, envp);
-// }
-// else
-// {
-// 	if (step == counter)
-// 	{
-// 		while (i-- > 0)
-// 			close(my_pipes.pipes[i]);
-// 	}
-// 	j = j + 2;
-// 	k = k + 2;
-// }
-// }
-
-// //This function goes over the entire list of nodes, handling redirections and pipes
-// //Heredoc yet remains to be handled...
-// void	loop_nodes(t_node *list, char *envp[])
-// {
-// 	t_node	*curr;
-// 	t_node	*command_node;
-// 	int		pipe_amount;
-
-// 	curr = list;
-// 	pipe_amount = get_pipe_amount(list);
-// 	while (curr != NULL)
-// 	{
-// 	if (curr->type == COMMAND)
-// 		command_node = curr;
-// 	if (pipe_amount == 0)
-// 	{
-// 		if (curr->type == REDIR_APPEND || curr->type == REDIR_OUTF)
-// 			redirection_outfile(curr, envp);
-// 		if (curr->type == REDIR_INF)
-// 			redirection_infile(curr, envp);
-// 	}
-// 	if (curr->next != NULL && pipe_amount > 0 && curr->type != REDIR_APPEND && curr->type != REDIR_OUTF && curr->type != REDIR_INF && curr->type != PIPE)
-// 	{
-// 		printf("how many times\n");
-// 		execute_pipe(curr, envp);
-// 	}
-// 	if (curr->next == NULL && pipe_amount == 0)
-// 		execute_command(-1, command_node, envp);
-// 	curr = curr->next;
-// 	}
-// }
-
 
 //SAME HERE THIS IS NOT WORKING
 // int main(int argc, char *argv[], char *envp[])
