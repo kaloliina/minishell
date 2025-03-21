@@ -113,6 +113,71 @@ char	*handle_expandables(char *line, char **envp)
 	return (line);
 }
 
+char	*handle_quotes_helper(char *s)
+{
+	int		i;
+	int		j;
+	int		s_quote;
+	int		d_quote;
+	char	*new;
+
+	i = 0;
+	j = 0;
+	s_quote = 0;
+	d_quote = 0;
+	new = malloc(ft_strlen(s) + 1);
+	while (s[i])
+	{
+		if (s[i] == 34)
+		{
+			if (d_quote)
+				new[j++] = s[i++];
+			else
+			{
+				i++;
+				s_quote = !s_quote;
+			}
+		}
+		else if (s[i] == 39)
+		{
+			if (s_quote)
+				new[j++] = s[i++];
+			else
+			{
+				i++;
+				d_quote = !d_quote;
+			}
+		}
+		else
+			new[j++] = s[i++];
+	}
+	free (s);
+	return (new);
+}
+
+void	handle_quotes(t_ast *ast)
+{
+	int		i;
+	t_node	*tmp;
+
+	tmp = ast->first;
+	while (tmp)
+	{
+		if (tmp->cmd)
+		{
+			i = 0;
+			while (tmp->cmd[i])
+			{
+				tmp->cmd[i] = handle_quotes_helper(tmp->cmd[i]);
+				i++;
+			}
+		}
+		if (tmp->file)
+			tmp->file = handle_quotes_helper(tmp->file);
+		tmp = tmp->next;
+	}
+}
+
 void	minishell(char *input, char **envp)
 {
 	t_ast	ast;
@@ -131,6 +196,7 @@ void	minishell(char *input, char **envp)
 	init_tokens(&ast);
 	if (lexer(&ast) < 0)
 		return ;
+	handle_quotes(&ast);
 	tmp = ast.first;
 	while (tmp)
 	{
