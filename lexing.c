@@ -80,7 +80,7 @@ int	lexer(t_ast *ast)
 
 	i = 0;
 	ast->first = NULL;
-	while (ast->sections[i]->section)
+	while (ast->sections[i])
 	{
 		j = 0;
 		if (i > 0)

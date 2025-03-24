@@ -28,16 +28,10 @@ typedef struct s_node
 	struct s_node	*next;
 }					t_node;
 
-typedef struct s_section
-{
-	char	*section;
-	int		number;
-}			t_section;
-
 typedef struct s_ast
 {
 	int			sections_amount;
-	t_section	**sections;
+	char		**sections;
 	char		***tokens;
 	t_node		*first;
 }				t_ast;
