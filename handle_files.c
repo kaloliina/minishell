@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_files.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:44:40 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/21 14:13:41 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/23 12:01:42 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,5 +27,6 @@ int	set_outfile(char *file, int append)
 		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (append == 1)
 		fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
+	printf("have we made outfile\n");
 	return (fd);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   test.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/21 20:28:08 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/24 12:17:43 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 static void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my_pipes)
 {
 	char **paths = NULL;
+	int		i = 0;
+	ft_putstr_fd("are we here in exec cmd\n", 2);
 	if (paths == NULL)
 		paths = get_paths(envp);
 	my_pipes->command_path = get_absolute_path(paths,node->cmd[0]);
@@ -25,34 +27,52 @@ static void execute_command(int single_command, t_node *node, char *envp[], t_pi
 	if (single_command == 1)
 	{
 		pid = fork();
-	}
-	else
-		pid = 0;
-	if (pid == 0)
-	{
-		printf("Path: %s and the command is %s and next %s and next %s\n", my_pipes->command_path, node->cmd[0], node->cmd[1], node->cmd[2]);
-		execve(my_pipes->command_path, node->cmd, envp);
-		printf("Error with exexve!\n");
-	}
-	else if (pid > 0)
-	{
-		// printf("Freeing command path!\n");
-		// if (my_pipes->command_path != NULL)
-		// {
-		// free (my_pipes->command_path);
-		// my_pipes->command_path = NULL;
-		// }
-	}
-	if (single_command == 1)
-	{
+		ft_putnbr_fd(pid, 2);
+		if (pid == 0)
+		{
+			ft_putendl_fd(my_pipes->command_path, 2);
+			// while (node->cmd[i])
+			// 	printf("%s ", node->cmd[i++]);
+			// printf("\n");
+			execve(my_pipes->command_path, node->cmd, envp);
+			printf("Error with exexve!\n");
+		}
 		int status;
 		waitpid(pid, &status, 0);
 		dup2(my_pipes->stdinfd, STDIN_FILENO);
 		dup2(my_pipes->stdoutfd, STDOUT_FILENO);
 		close (my_pipes->stdinfd);
 		close (my_pipes->stdoutfd);
+		printf("parent has waited for child %d\n", pid);
 	}
-
+	else
+	{
+		ft_putendl_fd(my_pipes->command_path, 2);
+		// while (node->cmd[i])
+		// 	printf("%s ", node->cmd[i++]);
+		// printf("\n");
+		execve(my_pipes->command_path, node->cmd, envp);
+		printf("Error with exexve!\n");
+	}
+	// else if (pid > 0)
+	// {
+		// printf("Freeing command path!\n");
+		// if (my_pipes->command_path != NULL)
+		// {
+		// free (my_pipes->command_path);
+		// my_pipes->command_path = NULL;
+		// }
+	// }
+	// if (single_command == 1)
+	// {
+	// int status;
+	// waitpid(pid, &status, 0);
+	// dup2(my_pipes->stdinfd, STDIN_FILENO);
+	// dup2(my_pipes->stdoutfd, STDOUT_FILENO);
+	// close (my_pipes->stdinfd);
+	// close (my_pipes->stdoutfd);
+	// printf("parent has waited for child %d\n", pid);
+	// }
 }
 
 //Function to handle outfile redirection
@@ -105,47 +125,80 @@ static void execute_pipe(t_node *node, char *envp[], t_pipes *my_pipes)
 	int i = my_pipes->pipe_amount * 2;
 	int	pid;
 my_pipes->current_section++;
+printf("we here in exec pipe with %s\n", node->cmd[0]);
+if (my_pipes->infile)
+	printf("we have infile %s\n", my_pipes->infile->file);
+else
+	printf("no infile\n");
+if (my_pipes->outfile)
+	printf("we have outfile %s\n", my_pipes->outfile->file);
+else
+	printf("no outfile\n");
 pid = fork();
+printf("new pid is %d in %s\n", pid, node->cmd[0]);
 if (pid == 0)
 {
 	if (node->next != NULL)
 	{
+		close (my_pipes->pipes[my_pipes->read_end]);
 		if (my_pipes->outfile == NULL)
 		{
+			printf("we dup stdout to pipe end %d\n", my_pipes->write_end);
 			if (dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO) == -1)
 				printf("Error with dup!\n");
+			close (my_pipes->pipes[my_pipes->write_end]);
 		}
 		else
 			redirection_outfile(my_pipes->outfile, envp, my_pipes);
 	}
-	if (my_pipes->current_section != 1)
+	else
+		printf("next node null\n");
+	ft_putstr_fd("are we in child\n", 2);
+	if (my_pipes->current_section == 1)
+		execute_command(0, node, envp, my_pipes);
+	// if (my_pipes->current_section != 1)
+	// {
+	if (my_pipes->infile == NULL && my_pipes->current_section != 1)
 	{
-		if (my_pipes->infile == NULL)
-		{
-			if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) == -1)
-				printf("Error with dup!\n");
-		}
-		else
-			redirection_infile(my_pipes->infile, envp, my_pipes);
+		//close (my_pipes->pipes[my_pipes->write_end]);
+		ft_putstr_fd("we dup stdin to pipe end ", 2);
+		ft_putnbr_fd(my_pipes->read_end, 2);
+		ft_putstr_fd("\n", 2);
+		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) == -1)
+			printf("Error with dup!\n");
+		close (my_pipes->pipes[my_pipes->read_end]);
+		printf("curr sect not 1\n");
+		execute_command(0, node, envp, my_pipes);
 	}
-	while (i-- > 0)
+	if (my_pipes->infile->file)
 	{
-		printf("%d", i);
-		close(my_pipes->pipes[i]);
-}
+		ft_putstr_fd("are we in child anymore\n", 2);
+		redirection_infile(my_pipes->infile, envp, my_pipes);
+	}
+	ft_putstr_fd("are we in child anymore\n", 2);
 	execute_command(0, node, envp, my_pipes);
+	// }
+	// while (i-- > 0)
+	// 	close(my_pipes->pipes[i]);
 }
 else if (pid > 0)
 {
 	if ((my_pipes->current_section % 2) == 0)
 	{
-	close(my_pipes->pipes[my_pipes->read_end]);
-	close(my_pipes->pipes[my_pipes->write_end]);
-	my_pipes->read_end = my_pipes->read_end + 2;
-	my_pipes->write_end = my_pipes->write_end + 2;
+		close(my_pipes->pipes[my_pipes->read_end]);
+		close(my_pipes->pipes[my_pipes->write_end]);
+		//my_pipes->read_end = my_pipes->read_end + 2;
+		//my_pipes->write_end = my_pipes->write_end + 2;
 	}
+	else
+		close(my_pipes->pipes[my_pipes->write_end]);
 	int status;
 	waitpid(pid, &status, 0);
+	printf("in exec pipe parent has waited for child %d %s\n", pid, node->cmd[0]);
+	if (my_pipes->infile)
+		my_pipes->infile = NULL;
+	if (my_pipes->outfile)
+		my_pipes->outfile = NULL;
 }
 }
 
@@ -205,8 +258,8 @@ void	loop_nodes(t_node *list, char *envp[])
 		execute_pipe(my_pipes->command_node, envp, my_pipes);
 	if (curr->next == NULL && my_pipes->pipe_amount == 0)
 		execute_command(1, my_pipes->command_node, envp, my_pipes);
-	my_pipes->outfile = NULL;
-	my_pipes->infile = NULL;
+	// my_pipes->outfile = NULL;
+	// my_pipes->infile = NULL;
 	curr = curr->next;
 	}
 	// stuff that needs to be freed

@@ -1,9 +1,5 @@
 #include "minishell.h"
 
-/*FRIDAY TO DO:
-- quote handling (double quotes, single quotes, spaces in between - what happens when with bash??
-+ REDIRS inside quotes!!*/
-
 char	*find_envp(char *exp, char **envp)
 {
 	int		i;
@@ -60,7 +56,6 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 	while (line[i])
 		new_line[l++] = line[i++];
 	new_line[l] = '\0';
-	free (line);
 	return (new_line);
 }
 
@@ -72,6 +67,7 @@ char	*handle_expandables(char *line, char **envp)
 	int		quote;
 	char	*exp;
 	char	*replacer;
+	char	*new_line;
 
 	i = 0;
 	k = 0;
@@ -96,8 +92,12 @@ char	*handle_expandables(char *line, char **envp)
 					replacer = find_envp(exp, envp);
 					if (replacer)
 					{
-						line = add_replacer(line, replacer, k - 1, j);
+						new_line = add_replacer(line, replacer, k - 1, j);
+						free (line);
 						free (replacer);
+						line = NULL;
+						line = new_line;
+						new_line = NULL;
 					}
 				}
 			}
@@ -151,7 +151,7 @@ char	*handle_quotes_helper(char *s)
 		else
 			new[j++] = s[i++];
 	}
-	free (s);
+	new[j] = '\0';
 	return (new);
 }
 
@@ -182,7 +182,7 @@ void	minishell(char *input, char **envp)
 {
 	t_ast	ast;
 	int		k;
-//	t_node	*tmp;
+	// t_node	*tmp;
 	char	*line;
 	char	*temp;
 
