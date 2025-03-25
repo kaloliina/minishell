@@ -8,12 +8,12 @@ int	is_redirection(char *token)
 	return (1);
 }
 
-int	count_elements(char **tokens)
+int	count_elements(char **sections)
 {
 	int	i;
 
 	i = 0;
-	while (tokens[i])
+	while (sections[i])
 		i++;
 	return (i);
 }
