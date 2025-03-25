@@ -1,8 +1,10 @@
 #include "minishell.h"
 
-/*SATURDAY TO DO:
--tcsetatt & tcgetatt -> ctrl+\
-+ check REDIRS inside quotes!!*/
+/*FOR TUESDAY:
+update parsing from this version!! also on minishell_mine mon folder
+- heredoc handling in token and node making etc
+- added null terminator condition to while loop in expandables
+- THIS VERSION HERE IN MINISHELL_REPO IS NOT THE UPDATED ONE!! Be careful when pulling/pushing/changing branch*/
 
 char	*find_envp(char *exp, char **envp)
 {
@@ -88,7 +90,7 @@ char	*handle_expandables(char *line, char **envp)
 				i++;
 				j++;
 			}
-			if (line[i] == ' ' || (line[i] == '"' && quote))
+			if (line[i] == ' '  || line[i] == '\0' || (line[i] == '"' && quote))
 			{
 				exp = ft_substr(line, k, j);
 				if (exp && *exp)
@@ -178,6 +180,8 @@ void	handle_quotes(t_ast *ast)
 		}
 		if (tmp->file)
 			tmp->file = handle_quotes_helper(tmp->file);
+		if (tmp->delimiter)
+			tmp->delimiter = handle_quotes_helper(tmp->delimiter);
 		tmp = tmp->next;
 	}
 }
@@ -186,7 +190,7 @@ void	minishell(char *input, char **envp)
 {
 	t_ast	ast;
 	int		k;
-	t_node	*tmp;
+	// t_node	*tmp;
 	char	*line;
 	char	*temp;
 
@@ -201,19 +205,20 @@ void	minishell(char *input, char **envp)
 	if (lexer(&ast) < 0)
 		return ;
 	handle_quotes(&ast);
-	tmp = ast.first;
-	while (tmp)
-	{
-		printf("type %d file %s", tmp->type, tmp->file);
-		k = 0;
-		if (tmp->cmd)
-		{
-			while (tmp->cmd[k])
-				printf(" cmd %s", tmp->cmd[k++]);
-		}
-		printf("\n");
-		tmp = tmp->next;
-	}
+	// tmp = ast.first;
+	// while (tmp)
+	// {
+	// 	printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
+	// 	k = 0;
+	// 	if (tmp->cmd)
+	// 	{
+	// 		while (tmp->cmd[k])
+	// 			printf(" cmd %s", tmp->cmd[k++]);
+	// 	}
+	// 	printf("\n");
+	// 	tmp = tmp->next;
+	// }
+	loop_nodes(ast.first, envp);
 	free_struct(&ast);
 }
 
@@ -225,7 +230,7 @@ int	main(int ac, char **av, char **envp)
 	if (ac != 1)
 		return (0);
 	signal(SIGINT, signal_handler);
-	signal(SIGQUIT, signal_handler);
+	signal(SIGQUIT, SIG_IGN);
 	while (1)
 	{
 		input = readline("minishell > ");

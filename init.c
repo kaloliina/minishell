@@ -11,6 +11,7 @@ t_node	*init_new_node(t_ast *ast, t_node *new_node)
 	}
 	new_node->file = NULL;
 	new_node->cmd = NULL;
+	new_node->delimiter = NULL;
 	new_node->prev = NULL;
 	new_node->next = NULL;
 	return (new_node);
@@ -28,7 +29,6 @@ void	init_sections(t_ast *ast, char *line)
 void	init_tokens(t_ast *ast)
 {
 	int	i;
-	int	j;
 	int	error;
 
 	ast->tokens = malloc(sizeof(char **) * (ast->sections_amount + 1));
@@ -48,12 +48,6 @@ void	init_tokens(t_ast *ast)
 			free_struct(ast);
 			ft_putstr_fd("minishell: memory allocation failure\n", 2);
 			exit (1);
-		}
-		j = 0;
-		while (ast->tokens[i][j])
-		{
-			printf("token[%d][%d] is %s\n", i, j, ast->tokens[i][j]);
-			j++;
 		}
 		i++;
 	}

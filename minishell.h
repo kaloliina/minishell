@@ -8,6 +8,8 @@
 # include "libft/libft.h"
 # include <readline/readline.h>
 # include <readline/history.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 typedef enum s_type
 {
@@ -23,6 +25,7 @@ typedef struct s_node
 {
 	t_type			type;
 	char			*file;
+	char			*delimiter;
 	char			**cmd;
 	struct s_node	*prev;
 	struct s_node	*next;
@@ -35,6 +38,23 @@ typedef struct s_ast
 	char		***tokens;
 	t_node		*first;
 }				t_ast;
+
+typedef struct t_pipe
+{
+	int	*pipes;
+	char *command_path;
+	struct s_node *infile;
+	struct s_node *outfile;
+	struct s_node *heredoc;
+	int	current_section;
+	int	pipe_amount;
+	int	stdinfd;
+	int	stdoutfd;
+	struct s_node *command_node;
+	int	read_end;
+	int	write_end;
+	char	*heredoc_path;
+}					t_pipes;
 
 //init
 t_node	*init_new_node(t_ast *ast, t_node *new_node);
@@ -66,5 +86,11 @@ void	free_array(char **array);
 //utils
 int		count_elements(char **tokens);
 void	signal_handler(int sig);
+
+char **get_paths(char *envp[]);
+char *get_absolute_path(char **paths, char *command);
+int	open_infile(char *file);
+int	set_outfile(char *file, int append);
+void	loop_nodes(t_node *list, char *envp[]);
 
 #endif

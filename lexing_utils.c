@@ -7,9 +7,7 @@ static int	count_args(t_ast *ast, int i, int j)
 	args = 0;
 	while (ast->tokens[i][j])
 	{
-		if (!ft_strcmp(ast->tokens[i][j], "<<"))
-			j++;
-		else if (is_redirection(ast->tokens[i][j]))
+		if (is_redirection(ast->tokens[i][j]))
 			j += 2;
 		else
 		{
@@ -45,9 +43,7 @@ static int	set_cmd_args(char **token, int init_j, int args, t_node *new_node)
 	new_node->cmd[k++] = token[init_j++];
 	while (k <= args)
 	{
-		if (!ft_strcmp(token[init_j], "<<"))
-			init_j++;
-		else if (is_redirection(token[init_j]))
+		if (is_redirection(token[init_j]))
 			init_j += 2;
 		else
 		{
@@ -90,12 +86,7 @@ int	make_node(t_ast *ast, int i, int j, t_node **first)
 	t_node	*current;
 
 	if (is_redirection(ast->tokens[i][j]))
-	{
-		if (!ft_strcmp(ast->tokens[i][j], "<<"))
-			return (j + 1);
-		else
 			return (j + 2);
-	}
 	new_node = NULL;
 	new_node = init_new_node(ast, new_node);
 	if (!*first)
