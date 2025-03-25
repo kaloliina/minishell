@@ -6,11 +6,16 @@ static int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
 		new_node->type = REDIR_INF;
 	else if (!ft_strcmp(ast->tokens[i][j], ">>"))
 		new_node->type = REDIR_APPEND;
-	else
+	else if (!ft_strcmp(ast->tokens[i][j], ">"))
 		new_node->type = REDIR_OUTF;
+	else
+		new_node->type = REDIR_HEREDOC;
 	if (ast->tokens[i][j + 1])
 	{
-		new_node->file = ast->tokens[i][j + 1];
+		if (new_node->type == REDIR_HEREDOC)
+			new_node->delimiter = ast->tokens[i][j + 1];
+		else
+			new_node->file = ast->tokens[i][j + 1];
 		return (j + 2);
 	}
 	else
@@ -24,19 +29,6 @@ static int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
 		return (-1);
 	}
 	return (j + 2);
-}
-
-static int	set_redir_node(t_node *new_node, t_ast *ast, int i, int j)
-{
-	if (!ft_strcmp(ast->tokens[i][j], "<")
-		|| !ft_strcmp(ast->tokens[i][j], ">")
-		|| !ft_strcmp(ast->tokens[i][j], ">>"))
-		return (set_redir_file_node(new_node, ast, i, j));
-	else
-	{
-		new_node->type = REDIR_HEREDOC;
-		return (j + 1);
-	}
 }
 
 static int	make_redir_node(t_ast *ast, int i, int j, t_node **first)
@@ -56,7 +48,7 @@ static int	make_redir_node(t_ast *ast, int i, int j, t_node **first)
 		current->next = new_node;
 		new_node->prev = current;
 	}
-	return (set_redir_node(new_node, ast, i, j));
+	return (set_redir_file_node(new_node, ast, i, j));
 }
 
 static void	make_all_redir_nodes(t_ast *ast, int i)

@@ -11,6 +11,7 @@ t_node	*init_new_node(t_ast *ast, t_node *new_node)
 	}
 	new_node->file = NULL;
 	new_node->cmd = NULL;
+	new_node->delimiter = NULL;
 	new_node->prev = NULL;
 	new_node->next = NULL;
 	return (new_node);
