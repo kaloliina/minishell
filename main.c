@@ -1,5 +1,14 @@
 #include "minishell.h"
 
+<<<<<<< HEAD
+=======
+/*FOR TUESDAY:
+update parsing from this version!! also on minishell_mine mon folder
+- heredoc handling in token and node making etc
+- added null terminator condition to while loop in expandables
+- THIS VERSION HERE IN MINISHELL_REPO IS NOT THE UPDATED ONE!! Be careful when pulling/pushing/changing branch*/
+
+>>>>>>> main
 char	*find_envp(char *exp, char **envp)
 {
 	int		i;
@@ -84,7 +93,7 @@ char	*handle_expandables(char *line, char **envp)
 				i++;
 				j++;
 			}
-			if (line[i] == ' ' || (line[i] == '"' && quote))
+			if (line[i] == ' '  || line[i] == '\0' || (line[i] == '"' && quote))
 			{
 				exp = ft_substr(line, k, j);
 				if (exp && *exp)
@@ -174,6 +183,8 @@ void	handle_quotes(t_ast *ast)
 		}
 		if (tmp->file)
 			tmp->file = handle_quotes_helper(tmp->file);
+		if (tmp->delimiter)
+			tmp->delimiter = handle_quotes_helper(tmp->delimiter);
 		tmp = tmp->next;
 	}
 }
@@ -200,7 +211,7 @@ void	minishell(char *input, char **envp)
 	// tmp = ast.first;
 	// while (tmp)
 	// {
-	// 	printf("type %d file %s", tmp->type, tmp->file);
+	// 	printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
 	// 	k = 0;
 	// 	if (tmp->cmd)
 	// 	{
@@ -222,7 +233,7 @@ int	main(int ac, char **av, char **envp)
 	if (ac != 1)
 		return (0);
 	signal(SIGINT, signal_handler);
-	signal(SIGQUIT, signal_handler);
+	signal(SIGQUIT, SIG_IGN);
 	while (1)
 	{
 		input = readline("minishell > ");

@@ -28,6 +28,7 @@ typedef struct s_node
 {
 	t_type			type;
 	char			*file;
+	char			*delimiter;
 	char			**cmd;
 	struct s_node	*prev;
 	struct s_node	*next;
