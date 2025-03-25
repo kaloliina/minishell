@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   test.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/25 15:21:37 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/25 19:34:30 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 //Function that handles the actual execution
 //Double check the waitpid here
-void execute_command(int single_command, t_node *node, char *envp[])
+void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my_pipes)
 {
 	char **paths = NULL;
 	if (paths == NULL)
@@ -38,8 +38,18 @@ void execute_command(int single_command, t_node *node, char *envp[])
 	ft_putstr_fd("\n", 2);
 	if (pid == 0)
 	{
-		execve(path, &node->cmd[0], envp);
-		write(2, "Errer", 5);
+		if (my_pipes->heredoc)
+		{
+			heredoc(node, my_pipes, envp, paths);
+			execve(path, node->cmd, envp);
+		}
+		if (!ft_strcmp(node->cmd[0], "echo"))
+			execute_echo(node, envp);
+		else
+		{
+			execve(path, &node->cmd[0], envp);
+			write(2, "Error", 5);
+		}
 	}
 	else if (pid > 0)
 	{
@@ -148,7 +158,7 @@ if (my_pipes->current_section != 1)
 	if (j != my_pipes->read_end && j != my_pipes->write_end)
 		close(my_pipes->pipes[j]);
 	}
-	execute_command(0, node, envp);
+	execute_command(0, node, envp, my_pipes);
 }
 else
 {
@@ -183,6 +193,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list)
 	my_pipes->pipes = NULL;
 	my_pipes->infile = NULL;
 	my_pipes->outfile = NULL;
+	my_pipes->heredoc = NULL;
 	my_pipes->command_node = NULL;
 	my_pipes->command_path = NULL;
 	my_pipes->read_end = 0;
@@ -231,12 +242,17 @@ void	loop_nodes(t_node *list, char *envp[])
 			redirection_infile(curr, envp, my_pipes);
 		my_pipes->infile = curr;
 	}
+	if (curr->type == REDIR_HEREDOC)
+	{
+		printf("did we find heredoc\n");
+		my_pipes->heredoc = curr;
+	}
 	if (curr->next != NULL && my_pipes->pipe_amount > 0 && curr->next->type == PIPE)
 		execute_pipe(my_pipes->command_node, envp, my_pipes);
 	if (my_pipes->pipe_amount > 0 && curr->next == NULL)
 		execute_pipe(my_pipes->command_node, envp, my_pipes);
 	if (curr->next == NULL && my_pipes->pipe_amount == 0)
-		execute_command(1, my_pipes->command_node, envp);
+		execute_command(1, my_pipes->command_node, envp, my_pipes);
 //we cant put these to null yet, put them elsewhere?
 	// my_pipes->outfile = NULL;
 	// my_pipes->infile = NULL;
@@ -276,6 +292,3 @@ void	loop_nodes(t_node *list, char *envp[])
 }
 
 }
-
-
-

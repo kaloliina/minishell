@@ -8,8 +8,8 @@
 # include "libft/libft.h"
 # include <readline/readline.h>
 # include <readline/history.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 
 typedef enum s_type
 {
@@ -53,7 +53,6 @@ typedef struct t_pipe
 	struct s_node *command_node;
 	int	read_end;
 	int	write_end;
-	char	*heredoc_path;
 }					t_pipes;
 
 //init
@@ -86,7 +85,14 @@ void	free_array(char **array);
 //utils
 int		count_elements(char **tokens);
 void	signal_handler(int sig);
+char	*handle_expandables(char *line, char **envp);
+void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
 
+//builtins
+void	execute_echo(t_node *node, char **envp);
+void	execute_env(char **envp);
+
+//execution
 char **get_paths(char *envp[]);
 char *get_absolute_path(char **paths, char *command);
 int	open_infile(char *file);
