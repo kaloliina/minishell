@@ -6,7 +6,7 @@
 /*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/25 15:21:37 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/26 10:16:21 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,12 +59,14 @@ void execute_command(int single_command, t_node *node, char *envp[])
 		}
 		free (paths);
 	}
+
 	}
 }
 
 //Function to handle outfile redirection
 static void redirection_outfile(t_node *node, char *envp[], t_pipes *my_pipes)
 {
+	ft_putstr_fd("How many times are we here\n", 2);
 	int fd;
 	int	backup;
 	if (node->type == REDIR_OUTF)
@@ -80,6 +82,7 @@ static void redirection_outfile(t_node *node, char *envp[], t_pipes *my_pipes)
 //Function to handle infile redirection
 static void redirection_infile(t_node *node, char *envp[], t_pipes *my_pipes)
 {
+	ft_putstr_fd("How many times are we here\n", 2);
 	int fd;
 	int	backup;
 	fd = open_infile(node->file);
@@ -117,18 +120,7 @@ void execute_pipe(t_node *node, char *envp[], t_pipes *my_pipes)
 if (pid == 0)
 {
 //this was the latest change you did.. double check
-if (node->next != NULL || my_pipes->outfile != NULL)
-{
-	if (my_pipes->outfile == NULL)
-	{
-		ft_putnbr_fd(my_pipes->write_end, 2);
-		ft_putstr_fd("first\n", 2);
-		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
-	}
-	else
-		redirection_outfile(my_pipes->outfile, envp, my_pipes);
-}
-if (my_pipes->current_section != 1)
+if (my_pipes->current_section != 1 || my_pipes->infile != NULL)
 {
 	if (my_pipes->infile == NULL)
 	{
@@ -140,8 +132,20 @@ if (my_pipes->current_section != 1)
 	else
 	{
 		ft_putstr_fd("are wii here\n", 2);
+		ft_putstr_fd(my_pipes->infile->file, 2);
 		redirection_infile(my_pipes->infile, envp, my_pipes);
 	}
+if (node->next != NULL || my_pipes->outfile != NULL)
+{
+	if (my_pipes->outfile == NULL)
+	{
+		ft_putnbr_fd(my_pipes->write_end, 2);
+		ft_putstr_fd("first\n", 2);
+		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
+	}
+	else
+		redirection_outfile(my_pipes->outfile, envp, my_pipes);
+}
 }
 	for (int j = 0; j < my_pipes->pipe_amount * 2; j++)
 	{
@@ -169,6 +173,8 @@ else
 		close(my_pipes->pipes[my_pipes->read_end]);
 		printf("Closing last read end: %d\n", my_pipes->read_end);
 	}
+	my_pipes->outfile = NULL;
+	my_pipes->infile = NULL;
 	int status;
 	waitpid(pid, &status, 0);
 }

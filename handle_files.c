@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   handle_files.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 17:44:40 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/23 12:01:42 by sojala           ###   ########.fr       */
+/*   Updated: 2025/03/26 10:01:24 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 int	open_infile(char *file)
 {
 	int fd = open(file, O_RDONLY);
+	printf("have we opened infile\n");
 	return (fd);
 }
 

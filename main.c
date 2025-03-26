@@ -1,14 +1,11 @@
 #include "minishell.h"
 
-<<<<<<< HEAD
-=======
 /*FOR TUESDAY:
 update parsing from this version!! also on minishell_mine mon folder
 - heredoc handling in token and node making etc
 - added null terminator condition to while loop in expandables
 - THIS VERSION HERE IN MINISHELL_REPO IS NOT THE UPDATED ONE!! Be careful when pulling/pushing/changing branch*/
 
->>>>>>> main
 char	*find_envp(char *exp, char **envp)
 {
 	int		i;
