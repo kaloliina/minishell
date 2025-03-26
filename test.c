@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/25 19:34:30 by sojala           ###   ########.fr       */
+/*   Updated: 2025/03/26 17:40:19 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my
 		free (path);
 	path = get_absolute_path(paths,node->cmd[0]);
 	int	pid;
-	if (single_command == 1)
+	if (single_command == 1 && ft_strcmp(node->cmd[0], "export"))
 	{
 		pid = fork();
 	}
@@ -36,6 +36,12 @@ void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my
 	ft_putstr_fd(node->cmd[0], 2);
 	ft_putstr_fd(node->cmd[1], 2);
 	ft_putstr_fd("\n", 2);
+	if (!ft_strcmp(node->cmd[0], "export"))
+	{
+		char **temp = execute_export(node->cmd, envp);
+		my_pipes->my_envp = temp;
+		return ;
+	}
 	if (pid == 0)
 	{
 		if (my_pipes->heredoc)
@@ -45,6 +51,8 @@ void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my
 		}
 		if (!ft_strcmp(node->cmd[0], "echo"))
 			execute_echo(node, envp);
+		else if (!ft_strcmp(node->cmd[0], "pwd") && !node->cmd[1])
+			execute_pwd();
 		else
 		{
 			execve(path, &node->cmd[0], envp);
@@ -186,7 +194,7 @@ else
 
 
 //Initializing a struct to track stuffsies
-void	initialize_struct(t_pipes *my_pipes, t_node *list)
+void	initialize_struct(t_pipes *my_pipes, t_node *list, char **envp)
 {
 	int	i;
 
@@ -196,6 +204,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list)
 	my_pipes->heredoc = NULL;
 	my_pipes->command_node = NULL;
 	my_pipes->command_path = NULL;
+	my_pipes->my_envp = envp;
 	my_pipes->read_end = 0;
 	my_pipes->write_end = 1;
 	my_pipes->stdinfd = -1;
@@ -216,14 +225,18 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list)
 
 //This function goes over the entire list of nodes, handling redirections and pipes
 //Heredoc yet remains to be handled...
-void	loop_nodes(t_node *list, char *envp[])
+void	loop_nodes(t_node *list, char **envp)
 {
 	t_node	*curr;
 	t_pipes *my_pipes;
 
 	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
-	initialize_struct(my_pipes, list);
+	initialize_struct(my_pipes, list, envp);
+	// int	i = 0;
+	// while (my_pipes->my_envp[i])
+	// 	printf("%s\n", my_pipes->my_envp[i++]);
+	// printf("STOP\n");
 	while (curr != NULL)
 	{
 	if (curr->type == COMMAND)
@@ -232,14 +245,14 @@ void	loop_nodes(t_node *list, char *envp[])
 	{
 		printf("did we find redir\n");
 		if (my_pipes->pipe_amount == 0)
-			redirection_outfile(curr, envp, my_pipes);
+			redirection_outfile(curr, my_pipes->my_envp, my_pipes);
 		my_pipes->outfile = curr;
 	}
 	if (curr->type == REDIR_INF)
 	{
 		printf("did we find redir_inf\n");
 		if (my_pipes->pipe_amount == 0)
-			redirection_infile(curr, envp, my_pipes);
+			redirection_infile(curr, my_pipes->my_envp, my_pipes);
 		my_pipes->infile = curr;
 	}
 	if (curr->type == REDIR_HEREDOC)
@@ -248,11 +261,11 @@ void	loop_nodes(t_node *list, char *envp[])
 		my_pipes->heredoc = curr;
 	}
 	if (curr->next != NULL && my_pipes->pipe_amount > 0 && curr->next->type == PIPE)
-		execute_pipe(my_pipes->command_node, envp, my_pipes);
+		execute_pipe(my_pipes->command_node, my_pipes->my_envp, my_pipes);
 	if (my_pipes->pipe_amount > 0 && curr->next == NULL)
-		execute_pipe(my_pipes->command_node, envp, my_pipes);
+		execute_pipe(my_pipes->command_node, my_pipes->my_envp, my_pipes);
 	if (curr->next == NULL && my_pipes->pipe_amount == 0)
-		execute_command(1, my_pipes->command_node, envp, my_pipes);
+		execute_command(1, my_pipes->command_node, my_pipes->my_envp, my_pipes);
 //we cant put these to null yet, put them elsewhere?
 	// my_pipes->outfile = NULL;
 	// my_pipes->infile = NULL;

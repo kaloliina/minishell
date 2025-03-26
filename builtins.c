@@ -6,7 +6,6 @@ void	execute_echo(t_node *node, char **envp)
 	char	*temp;
 
 	i = 1;
-	printf("here?\n");
 	while (node->cmd[i])
 	{
 		temp = handle_expandables(node->cmd[i], envp);
@@ -27,4 +26,56 @@ void	execute_env(char **envp)
 	i = 0;
 	while (envp[i])
 		printf("%s\n", envp[i++]);
+}
+
+void	execute_pwd()
+{
+	char	*buf;
+
+	buf = malloc(100);
+	if (!buf)
+	{
+		printf("minishell: memory allocation failure\n");
+		exit (1);
+	}
+	getcwd(buf, 100);
+	if (!buf)
+		perror("minishell:");
+	else
+		printf("%s\n", buf);
+	free (buf);
+}
+
+char	**execute_export(char **cmd, char **envp)
+{
+	int		i;
+	int		j;
+	int		args;
+	char	**new_envp;
+
+	i = 0;
+	while (envp[i])
+		i++;
+	args = 0;
+	while (cmd[args])
+		args++;
+	new_envp = malloc(sizeof(char *) * (i + 1 + args));
+	//malloc protection
+	i = 0;
+	while (envp[i])
+	{
+		new_envp[i] = ft_strdup(envp[i]);
+		//malloc protection
+		i++;
+	}
+	j = 0;
+	while (cmd[j])
+	{
+		new_envp[i++] = ft_strdup(cmd[j++]);
+		//malloc protection
+	}
+	new_envp[i] = NULL;
+	// free_array(envp);
+	printf("are we done with export\n");
+	return (new_envp);
 }

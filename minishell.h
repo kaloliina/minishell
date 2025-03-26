@@ -35,6 +35,7 @@ typedef struct s_ast
 {
 	int			sections_amount;
 	char		**sections;
+	char		**my_envp;
 	char		***tokens;
 	t_node		*first;
 }				t_ast;
@@ -43,6 +44,7 @@ typedef struct t_pipe
 {
 	int	*pipes;
 	char *command_path;
+	char	**my_envp;
 	struct s_node *infile;
 	struct s_node *outfile;
 	struct s_node *heredoc;
@@ -91,6 +93,8 @@ void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
 //builtins
 void	execute_echo(t_node *node, char **envp);
 void	execute_env(char **envp);
+void	execute_pwd();
+char	**execute_export(char **cmd, char **envp);
 
 //execution
 char **get_paths(char *envp[]);

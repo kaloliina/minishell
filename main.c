@@ -186,6 +186,36 @@ void	handle_quotes(t_ast *ast)
 	}
 }
 
+void	copy_envp(char **envp, t_ast *ast)
+{
+	char	**my_envp;
+	int		i;
+
+	i = 0;
+	while (envp[i])
+		i++;
+	my_envp = malloc(sizeof(char *) * (i + 1));
+	if (!my_envp)
+	{
+		ft_putstr_fd("minishell: memory allocation failure\n", 2);
+		exit (1);
+	}
+	i = 0;
+	while (envp[i])
+	{
+		my_envp[i] = ft_strdup(envp[i]);
+		if (!my_envp[i])
+		{
+			ft_putstr_fd("minishell: memory allocation failure\n", 2);
+			free_array(my_envp);
+			exit (1);
+		}
+		i++;
+	}
+	my_envp[i] = NULL;
+	ast->my_envp = my_envp;
+}
+
 void	minishell(char *input, char **envp)
 {
 	t_ast	ast;
@@ -193,11 +223,13 @@ void	minishell(char *input, char **envp)
 	// t_node	*tmp;
 	char	*line;
 	char	*temp;
+	// char	**my_envp;
 
 	line = add_spaces(input);
 	if (!line)
 		return ;
-	temp = handle_expandables(line, envp);
+	copy_envp(envp, &ast);
+	temp = handle_expandables(line, ast.my_envp);
 	if (temp)
 		line = temp;
 	init_sections(&ast, line);
@@ -218,7 +250,7 @@ void	minishell(char *input, char **envp)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
-	loop_nodes(ast.first, envp);
+	loop_nodes(ast.first, ast.my_envp);
 	free_struct(&ast);
 }
 
