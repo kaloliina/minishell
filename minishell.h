@@ -44,17 +44,18 @@ typedef struct s_ast
 
 typedef struct t_pipe
 {
-	int	*pipes;
-	char *command_path;
-	struct s_node *infile;
-	struct s_node *outfile;
-	int	current_section;
-	int	pipe_amount;
-	int	stdinfd;
-	int	stdoutfd;
-	struct s_node *command_node;
-	int	read_end;
-	int	write_end;
+	int				*pipes;
+	char			*command_path;
+	char			**paths;
+	struct s_node	*infile;
+	struct s_node	*outfile;
+	int				current_section;
+	int				pipe_amount;
+	int				stdinfd;
+	int				stdoutfd;
+	struct s_node	*command_node;
+	int				read_end;
+	int				write_end;
 }					t_pipes;
 
 //init
