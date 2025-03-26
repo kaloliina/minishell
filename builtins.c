@@ -68,7 +68,7 @@ char	**execute_export(char **cmd, char **envp)
 		//malloc protection
 		i++;
 	}
-	j = 0;
+	j = 1;
 	while (cmd[j])
 	{
 		new_envp[i++] = ft_strdup(cmd[j++]);
@@ -77,5 +77,8 @@ char	**execute_export(char **cmd, char **envp)
 	new_envp[i] = NULL;
 	// free_array(envp);
 	printf("are we done with export\n");
+	// i = 0;
+	// while (new_envp[i])
+	// 	printf("%s\n", new_envp[i++]);
 	return (new_envp);
 }

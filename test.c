@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/26 17:40:19 by sojala           ###   ########.fr       */
+/*   Updated: 2025/03/26 18:18:06 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,14 +32,16 @@ void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my
 	}
 	else
 		pid = 0;
-	ft_putstr_fd(path, 2);
-	ft_putstr_fd(node->cmd[0], 2);
-	ft_putstr_fd(node->cmd[1], 2);
-	ft_putstr_fd("\n", 2);
+	// ft_putstr_fd(path, 2);
+	// ft_putstr_fd(node->cmd[0], 2);
+	// ft_putstr_fd(node->cmd[1], 2);
+	// ft_putstr_fd("\n", 2);
 	if (!ft_strcmp(node->cmd[0], "export"))
 	{
 		char **temp = execute_export(node->cmd, envp);
 		my_pipes->my_envp = temp;
+		//free everything before going out of here
+		//we have to return my_envp somehow to main so it is stored for next prompt round!
 		return ;
 	}
 	if (pid == 0)
@@ -301,7 +303,9 @@ void	loop_nodes(t_node *list, char **envp)
 		free(my_pipes->pipes);
 		my_pipes->pipes = NULL;
 		}
+		if (my_pipes->my_envp)
+			free_array(my_pipes->my_envp);
 	free(my_pipes);
-}
+	}
 
 }

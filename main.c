@@ -186,7 +186,7 @@ void	handle_quotes(t_ast *ast)
 	}
 }
 
-void	copy_envp(char **envp, t_ast *ast)
+char	**copy_envp(char **envp)
 {
 	char	**my_envp;
 	int		i;
@@ -213,7 +213,7 @@ void	copy_envp(char **envp, t_ast *ast)
 		i++;
 	}
 	my_envp[i] = NULL;
-	ast->my_envp = my_envp;
+	return (my_envp);
 }
 
 void	minishell(char *input, char **envp)
@@ -223,13 +223,13 @@ void	minishell(char *input, char **envp)
 	// t_node	*tmp;
 	char	*line;
 	char	*temp;
-	// char	**my_envp;
+	char	**my_envp;
 
 	line = add_spaces(input);
 	if (!line)
 		return ;
-	copy_envp(envp, &ast);
-	temp = handle_expandables(line, ast.my_envp);
+	my_envp = copy_envp(envp);
+	temp = handle_expandables(line, my_envp);
 	if (temp)
 		line = temp;
 	init_sections(&ast, line);
@@ -250,7 +250,7 @@ void	minishell(char *input, char **envp)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
-	loop_nodes(ast.first, ast.my_envp);
+	loop_nodes(ast.first, my_envp);
 	free_struct(&ast);
 }
 
