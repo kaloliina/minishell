@@ -1,6 +1,17 @@
 #include "minishell.h"
 #include <errno.h>
 
+// int		handle_heredoc_exp(char *line, int i, char **envp)
+// {
+// 	int	j;
+
+// 	j = i;
+// 	while (line[i] <= 'A' && line[i] >= 'Z')
+// 		j++;
+// 	if
+
+// }
+
 char	*heredoc_expandables(char *line, char **envp)
 {
 	int		i;
@@ -14,6 +25,14 @@ char	*heredoc_expandables(char *line, char **envp)
 
 	i = 0;
 	k = 0;
+	// while (line[i])
+	// {
+	// 	if (line[i] == '$')
+	// 		i += handle_heredoc_exp(line, i + 1, envp);
+	// 	else
+	// 		write(fd, &line[i], 1);
+	// 	i++;
+	// }
 	while (line[i])
 	{
 		if (line[i] == '$')
