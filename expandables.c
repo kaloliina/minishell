@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-static char	*find_envp(char *exp, char **envp)
+char	*find_envp(char *exp, char **envp)
 {
 	int		i;
 	int		len;
@@ -19,7 +19,7 @@ static char	*find_envp(char *exp, char **envp)
 	return (replacer);
 }
 
-static char	*add_replacer(char *line, char *replacer, int k, int j)
+char	*add_replacer(char *line, char *replacer, int k, int j)
 {
 	int		i;
 	int		l;
@@ -41,12 +41,15 @@ static char	*add_replacer(char *line, char *replacer, int k, int j)
 		ft_putstr_fd("minishell: memory allocation failure\n", 2);
 		exit (1);
 	}
-	while (i < (k - 1))
-		new_line[l++] = line[i++];
-	if (line[i] != '"')
-		new_line[l++] = line[i++];
-	else
-		quote = 2;
+	if (k > 1)
+	{
+		while (i < (k - 1))
+			new_line[l++] = line[i++];
+		if (line[i] != '"')
+			new_line[l++] = line[i++];
+		else
+			quote = 2;
+	}
 	while (replacer_len > 0)
 	{
 		new_line[l++] = replacer[m++];
@@ -68,6 +71,8 @@ char	*handle_expandables(char *line, char **envp)
 	char	*exp;
 	char	*replacer;
 	char	*new_line;
+	char	*new_start;
+	char	*new_end;
 
 	i = 0;
 	k = 0;
@@ -79,7 +84,7 @@ char	*handle_expandables(char *line, char **envp)
 			j = 0;
 			i++;
 			k = i;
-			while (line[i] <= 'Z' && line[i] >= 'A')
+			while ((line[i] <= 'Z' && line[i] >= 'A') || line[i] == '_')
 			{
 				i++;
 				j++;
@@ -93,13 +98,31 @@ char	*handle_expandables(char *line, char **envp)
 					if (replacer)
 					{
 						new_line = add_replacer(line, replacer, k - 1, j);
-						free (line);
 						free (replacer);
-						line = NULL;
-						line = new_line;
-						new_line = NULL;
 					}
+					else
+					{
+						new_start = ft_substr(line, 0, k - 1);
+						new_end = ft_substr(line, i, (ft_strlen(line) - i));
+						new_line = ft_strjoin(new_start, new_end);
+					}
+					free (line);
+					line = NULL;
+					line = new_line;
+					new_line = NULL;
 				}
+			}
+			else
+			{
+				while ((line[i] <= 'z' && line[i] >= 'a') || (line[i] <= 'Z' && line[i] >= 'A')
+				|| (line[i] <= '9' && line[i] >= '0') || line[i] == '_')
+					i++;
+				new_start = ft_substr(line, 0, k - 1);
+				new_end = ft_substr(line, i, (ft_strlen(line) - i));
+				new_line = ft_strjoin(new_start, new_end);
+				free (line);
+				line = NULL;
+				line = new_line;
 			}
 			i = k;
 		}

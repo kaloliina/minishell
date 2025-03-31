@@ -1,6 +1,81 @@
 #include "minishell.h"
 #include <errno.h>
 
+char	*heredoc_expandables(char *line, char **envp)
+{
+	int		i;
+	int		j;
+	int		k;
+	char	*exp;
+	char	*replacer;
+	char	*new_line;
+	char	*new_start;
+	char	*new_end;
+
+	i = 0;
+	k = 0;
+	while (line[i])
+	{
+		if (line[i] == '$')
+		{
+			j = 0;
+			i++;
+			k = i;
+			while (line[i] <= 'Z' && line[i] >= 'A')
+			{
+				i++;
+				j++;
+			}
+			if (!(line[i] <= '9' && line[i] >= '0') && !(line[i] <= 'Z' && line[i] >= 'A')
+				&& !(line[i] <= 'z' && line[i] >= 'a' && line[i] != '_'))
+			{
+				exp = ft_substr(line, k, j);
+				if (exp && *exp)
+				{
+					replacer = find_envp(exp, envp);
+					if (replacer)
+					{
+						new_line = add_replacer(line, replacer, k - 1, j);
+						free (line);
+						free (replacer);
+						line = NULL;
+						line = new_line;
+						new_line = NULL;
+					}
+					else
+					{
+						while ((line[i] <= 'z' && line[i] >= 'a') || (line[i] <= 'Z' && line[i] >= 'A')
+						|| (line[i] <= '9' && line[i] >= '0') || line[i] == '_')
+							i++;
+						new_start = ft_substr(line, 0, k - 1);
+						new_end = ft_substr(line, i, (ft_strlen(line) - i));
+						new_line = ft_strjoin(new_start, new_end);
+						free (line);
+						line = NULL;
+						line = new_line;
+					}
+				}
+			}
+			else
+			{
+				while ((line[i] <= 'z' && line[i] >= 'a') || (line[i] <= 'Z' && line[i] >= 'A')
+				|| (line[i] <= '9' && line[i] >= '0') || line[i] == '_')
+					i++;
+				new_start = ft_substr(line, 0, k - 1);
+				new_end = ft_substr(line, i, (ft_strlen(line) - i));
+				new_line = ft_strjoin(new_start, new_end);
+				free (line);
+				line = NULL;
+				line = new_line;
+			}
+			i = k;
+		}
+		else
+			i++;
+	}
+	return (line);
+}
+
 static void	heredoc_rm(char **envp, char **paths)
 {
 	pid_t	rm_pid;
@@ -51,6 +126,7 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
 {
 	int		fd;
 	char	*line;
+	char	*temp;
 
 	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	while (1)
@@ -58,6 +134,9 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
 		line = readline("> ");
 		if (!ft_strcmp(line, delimiter_node->delimiter))
 			break ;
+		temp = heredoc_expandables(line, my_pipes->my_envp);
+		if (temp)
+			line = temp;
 		ft_putendl_fd(line, fd);
 		free (line);
 	}

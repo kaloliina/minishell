@@ -74,6 +74,8 @@ char	**ft_ms_split(char const *s, char c, int *error);
 int		make_node(t_ast *ast, int i, int j, t_node **first);
 int		lexer(t_ast *ast);
 char	*handle_expandables(char *line, char **envp);
+char	*add_replacer(char *line, char *replacer, int k, int j);
+char	*find_envp(char *exp, char **envp);
 
 //parsing
 int		is_redirection(char *token);
