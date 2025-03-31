@@ -47,12 +47,12 @@ typedef struct t_pipe
 	int				*pipes;
 	char			*command_path;
 	char			**paths;
-	struct s_node	*infile;
-	struct s_node	*outfile;
 	int				current_section;
 	int				pipe_amount;
 	int				stdinfd;
 	int				stdoutfd;
+	int				infile_fd;
+	int				outfile_fd;
 	struct s_node	*command_node;
 	int				read_end;
 	int				write_end;
@@ -92,7 +92,7 @@ void	signal_handler(int sig);
 char **get_paths(char *envp[]);
 char *get_absolute_path(char **paths, char *command);
 int	open_infile(char *file);
-int	set_outfile(char *file, int append);
+int	set_outfile(char *file, enum s_type redir_type);
 void	loop_nodes(t_node *list, char *envp[]);
 
 #endif

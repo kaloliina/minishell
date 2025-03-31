@@ -12,57 +12,59 @@
 
 #include "../minishell.h"
 
-//Function that handles the actual execution
-//Double check the waitpid here
-void	execute_command(int single_command, t_node *node, char *envp[], t_pipes *my_pipes)
-{
-	int	pid;
-	int	status;
 
-	if (my_pipes->paths == NULL)
-		my_pipes->paths = get_paths(envp);
-	my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
-	if (single_command == 1)
-		pid = fork();
-	else
-		pid = 0;
-	if (pid == 0)
+void	execute_echo(t_node *node, char **envp)
+{
+	int		i;
+	char	*temp;
+
+	i = 1;
+	while (node->cmd[i])
 	{
-		execve(my_pipes->command_path, &node->cmd[0], envp);
-		write(2, "Error", 5);
+
+		printf("%s", node->cmd[i]);
+		if (node->cmd[i + 1])
+			printf(" ");
+		i++;
 	}
-	else if (pid > 0)
-	{
-		if (single_command == 1)
-			waitpid(pid, &status, 0);
-	}
+	printf("\n");
 }
 
-//Function to handle outfile redirection
-static void	redirection_outfile(t_node *node, char *envp[], t_pipes *my_pipes)
+void	execute_pwd()
 {
-	int	fd;
+	char	*buf;
 
-	if (node->type == REDIR_OUTF)
-		fd = set_outfile(node->file, 0);
-	if (node->type == REDIR_APPEND)
-		fd = set_outfile(node->file, 1);
+	buf = malloc(100);
+	if (!buf)
+	{
+		printf("minishell: memory allocation failure\n");
+		exit (1);
+	}
+	getcwd(buf, 100);
+	if (!buf)
+		perror("minishell:");
+	else
+		printf("%s\n", buf);
+	free (buf);
+}
+
+
+//Function to handle outfile redirection
+static void	redirection_outfile(t_pipes *my_pipes)
+{
 	if (my_pipes->stdoutfd == -1)
 		my_pipes->stdoutfd = dup(STDOUT_FILENO);
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
+	dup2(my_pipes->outfile_fd, STDOUT_FILENO);
+	close(my_pipes->outfile_fd);
 }
 
 //Function to handle infile redirection
-static void	redirection_infile(t_node *node, char *envp[], t_pipes *my_pipes)
+static void	redirection_infile(t_pipes *my_pipes)
 {
-	int	fd;
-
-	fd = open_infile(node->file);
 	if (my_pipes->stdinfd == -1)
 		my_pipes->stdinfd = dup(STDIN_FILENO);
-	dup2(fd, STDIN_FILENO);
-	close(fd);
+	dup2(my_pipes->infile_fd, STDIN_FILENO);
+	close(my_pipes->infile_fd);
 }
 
 //Helper function to get pipe amount
@@ -84,11 +86,11 @@ int	get_pipe_amount(t_node *list)
 
 void	reset_properties(t_pipes *my_pipes)
 {
-	my_pipes->outfile = NULL;
-	my_pipes->infile = NULL;
 	free (my_pipes->command_path);
 	my_pipes->command_path = NULL;
 	my_pipes->command_node = NULL;
+	my_pipes->infile_fd = -1;
+	my_pipes->outfile_fd = -1;
 }
 
 //This function handles the actual pipe execution
@@ -105,34 +107,9 @@ The first if statement closes the previous write end.
 The second moves to the next pipe.
 The last one closes the last read end.
 This one still has issues!*/
-void	execute_pipe(t_node *node, char *envp[], t_pipes *my_pipes)
+void	close_pipes(t_node *node, t_pipes *my_pipes)
 {
-	int	i;
-	int	pid;
-	int	status;
-
-	i = 0;
-	my_pipes->current_section++;
-	pid = fork();
-	if (pid == 0)
-	{
-		if (my_pipes->outfile != NULL)
-			redirection_outfile(my_pipes->outfile, envp, my_pipes);
-		if (my_pipes->infile != NULL)
-			redirection_infile(my_pipes->infile, envp, my_pipes);
-		if (my_pipes->current_section != 1 && my_pipes->infile == NULL)
-			dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
-		if (node->next != NULL && my_pipes->outfile == NULL)
-			dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
-		while (i < my_pipes->pipe_amount * 2)
-		{
-			if (i != my_pipes->read_end && i != my_pipes->write_end)
-				close(my_pipes->pipes[i]);
-			i++;
-		}
-		execute_command(0, node, envp, my_pipes);
-	}
-	else
+	if (my_pipes->pipe_amount > 0)
 	{
 		if (my_pipes->current_section > 1)
 		{
@@ -152,18 +129,105 @@ void	execute_pipe(t_node *node, char *envp[], t_pipes *my_pipes)
 			printf("Closing last read end: %d\n", my_pipes->read_end);
 		}
 		reset_properties(my_pipes);
-		waitpid(pid, &status, 0);
 	}
 }
 
+
+void execute_builtin(t_node *node, t_pipes *my_pipes, char *envp[])
+{
+	my_pipes->current_section++;
+	if (my_pipes->outfile_fd >= 0)
+		redirection_outfile(my_pipes);
+	if (my_pipes->infile_fd >= 0)
+		redirection_infile(my_pipes);
+	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
+		dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
+	if (node->next != NULL && my_pipes->outfile_fd == -1)
+		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
+	if (ft_strcmp(node->cmd[0], "echo") == 0)	
+		execute_echo(node, envp);
+	if (ft_strcmp(node->cmd[0], "pwd") == 0)	
+		execute_pwd();
+	close_pipes(node, my_pipes);
+	if (my_pipes->stdinfd != -1)
+	{
+		dup2(my_pipes->stdinfd, STDIN_FILENO);
+		close (my_pipes->stdinfd);
+	}
+	if (my_pipes->stdoutfd != -1)
+	{
+		dup2(my_pipes->stdoutfd, STDOUT_FILENO);
+		close (my_pipes->stdoutfd);
+	}
+}
+
+int execute_executable(t_node *node, char *envp[], t_pipes *my_pipes)
+{
+	int	i;
+	int	pid;
+	int	status;
+
+	i = 0;
+	my_pipes->current_section++;
+	pid = fork();
+	if (pid == 0)
+	{
+		if (my_pipes->outfile_fd >= 0)
+			redirection_outfile(my_pipes);
+		if (my_pipes->infile_fd >= 0)
+			redirection_infile(my_pipes);
+		if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
+		{
+			dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
+			close(my_pipes->pipes[my_pipes->read_end]);
+		}
+		if (node->next != NULL && my_pipes->outfile_fd == -1)
+		{
+		//mby overthinking this but im actually sceptical do we get here always when we want to get here because we are sending the command node into
+		//this function, which doesnt necessarily mean that next is NULL. Maybe instead i should have if current section is not pipeamount + 1.
+			dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
+			close(my_pipes->pipes[my_pipes->write_end]);
+		}
+		while (i < my_pipes->pipe_amount * 2)
+		{
+			if (i != my_pipes->read_end && i != my_pipes->write_end)
+				close(my_pipes->pipes[i]);
+			i++;
+		}
+		if (my_pipes->paths == NULL)
+			my_pipes->paths = get_paths(envp);
+		my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
+		execve(my_pipes->command_path, &node->cmd[0], envp);
+		write(2, "Error", 5);
+	}
+	else
+	{
+		close_pipes(node, my_pipes);
+		return (pid);
+	}
+}
+
+int	is_builtin(char *command)
+{
+	const char *builtins[] = {"echo", "cd", "pwd", "export", "unset", "env", "exit"};
+	int i = 0;
+	while (i <= 6)
+	{
+		if (ft_strcmp(builtins[i], command) == 0)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+
 //Initializing a struct to track stuffsies
+//I dont even know if I need the pipe_amount, look at what other things you may not need
 void	initialize_struct(t_pipes *my_pipes, t_node *list)
 {
 	int	i;
 
 	my_pipes->pipes = NULL;
-	my_pipes->infile = NULL;
-	my_pipes->outfile = NULL;
 	my_pipes->command_node = NULL;
 	my_pipes->command_path = NULL;
 	my_pipes->paths = NULL;
@@ -171,6 +235,8 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list)
 	my_pipes->write_end = 1;
 	my_pipes->stdoutfd = -1;
 	my_pipes->stdinfd = -1;
+	my_pipes->infile_fd = -1;
+	my_pipes->outfile_fd = -1;
 	my_pipes->current_section = 0;
 	my_pipes->pipe_amount = get_pipe_amount(list);
 	if (my_pipes->pipe_amount > 0)
@@ -190,16 +256,6 @@ void	free_my_pipes(t_pipes *my_pipes)
 	int	i;
 
 	i = 0;
-	if (my_pipes->stdinfd != -1)
-	{
-		dup2(my_pipes->stdinfd, STDIN_FILENO);
-		close (my_pipes->stdinfd);
-	}
-	if (my_pipes->stdoutfd != -1)
-	{
-		dup2(my_pipes->stdoutfd, STDOUT_FILENO);
-		close (my_pipes->stdoutfd);
-	}
 	if (my_pipes != NULL)
 	{
 		if (my_pipes->paths != NULL)
@@ -238,6 +294,9 @@ void	loop_nodes(t_node *list, char *envp[])
 {
 	t_node	*curr;
 	t_pipes	*my_pipes;
+	pid_t child_pids[my_pipes->pipe_amount + 1];
+	int status;
+	int i = 0;
 
 	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
@@ -247,24 +306,36 @@ void	loop_nodes(t_node *list, char *envp[])
 		if (curr->type == COMMAND)
 			my_pipes->command_node = curr;
 		if (curr->type == REDIR_APPEND || curr->type == REDIR_OUTF)
-		{
-			if (my_pipes->pipe_amount == 0)
-				redirection_outfile(curr, envp, my_pipes);
-			my_pipes->outfile = curr;
-		}
+			my_pipes->outfile_fd = set_outfile(curr->file, curr->type);
 		if (curr->type == REDIR_INF)
-		{
-			if (my_pipes->pipe_amount == 0)
-				redirection_infile(curr, envp, my_pipes);
-			my_pipes->infile = curr;
-		}
+			my_pipes->infile_fd = open_infile(curr->file);
 		if (curr->next != NULL && my_pipes->pipe_amount > 0 && curr->next->type == PIPE)
-			execute_pipe(my_pipes->command_node, envp, my_pipes);
-		if (my_pipes->pipe_amount > 0 && curr->next == NULL)
-			execute_pipe(my_pipes->command_node, envp, my_pipes);
-		if (curr->next == NULL && my_pipes->pipe_amount == 0)
-			execute_command(1, my_pipes->command_node, envp, my_pipes);
+		{
+			if (is_builtin(my_pipes->command_node->cmd[0]) == 1)
+				execute_builtin(my_pipes->command_node, my_pipes, envp);
+			else
+			{
+				child_pids[i] = execute_executable(my_pipes->command_node, envp, my_pipes);
+				i++;
+			}
+		}
+		if (curr->next == NULL)
+		{
+			if (is_builtin(my_pipes->command_node->cmd[0]) == 1)
+				execute_builtin(my_pipes->command_node, my_pipes, envp);
+			else
+			{
+				child_pids[i] = execute_executable(my_pipes->command_node, envp, my_pipes);
+				i++;
+			}
+		}
 		curr = curr->next;
+	}
+	int j = 0;
+	while (j < i)
+	{
+			waitpid(child_pids[j], &status, 0);
+			j++;
 	}
 	free_my_pipes(my_pipes);
 }
