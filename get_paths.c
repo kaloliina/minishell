@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 18:08:15 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/26 18:12:48 by sojala           ###   ########.fr       */
+/*   Updated: 2025/03/31 11:58:58 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,7 @@ char *get_absolute_path(char **paths, char *command)
 		free (path);
 		i++;
 	}
-	if (path_helper)
-		free (path_helper);
+	// if (path_helper)
+	// 	free (path_helper);
 	return (path);
 }

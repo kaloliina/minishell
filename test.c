@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/26 18:18:06 by sojala           ###   ########.fr       */
+/*   Updated: 2025/03/31 12:04:04 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my
 	char **paths = NULL;
 	if (paths == NULL)
 	{
-	paths = get_paths(envp);
+	paths = get_paths(my_pipes->my_envp);
 	}
 	char *path = NULL;
 	if (path != NULL)
@@ -32,14 +32,18 @@ void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my
 	}
 	else
 		pid = 0;
-	// ft_putstr_fd(path, 2);
-	// ft_putstr_fd(node->cmd[0], 2);
-	// ft_putstr_fd(node->cmd[1], 2);
-	// ft_putstr_fd("\n", 2);
 	if (!ft_strcmp(node->cmd[0], "export"))
 	{
-		char **temp = execute_export(node->cmd, envp);
+		char **temp = execute_export(node->cmd, my_pipes->my_envp);
+		free_array(my_pipes->my_envp);
 		my_pipes->my_envp = temp;
+		// int i = 0;
+		// while (my_pipes->my_envp[i])
+		// {
+		// 	printf("i: %d, %s\n", i,  my_pipes->my_envp[i]);
+		// 	i++;
+		// }
+		// printf("-------------------STOP---------------\n");
 		//free everything before going out of here
 		//we have to return my_envp somehow to main so it is stored for next prompt round!
 		return ;
@@ -48,17 +52,17 @@ void execute_command(int single_command, t_node *node, char *envp[], t_pipes *my
 	{
 		if (my_pipes->heredoc)
 		{
-			heredoc(node, my_pipes, envp, paths);
-			execve(path, node->cmd, envp);
+			heredoc(node, my_pipes, my_pipes->my_envp, paths);
+			execve(path, node->cmd, my_pipes->my_envp);
 		}
 		if (!ft_strcmp(node->cmd[0], "echo"))
-			execute_echo(node, envp);
+			execute_echo(node, my_pipes->my_envp);
 		else if (!ft_strcmp(node->cmd[0], "pwd") && !node->cmd[1])
 			execute_pwd();
 		else
 		{
-			execve(path, &node->cmd[0], envp);
-			write(2, "Error", 5);
+			execve(path, &node->cmd[0], my_pipes->my_envp);
+			write(2, "Error\n", 6);
 		}
 	}
 	else if (pid > 0)
@@ -227,7 +231,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char **envp)
 
 //This function goes over the entire list of nodes, handling redirections and pipes
 //Heredoc yet remains to be handled...
-void	loop_nodes(t_node *list, char **envp)
+char	**loop_nodes(t_node *list, char **envp)
 {
 	t_node	*curr;
 	t_pipes *my_pipes;
@@ -235,10 +239,6 @@ void	loop_nodes(t_node *list, char **envp)
 	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
 	initialize_struct(my_pipes, list, envp);
-	// int	i = 0;
-	// while (my_pipes->my_envp[i])
-	// 	printf("%s\n", my_pipes->my_envp[i++]);
-	// printf("STOP\n");
 	while (curr != NULL)
 	{
 	if (curr->type == COMMAND)
@@ -274,6 +274,7 @@ void	loop_nodes(t_node *list, char **envp)
 	my_pipes->command_node = NULL;
 	curr = curr->next;
 	}
+	char	**ret_envp = my_pipes->my_envp;
 	// what if we wait here instead of we wait with mod
 	if (my_pipes->stdinfd != -1)
 	{
@@ -303,9 +304,10 @@ void	loop_nodes(t_node *list, char **envp)
 		free(my_pipes->pipes);
 		my_pipes->pipes = NULL;
 		}
-		if (my_pipes->my_envp)
-			free_array(my_pipes->my_envp);
+		my_pipes->my_envp = NULL;
+		// if (my_pipes->my_envp)
+		// 	free_array(my_pipes->my_envp);
 	free(my_pipes);
 	}
-
+	return (ret_envp);
 }

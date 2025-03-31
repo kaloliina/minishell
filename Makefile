@@ -8,7 +8,8 @@ HEADERS = minishell.h $(LIBFTDIR)/libft.h
 SRC = main.c input_init.c cleanup.c ft_ms_split.c \
 	ft_ms_split_utils.c utils.c signals.c init.c \
 	lexing.c lexing_utils.c get_paths.c test.c \
-	handle_files.c builtins.c heredoc.c
+	handle_files.c builtins.c heredoc.c \
+	expandables.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)

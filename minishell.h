@@ -61,6 +61,7 @@ typedef struct t_pipe
 t_node	*init_new_node(t_ast *ast, t_node *new_node);
 void	init_sections(t_ast *ast, char *line);
 void	init_tokens(t_ast *ast);
+void	init_tokens_struct(t_ast *ast);
 int		set_sections(t_ast *ast, char **tmp_sections);
 void	set_last_section(t_ast *ast, int i, char **tmp_sections);
 
@@ -72,6 +73,7 @@ char	**ft_ms_freearray(char **array, int j, int *error);
 char	**ft_ms_split(char const *s, char c, int *error);
 int		make_node(t_ast *ast, int i, int j, t_node **first);
 int		lexer(t_ast *ast);
+char	*handle_expandables(char *line, char **envp);
 
 //parsing
 int		is_redirection(char *token);
@@ -101,6 +103,6 @@ char **get_paths(char *envp[]);
 char *get_absolute_path(char **paths, char *command);
 int	open_infile(char *file);
 int	set_outfile(char *file, int append);
-void	loop_nodes(t_node *list, char *envp[]);
+char	**loop_nodes(t_node *list, char *envp[]);
 
 #endif
