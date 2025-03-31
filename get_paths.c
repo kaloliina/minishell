@@ -6,7 +6,7 @@
 /*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 18:08:15 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/24 15:41:09 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/31 14:48:24 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,8 @@ char *get_absolute_path(char **paths, char *command)
 	char *path_helper = NULL;
 	char *path = NULL;
 	int i = 0;
+	if (access(command, F_OK | X_OK) == 0)
+		return (command);
 	while (paths[i] != NULL)
 	{
 		path_helper = ft_strjoin(paths[i], "/");

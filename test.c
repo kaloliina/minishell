@@ -6,7 +6,7 @@
 /*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/26 12:24:23 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/03/31 14:47:40 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,9 +144,9 @@ void execute_builtin(t_node *node, t_pipes *my_pipes, char *envp[])
 		dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
 	if (node->next != NULL && my_pipes->outfile_fd == -1)
 		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
-	if (ft_strcmp(node->cmd[0], "echo") == 0)	
+	if (ft_strcmp(node->cmd[0], "echo") == 0)
 		execute_echo(node, envp);
-	if (ft_strcmp(node->cmd[0], "pwd") == 0)	
+	if (ft_strcmp(node->cmd[0], "pwd") == 0)
 		execute_pwd();
 	close_pipes(node, my_pipes);
 	if (my_pipes->stdinfd != -1)
@@ -200,11 +200,8 @@ int execute_executable(t_node *node, char *envp[], t_pipes *my_pipes)
 		execve(my_pipes->command_path, &node->cmd[0], envp);
 		write(2, "Error", 5);
 	}
-	else
-	{
 		close_pipes(node, my_pipes);
 		return (pid);
-	}
 }
 
 int	is_builtin(char *command)
@@ -294,13 +291,14 @@ void	loop_nodes(t_node *list, char *envp[])
 {
 	t_node	*curr;
 	t_pipes	*my_pipes;
-	pid_t child_pids[my_pipes->pipe_amount + 1];
+
 	int status;
 	int i = 0;
 
 	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
 	initialize_struct(my_pipes, list);
+	pid_t child_pids[my_pipes->pipe_amount + 1];
 	while (curr != NULL)
 	{
 		if (curr->type == COMMAND)
@@ -309,17 +307,7 @@ void	loop_nodes(t_node *list, char *envp[])
 			my_pipes->outfile_fd = set_outfile(curr->file, curr->type);
 		if (curr->type == REDIR_INF)
 			my_pipes->infile_fd = open_infile(curr->file);
-		if (curr->next != NULL && my_pipes->pipe_amount > 0 && curr->next->type == PIPE)
-		{
-			if (is_builtin(my_pipes->command_node->cmd[0]) == 1)
-				execute_builtin(my_pipes->command_node, my_pipes, envp);
-			else
-			{
-				child_pids[i] = execute_executable(my_pipes->command_node, envp, my_pipes);
-				i++;
-			}
-		}
-		if (curr->next == NULL)
+		if ((curr->next == NULL) || (curr->next != NULL && my_pipes->pipe_amount > 0 && curr->next->type == PIPE))
 		{
 			if (is_builtin(my_pipes->command_node->cmd[0]) == 1)
 				execute_builtin(my_pipes->command_node, my_pipes, envp);
