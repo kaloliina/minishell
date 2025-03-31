@@ -16,7 +16,6 @@ void	free_array(char **array)
 void	free_struct(t_ast *ast)
 {
 	int		i;
-	// int		j;
 	t_node	*tmp;
 
 	i = 0;

@@ -47,6 +47,7 @@ typedef struct t_pipe
 	int				*pipes;
 	char			*command_path;
 	char			**paths;
+	char			**my_envp;
 	int				current_section;
 	int				pipe_amount;
 	int				stdinfd;
@@ -54,6 +55,7 @@ typedef struct t_pipe
 	int				infile_fd;
 	int				outfile_fd;
 	struct s_node	*command_node;
+	struct s_node	*heredoc_node;
 	int				read_end;
 	int				write_end;
 }					t_pipes;
@@ -62,6 +64,7 @@ typedef struct t_pipe
 t_node	*init_new_node(t_ast *ast, t_node *new_node);
 void	init_sections(t_ast *ast, char *line);
 void	init_tokens(t_ast *ast);
+void	init_tokens_struct(t_ast *ast);
 int		set_sections(t_ast *ast, char **tmp_sections);
 void	set_last_section(t_ast *ast, int i, char **tmp_sections);
 
@@ -79,6 +82,9 @@ int		is_redirection(char *token);
 int		is_char_redirection(char c);
 int		is_redirection_char(char *s);
 void	make_pipe_node(t_ast *ast, t_node **first);
+char	*handle_expandables(char *line, char **envp);
+char	*add_replacer(char *line, char *replacer, int k, int j);
+char	*find_envp(char *exp, char **envp);
 
 //cleanup
 void	free_struct(t_ast *ast);
@@ -89,10 +95,17 @@ void	free_array(char **array);
 int		count_elements(char **tokens);
 void	signal_handler(int sig);
 
+//builtins
+void	execute_echo(t_node *node, char **envp);
+void	execute_env(char **envp);
+void	execute_pwd();
+void	execute_export(char **cmd, char ***envp);
+
 char **get_paths(char *envp[]);
 char *get_absolute_path(char **paths, char *command);
 int	open_infile(char *file);
 int	set_outfile(char *file, enum s_type redir_type);
-void	loop_nodes(t_node *list, char *envp[]);
+char	**loop_nodes(t_node *list, char *envp[]);
+void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
 
 #endif

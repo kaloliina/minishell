@@ -53,3 +53,11 @@ void	init_tokens(t_ast *ast)
 	}
 	ast->tokens[i] = NULL;
 }
+
+void	init_tokens_struct(t_ast *ast)
+{
+	ast->first = NULL;
+	ast->sections = NULL;
+	ast->sections_amount = 0;
+	ast->tokens = NULL;
+}
