@@ -82,7 +82,7 @@ int	check_quotes(char *input)
 			temp = check_closing_quote(input, i + 1, input[i]);
 			if (!temp)
 			{
-				ft_putstr_fd("minishell: unclosed quote(s)\n", 2);
+				ft_printf(2, "minishell: unclosed quote(s)\n");
 				return (-1);
 			}
 			else
@@ -105,7 +105,7 @@ char	*add_spaces(char *input)
 	line = malloc(ft_strlen(input) + extras + 1);
 	if (!line)
 	{
-		ft_putstr_fd("minishell: memory allocation failure\n", 2);
+		ft_printf(2, "minishell: memory allocation failure\n");
 		exit (1);
 	}
 	return (add_spaces_helper(line, input, 0));

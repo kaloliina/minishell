@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 18:08:15 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/04/01 13:36:40 by sojala           ###   ########.fr       */
+/*   Updated: 2025/04/01 14:37:56 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,8 +50,7 @@ char *get_absolute_path(char **paths, char *command)
 	}
 	if (!paths[i])
 	{
-		ft_putstr_fd(command, 2);
-		ft_putendl_fd(": command not found", 2);
+		ft_printf(2, "%s: command not found\n", command);
 		exit (1);
 	}
 	if (path_helper)

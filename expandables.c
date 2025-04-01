@@ -38,7 +38,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 	new_line = malloc(len + 1);
 	if (!new_line)
 	{
-		ft_putstr_fd("minishell: memory allocation failure\n", 2);
+		ft_printf(2, "minishell: memory allocation failure\n");
 		exit (1);
 	}
 	if (k > 1)

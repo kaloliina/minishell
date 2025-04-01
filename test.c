@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/04/01 13:57:39 by sojala           ###   ########.fr       */
+/*   Updated: 2025/04/01 16:21:03 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ int	get_pipe_amount(t_node *list)
 
 	pipe_amount = 0;
 	curr = list;
-	while (curr != NULL)
+	while (curr)
 	{
 		if (curr->type == PIPE)
 			pipe_amount++;
@@ -108,14 +108,18 @@ void execute_builtin(t_node *node, t_pipes *my_pipes)
 		dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
 	if (node->next != NULL && my_pipes->outfile_fd == -1)
 		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
-	if (ft_strcmp(node->cmd[0], "echo") == 0)
+	if (!ft_strcmp(node->cmd[0], "echo"))
 		execute_echo(node, my_pipes->my_envp);
-	if (ft_strcmp(node->cmd[0], "pwd") == 0)
+	if (!ft_strcmp(node->cmd[0], "pwd"))
 		execute_pwd();
-	if (ft_strcmp(node->cmd[0], "env") == 0)
+	if (!ft_strcmp(node->cmd[0], "env"))
 		execute_env(my_pipes->my_envp);
-	if (ft_strcmp(node->cmd[0], "export") == 0)
+	if (!ft_strcmp(node->cmd[0], "export"))
 		execute_export(node->cmd, &my_pipes->my_envp);
+	if (!ft_strcmp(node->cmd[0], "unset"))
+		execute_unset(node->cmd, &my_pipes->my_envp);
+	if (!ft_strcmp(node->cmd[0], "cd"))
+		execute_cd(node->cmd);
 	close_pipes(node, my_pipes);
 	if (my_pipes->stdinfd != -1)
 	{
@@ -183,7 +187,7 @@ int	is_builtin(char *command)
 	int i = 0;
 	while (i <= 6)
 	{
-		if (ft_strcmp(builtins[i], command) == 0)
+		if (!ft_strcmp(builtins[i], command))
 			return (1);
 		i++;
 	}
@@ -228,24 +232,16 @@ void	free_my_pipes(t_pipes *my_pipes)
 	int	i;
 
 	i = 0;
-	if (my_pipes != NULL)
+	if (my_pipes)
 	{
-		if (my_pipes->paths != NULL)
-		{
-			while (my_pipes->paths[i] != NULL)
-			{
-				free(my_pipes->paths[i]);
-				i++;
-			}
-			free (my_pipes->paths);
-		}
-		i = 0;
-		if (my_pipes->command_path != NULL)
+		if (my_pipes->paths)
+			free_array(my_pipes->paths);
+		if (my_pipes->command_path)
 		{
 			free(my_pipes->command_path);
 			my_pipes->command_path = NULL;
 		}
-		if (my_pipes->pipes != NULL)
+		if (my_pipes->pipes)
 		{
 			while (i < my_pipes->pipe_amount * 2)
 			{
@@ -284,7 +280,7 @@ char	**loop_nodes(t_node *list, char *envp[])
 			my_pipes->infile_fd = open_infile(curr->file);
 		if (curr->type == REDIR_HEREDOC)
 			my_pipes->heredoc_node = curr;
-		if ((curr->next == NULL) || (curr->next != NULL && my_pipes->pipe_amount > 0 && curr->next->type == PIPE))
+		if ((curr->next == NULL) || (curr->next && my_pipes->pipe_amount > 0 && curr->next->type == PIPE))
 		{
 			if (is_builtin(my_pipes->command_node->cmd[0]) == 1)
 				execute_builtin(my_pipes->command_node, my_pipes);

@@ -6,12 +6,13 @@ t_node	*init_new_node(t_ast *ast, t_node *new_node)
 	if (!new_node)
 	{
 		free_struct(ast);
-		ft_putstr_fd("minishell: memory allocation failure\n", 2);
+		ft_printf(2, "minishell: memory allocation failure\n");
 		exit (1);
 	}
-	new_node->file = NULL;
 	new_node->cmd = NULL;
+	new_node->file = NULL;
 	new_node->delimiter = NULL;
+	new_node->delimiter_quote = 0;
 	new_node->prev = NULL;
 	new_node->next = NULL;
 	return (new_node);
@@ -35,7 +36,7 @@ void	init_tokens(t_ast *ast)
 	if (!ast->tokens)
 	{
 		free_array(ast->sections);
-		ft_putstr_fd("minishell: memory allocation failure\n", 2);
+		ft_printf(2, "minishell: memory allocation failure\n");
 		exit (1);
 	}
 	i = 0;
@@ -46,7 +47,7 @@ void	init_tokens(t_ast *ast)
 		if (!ast->tokens[i] && error)
 		{
 			free_struct(ast);
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
+			ft_printf(2, "minishell: memory allocation failure\n");
 			exit (1);
 		}
 		i++;

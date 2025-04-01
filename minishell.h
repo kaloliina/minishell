@@ -5,14 +5,12 @@
 # include <fcntl.h>
 # include <stdio.h>
 # include <signal.h>
+# include <stdbool.h>
 # include "libft/libft.h"
 # include <readline/readline.h>
 # include <readline/history.h>
 #include <sys/types.h>
 #include <sys/wait.h>
-
-
-
 
 typedef enum s_type
 {
@@ -27,9 +25,10 @@ typedef enum s_type
 typedef struct s_node
 {
 	t_type			type;
+	char			**cmd;
 	char			*file;
 	char			*delimiter;
-	char			**cmd;
+	bool			delimiter_quote;
 	struct s_node	*prev;
 	struct s_node	*next;
 }					t_node;
@@ -100,6 +99,8 @@ void	execute_echo(t_node *node, char **envp);
 void	execute_env(char **envp);
 void	execute_pwd();
 void	execute_export(char **cmd, char ***envp);
+void	execute_cd(char **cmd);
+void	execute_unset(char **cmd, char ***envp);
 
 char **get_paths(char *envp[]);
 char *get_absolute_path(char **paths, char *command);

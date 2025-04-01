@@ -42,6 +42,20 @@ char	*handle_quotes_helper(char *s)
 	return (new);
 }
 
+static int	is_quote(char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] == 34 || s[i] == 39)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
 void	handle_quotes(t_ast *ast)
 {
 	int		i;
@@ -62,7 +76,11 @@ void	handle_quotes(t_ast *ast)
 		if (tmp->file)
 			tmp->file = handle_quotes_helper(tmp->file);
 		if (tmp->delimiter)
+		{
+			if (is_quote(tmp->delimiter))
+				tmp->delimiter_quote = 1;
 			tmp->delimiter = handle_quotes_helper(tmp->delimiter);
+		}
 		tmp = tmp->next;
 	}
 }

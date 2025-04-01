@@ -25,14 +25,6 @@ char	*heredoc_expandables(char *line, char **envp)
 
 	i = 0;
 	k = 0;
-	// while (line[i])
-	// {
-	// 	if (line[i] == '$')
-	// 		i += handle_heredoc_exp(line, i + 1, envp);
-	// 	else
-	// 		write(fd, &line[i], 1);
-	// 	i++;
-	// }
 	while (line[i])
 	{
 		if (line[i] == '$')
@@ -109,7 +101,7 @@ static void	heredoc_rm(char **envp, char **paths)
 		rm_cmd = malloc(sizeof(char *) * 3);
 		if (!rm_cmd)
 		{
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
+			ft_printf(2, "minishell: memory allocation failure\n");
 			exit (1);
 		}
 		rm_cmd[0] = "rm";
@@ -134,7 +126,7 @@ static void	heredoc_rmdir(char **envp, char **paths)
 		rmdir_cmd = malloc(sizeof(char *) * 3);
 		if (!rmdir_cmd)
 		{
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
+			ft_printf(2, "minishell: memory allocation failure\n");
 			exit (1);
 		}
 		rmdir_cmd[0] = "rmdir";
@@ -157,10 +149,13 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
 		line = readline("> ");
 		if (!ft_strcmp(line, delimiter_node->delimiter))
 			break ;
-		temp = heredoc_expandables(line, my_pipes->my_envp);
-		if (temp)
-			line = temp;
-		ft_putendl_fd(line, fd);
+		if (!delimiter_node->delimiter_quote)
+		{
+			temp = heredoc_expandables(line, my_pipes->my_envp);
+			if (temp)
+				line = temp;
+		}
+		ft_printf(fd, "%s\n", line);
 		free (line);
 	}
 	if (line)
@@ -186,7 +181,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 		mkdir_cmd = malloc(sizeof(char *) * 3);
 		if (!mkdir_cmd)
 		{
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
+			ft_printf(2, "minishell: memory allocation failure\n");
 			exit (1);
 		}
 		mkdir_cmd[0] = "mkdir";
