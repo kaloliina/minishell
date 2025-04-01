@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/31 17:41:45 by sojala           ###   ########.fr       */
+/*   Updated: 2025/04/01 11:48:08 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,13 +116,6 @@ void execute_builtin(t_node *node, t_pipes *my_pipes)
 		execute_env(my_pipes->my_envp);
 	if (ft_strcmp(node->cmd[0], "export") == 0)
 		execute_export(node->cmd, &my_pipes->my_envp);
-	int	i = 0;
-	printf("-------------------this is envp---------------\n");
-	while (my_pipes->my_envp[i])
-	{
-		printf("i: %d, %s\n", i, my_pipes->my_envp[i]);
-		i++;
-	}
 	close_pipes(node, my_pipes);
 	if (my_pipes->stdinfd != -1)
 	{

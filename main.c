@@ -156,6 +156,7 @@ int	main(int ac, char **av, char **envp)
 			printf("exit\n");
 			if (input)
 				free (input);
+			free_array(my_envp);
 			clear_history();
 			return (0);
 		}
@@ -166,6 +167,7 @@ int	main(int ac, char **av, char **envp)
 		my_envp = tmp;
 		free (input);
 	}
+	free_array(my_envp);
 	clear_history();
 	return (0);
 }

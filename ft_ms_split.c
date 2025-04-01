@@ -13,7 +13,7 @@ static void	ft_ms_setstring(char const *s, int *i, int *len, int *quote)
 {
 	if ((s[*i] == 39 && *quote == 39) || (s[*i] == 34 && *quote == 34))
 		*quote = 0;
-	if (!(*quote) && (s[*i] == 39 || s[*i] == 34)
+	else if (!(*quote) && (s[*i] == 39 || s[*i] == 34)
 		&& ft_ms_checkquote(s, *i + 1, s[*i]))
 		*quote = s[*i];
 	*i = *i + 1;
@@ -31,9 +31,9 @@ static char	**ft_ms_makearray_helper(char **array, char const *s,
 
 	i = 0;
 	j = -1;
-	quote = 0;
 	while (s[i])
 	{
+		quote = 0;
 		while (s[i] && s[i] == c)
 			i++;
 		if (!s[i])

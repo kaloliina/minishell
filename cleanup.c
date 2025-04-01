@@ -29,6 +29,8 @@ void	free_struct(t_ast *ast)
 		free_array(tmp->cmd);
 		if (tmp->file)
 			free (tmp->file);
+		if (tmp->delimiter)
+			free (tmp->delimiter);
 		free (tmp);
 	}
 	i = 0;

@@ -26,7 +26,7 @@ void	execute_env(char **envp)
 	i = 0;
 	while (envp[i])
 	{
-		printf("i: %d, %s\n", i, envp[i]);
+		printf("%s\n", envp[i]);
 		i++;
 	}
 }
@@ -62,7 +62,6 @@ void	execute_export(char **cmd, char ***envp)
 	args = 1;
 	while (cmd[args + 1])
 		args++;
-	printf("we malloc %d plus 1 plus %d\n", i, args);
 	new_envp = malloc(sizeof(char *) * (i + 1 + args));
 	//malloc protection
 	i = 0;
@@ -70,28 +69,18 @@ void	execute_export(char **cmd, char ***envp)
 	{
 		new_envp[i] = ft_strdup((*envp)[i]);
 		//malloc protection
-		//printf("new envp[i]: %s\n", new_envp[i]);
 		i++;
 	}
 	j = 1;
 	while (cmd[j])
 	{
 		new_envp[i] = ft_strdup(cmd[j]);
-		// printf("new envp[i]: %s\n", new_envp[i]);
 		i++;
 		j++;
 		//malloc protection
 	}
 	new_envp[i] = NULL;
-	printf("are we done with export\n");
-	i = 0;
-	printf("-------------------NOW WHAT in export---------------\n");
-	while (new_envp[i])
-	{
-		printf("i: %d, %s\n", i, new_envp[i]);
-		i++;
-	}
-	// free_array(*envp);
-	// envp = NULL;
-	envp = &new_envp;
+	free_array(*envp);
+	*envp = NULL;
+	*envp = new_envp;
 }
