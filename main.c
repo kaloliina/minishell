@@ -78,7 +78,7 @@ char	**copy_envp(char **envp)
 	my_envp = malloc(sizeof(char *) * (i + 1));
 	if (!my_envp)
 	{
-		ft_putstr_fd("minishell: memory allocation failure\n", 2);
+		ft_printf(2, "minishell: memory allocation failure\n");
 		exit (1);
 	}
 	i = 0;
@@ -87,7 +87,7 @@ char	**copy_envp(char **envp)
 		my_envp[i] = ft_strdup(envp[i]);
 		if (!my_envp[i])
 		{
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
+			ft_printf(2, "minishell: memory allocation failure\n");
 			free_array(my_envp);
 			exit (1);
 		}
@@ -153,7 +153,7 @@ int	main(int ac, char **av, char **envp)
 		input = readline("minishell > ");
 		if (!input || !ft_strcmp(input, "exit"))
 		{
-			printf("exit\n");
+			ft_printf(1, "exit\n");
 			if (input)
 				free (input);
 			free_array(my_envp);

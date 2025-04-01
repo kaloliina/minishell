@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   get_paths.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/13 18:08:15 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/31 14:48:24 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/04/01 13:36:40 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,13 @@ char *get_absolute_path(char **paths, char *command)
 		free (path);
 		i++;
 	}
-	free (path_helper);
+	if (!paths[i])
+	{
+		ft_putstr_fd(command, 2);
+		ft_putendl_fd(": command not found", 2);
+		exit (1);
+	}
+	if (path_helper)
+		free (path_helper);
 	return (path);
 }

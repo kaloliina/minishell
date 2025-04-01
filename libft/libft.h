@@ -6,12 +6,13 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/10/30 14:17:03 by sojala            #+#    #+#             */
-/*   Updated: 2025/03/14 13:08:16 by sojala           ###   ########.fr       */
+/*   Updated: 2025/04/01 13:55:28 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef LIBFT_H
 # define LIBFT_H
+# include <stdarg.h>
 # include <unistd.h>
 # include <stdlib.h>
 # include <limits.h>
@@ -47,9 +48,14 @@ char	**ft_split(char const *s, char c);
 char	*ft_itoa(int n);
 char	*ft_strmapi(char const *s, char (*f)(unsigned int, char));
 void	ft_striteri(char *s, void (*f)(unsigned int, char*));
-void	ft_putchar_fd(char c, int fd);
-void	ft_putstr_fd(char *s, int fd);
+int		ft_putchar_fd(char c, int fd);
+int		ft_putstr_fd(char *s, int fd);
 void	ft_putendl_fd(char *s, int fd);
-void	ft_putnbr_fd(int n, int fd);
+int		ft_putnbr_fd(int n, int fd);
+int		ft_putptr_fd(void *ptr, int fd);
+int		ft_puthex_lower_fd(unsigned int n, int fd);
+int		ft_puthex_upper_fd(unsigned int n, int fd);
+int		ft_putunsigned_fd(unsigned int n, int fd);
+int		ft_printf(int fd, const char *string, ...);
 
 #endif

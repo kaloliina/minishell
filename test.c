@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/05 13:26:20 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/04/01 11:48:08 by sojala           ###   ########.fr       */
+/*   Updated: 2025/04/01 13:57:39 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,19 +78,19 @@ void	close_pipes(t_node *node, t_pipes *my_pipes)
 		if (my_pipes->current_section > 1)
 		{
 			close(my_pipes->pipes[my_pipes->write_end - 2]);
-			printf("Closing previous write end: %d\n", my_pipes->write_end - 2);
+			ft_printf(2, "Closing previous write end: %d\n", my_pipes->write_end - 2);
 		}
 		//Next pipies
 		if (node->next != NULL)
 		{
 			my_pipes->read_end = my_pipes->write_end - 1;
 			my_pipes->write_end = my_pipes->write_end + 2;
-			printf("Moving to next pipeeez: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
+			ft_printf(2, "Moving to next pipeeez: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
 		}
 		else
 		{
 			close(my_pipes->pipes[my_pipes->read_end]);
-			printf("Closing last read end: %d\n", my_pipes->read_end);
+			ft_printf(2, "Closing last read end: %d\n", my_pipes->read_end);
 		}
 		reset_properties(my_pipes);
 	}
@@ -171,7 +171,7 @@ int execute_executable(t_node *node, t_pipes *my_pipes)
 		}
 		my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
 		execve(my_pipes->command_path, &node->cmd[0], my_pipes->my_envp);
-		write(2, "Error", 5);
+		ft_printf(2, "minishell: execve failure\n");
 	}
 	close_pipes(node, my_pipes);
 	return (pid);
