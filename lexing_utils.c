@@ -86,7 +86,7 @@ int	make_node(t_ast *ast, int i, int j, t_node **first)
 	t_node	*current;
 
 	if (is_redirection(ast->tokens[i][j]))
-			return (j + 2);
+		return (j + 2);
 	new_node = NULL;
 	new_node = init_new_node(ast, new_node);
 	if (!*first)

@@ -97,7 +97,7 @@ char	*handle_expandables(char *line, char **envp)
 				i++;
 				j++;
 			}
-			if (line[i] == ' '  || line[i] == '\0' || (line[i] == '"' && quote))
+			if (line[i] == ' ' || line[i] == '\0' || (line[i] == '"' && quote))
 			{
 				exp = ft_substr(line, k, j);
 				if (exp && *exp)

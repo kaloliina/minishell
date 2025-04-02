@@ -34,7 +34,7 @@ void	execute_env(char **envp)
 	}
 }
 
-void	execute_pwd()
+void	execute_pwd(void)
 {
 	char	*buf;
 

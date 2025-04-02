@@ -104,11 +104,10 @@ char	**copy_envp(char **envp)
 	return (my_envp);
 }
 
-char	**minishell(char *input, char **envp)
+char	**minishell(char *input, char **envp, int *status)
 {
 	t_ast	ast;
 	int		k;
-	// t_node	*tmp;
 	char	*line;
 	char	**new_envp;
 
@@ -121,20 +120,7 @@ char	**minishell(char *input, char **envp)
 	if (lexer(&ast) < 0)
 		return (NULL);
 	handle_quotes(&ast, envp);
-	// tmp = ast.first;
-	// while (tmp)
-	// {
-	// 	printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
-	// 	k = 0;
-	// 	if (tmp->cmd)
-	// 	{
-	// 		while (tmp->cmd[k])
-	// 			printf(" cmd %s", tmp->cmd[k++]);
-	// 	}
-	// 	printf("\n");
-	// 	tmp = tmp->next;
-	// }
-	new_envp = loop_nodes(ast.first, envp);
+	new_envp = loop_nodes(ast.first, envp, status);
 	free_struct(&ast);
 	return (new_envp);
 }
@@ -144,6 +130,7 @@ int	main(int ac, char **av, char **envp)
 	char	*input;
 	char	**my_envp;
 	char	**tmp;
+	int		status;
 
 	(void)av;
 	if (ac != 1)
@@ -163,10 +150,12 @@ int	main(int ac, char **av, char **envp)
 			clear_history();
 			return (0);
 		}
+		if (!ft_strcmp(input, "echo $?"))
+			ft_printf(1, "%d\n", status);
 		if (input)
 			add_history(input);
 		tmp = NULL;
-		tmp = minishell(input, my_envp);
+		tmp = minishell(input, my_envp, &status);
 		if (tmp)
 			my_envp = tmp;
 		free (input);

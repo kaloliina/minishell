@@ -62,6 +62,7 @@ char	*heredoc_expandables(char *line, char **envp)
 						free (line);
 						line = NULL;
 						line = new_line;
+						new_line = NULL;
 					}
 				}
 			}
@@ -75,6 +76,7 @@ char	*heredoc_expandables(char *line, char **envp)
 				free (line);
 				line = NULL;
 				line = new_line;
+				new_line = NULL;
 			}
 			i = k;
 		}

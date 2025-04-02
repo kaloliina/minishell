@@ -16,7 +16,6 @@ static int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
 			new_node->delimiter = ast->tokens[i][j + 1];
 		else
 			new_node->file = ast->tokens[i][j + 1];
-		return (j + 2);
 	}
 	else
 	{

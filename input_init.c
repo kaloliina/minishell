@@ -20,6 +20,14 @@ static int	count_missing_spaces(char *input)
 	return (extras);
 }
 
+void	update_quote(char c, int *quote)
+{
+	if ((c == 34 || c == 39) && !(*quote))
+		*quote = c;
+	else if ((c == 34 || c == 39) && *quote == c)
+		*quote = 0;
+}
+
 static char	*add_spaces_helper(char *line, char *input, int i)
 {
 	int	j;
@@ -29,10 +37,7 @@ static char	*add_spaces_helper(char *line, char *input, int i)
 	quote = 0;
 	while (input[i])
 	{
-		if ((input[i] == 34 || input[i] == 39) && !quote)
-			quote = input[i];
-		else if ((input[i] == 34 || input[i] == 39) && quote == input[i])
-			quote = 0;
+		update_quote(input[i], &quote);
 		if (i > 0 && is_char_redirection(input[i]) && input[i - 1] != ' '
 			&& !is_char_redirection(input[i - 1]) && !quote)
 		{

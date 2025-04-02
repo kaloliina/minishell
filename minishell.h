@@ -9,8 +9,8 @@
 # include "libft/libft.h"
 # include <readline/readline.h>
 # include <readline/history.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 
 typedef enum s_type
 {
@@ -99,16 +99,16 @@ int		is_valid_char(char c);
 //builtins
 void	execute_echo(t_node *node, char **envp);
 void	execute_env(char **envp);
-void	execute_pwd();
+void	execute_pwd(void);
 int		execute_export(char **cmd, char ***envp);
 void	execute_cd(char **cmd);
 int		execute_unset(char **cmd, char ***envp);
 
 //execution
-char 	**get_paths(char *envp[]);
-char 	*get_absolute_path(char **paths, char *command);
+char	**get_paths(char *envp[]);
+char	*get_absolute_path(char **paths, char *command);
 int		open_infile(char *file);
 int		set_outfile(char *file, enum s_type redir_type);
-char	**loop_nodes(t_node *list, char *envp[]);
+char	**loop_nodes(t_node *list, char *envp[], int *status);
 
 #endif

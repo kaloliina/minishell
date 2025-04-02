@@ -84,8 +84,7 @@ void	close_pipes(t_node *node, t_pipes *my_pipes)
 	}
 }
 
-
-void execute_builtin(t_node *node, t_pipes *my_pipes)
+void	execute_builtin(t_node *node, t_pipes *my_pipes)
 {
 	my_pipes->current_section++;
 	if (my_pipes->outfile_fd >= 0)
@@ -121,7 +120,7 @@ void execute_builtin(t_node *node, t_pipes *my_pipes)
 	}
 }
 
-int execute_executable(t_node *node, t_pipes *my_pipes)
+int	execute_executable(t_node *node, t_pipes *my_pipes)
 {
 	int	i;
 	int	pid;
@@ -171,8 +170,9 @@ int execute_executable(t_node *node, t_pipes *my_pipes)
 
 int	is_builtin(char *command)
 {
-	const char *builtins[] = {"echo", "cd", "pwd", "export", "unset", "env", "exit"};
-	int i = 0;
+	const char	*builtins[] = {"echo", "cd", "pwd", "export", "unset", "env", "exit"};
+	int	i = 0;
+
 	while (i <= 6)
 	{
 		if (!ft_strcmp(builtins[i], command))
@@ -181,7 +181,6 @@ int	is_builtin(char *command)
 	}
 	return (0);
 }
-
 
 //Initializing a struct to track stuffsies
 //I dont even know if I need the pipe_amount, look at what other things you may not need
@@ -246,18 +245,18 @@ void	free_my_pipes(t_pipes *my_pipes)
 //This function goes over the entire list of nodes, handling redirections and pipes
 //Heredoc yet remains to be handled...
 //We should wait for processes in loop nodes rather that in execute pipes and execute command!
-char	**loop_nodes(t_node *list, char *envp[])
+char	**loop_nodes(t_node *list, char *envp[], int *status)
 {
 	t_node	*curr;
 	t_pipes	*my_pipes;
 	char	**return_envp;
-	int status;
-	int i = 0;
+	int		status;
+	int		i = 0;
 
 	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
 	initialize_struct(my_pipes, list, envp);
-	pid_t child_pids[my_pipes->pipe_amount + 1];
+	pid_t	child_pids[my_pipes->pipe_amount + 1];
 	while (curr != NULL)
 	{
 		if (curr->type == COMMAND)
@@ -284,8 +283,8 @@ char	**loop_nodes(t_node *list, char *envp[])
 	int j = 0;
 	while (j < i)
 	{
-			waitpid(child_pids[j], &status, 0);
-			j++;
+		waitpid(child_pids[j], &status, 0);
+		j++;
 	}
 	free_my_pipes(my_pipes);
 	return (return_envp);

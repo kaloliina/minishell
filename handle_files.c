@@ -3,7 +3,7 @@
 //remember error cases.. :)
 int	open_infile(char *file)
 {
-	int fd;
+	int	fd;
 
 	fd = open(file, O_RDONLY);
 	return (fd);
@@ -11,7 +11,7 @@ int	open_infile(char *file)
 
 int	set_outfile(char *file, enum s_type redir_type)
 {
-	int fd;
+	int	fd;
 
 	if (redir_type == REDIR_OUTF)
 		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
