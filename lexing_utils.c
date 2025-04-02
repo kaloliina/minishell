@@ -27,7 +27,7 @@ static int	set_cmd_no_args(t_ast *ast, int i, int init_j, t_node *new_node)
 	if (!new_node->cmd)
 	{
 		free_struct(ast);
-		ft_putstr_fd("minishell: memory allocation failure\n", 2);
+		ft_printf(2, "minishell: memory allocation failure\n");
 		exit (1);
 	}
 	new_node->cmd[k++] = ast->tokens[i][init_j++];
@@ -71,7 +71,7 @@ static int	set_cmd_node(t_ast *ast, int i, int j, t_node *new_node)
 		if (!new_node->cmd)
 		{
 			free_struct(ast);
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
+			ft_printf(2, "minishell: memory allocation failure\n");
 			exit (1);
 		}
 		return (set_cmd_args(ast->tokens[i], init_j, args, new_node));

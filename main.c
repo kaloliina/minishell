@@ -15,34 +15,35 @@ char	*handle_quotes_helper(char *s)
 	new = malloc(ft_strlen(s) + 1);
 	while (s[i])
 	{
-		if (s[i] == 34)
-		{
-			if (d_quote)
-				new[j++] = s[i++];
-			else
-			{
-				i++;
-				s_quote = !s_quote;
-			}
-		}
-		else if (s[i] == 39)
-		{
-			if (s_quote)
-				new[j++] = s[i++];
-			else
-			{
-				i++;
-				d_quote = !d_quote;
-			}
-		}
+		if ((s[i] == 34 && d_quote) || (s[i] == 39 && s_quote))
+			new[j++] = s[i];
+		else if (s[i] == 34 && !d_quote)
+			s_quote = !s_quote;
+		else if (s[i] == 39 && !s_quote)
+			d_quote = !d_quote;
 		else
-			new[j++] = s[i++];
+			new[j++] = s[i];
+		i++;
 	}
 	new[j] = '\0';
 	return (new);
 }
 
-void	handle_quotes(t_ast *ast)
+static int	is_quote(char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] == 34 || s[i] == 39)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+void	handle_quotes(t_ast *ast, char **envp)
 {
 	int		i;
 	t_node	*tmp;
@@ -56,13 +57,21 @@ void	handle_quotes(t_ast *ast)
 			while (tmp->cmd[i])
 			{
 				tmp->cmd[i] = handle_quotes_helper(tmp->cmd[i]);
+				tmp->cmd[i] = handle_expandables(tmp->cmd[i], envp);
 				i++;
 			}
 		}
 		if (tmp->file)
+		{
 			tmp->file = handle_quotes_helper(tmp->file);
+			tmp->file = handle_expandables(tmp->file, envp);
+		}
 		if (tmp->delimiter)
+		{
+			if (is_quote(tmp->delimiter))
+				tmp->delimiter_quote = 1;
 			tmp->delimiter = handle_quotes_helper(tmp->delimiter);
+		}
 		tmp = tmp->next;
 	}
 }
@@ -72,13 +81,11 @@ char	**copy_envp(char **envp)
 	char	**my_envp;
 	int		i;
 
-	i = 0;
-	while (envp[i])
-		i++;
+	i = count_elements(envp);
 	my_envp = malloc(sizeof(char *) * (i + 1));
 	if (!my_envp)
 	{
-		ft_putstr_fd("minishell: memory allocation failure\n", 2);
+		ft_printf(2, "minishell: memory allocation failure\n");
 		exit (1);
 	}
 	i = 0;
@@ -87,7 +94,7 @@ char	**copy_envp(char **envp)
 		my_envp[i] = ft_strdup(envp[i]);
 		if (!my_envp[i])
 		{
-			ft_putstr_fd("minishell: memory allocation failure\n", 2);
+			ft_printf(2, "minishell: memory allocation failure\n");
 			free_array(my_envp);
 			exit (1);
 		}
@@ -103,21 +110,17 @@ char	**minishell(char *input, char **envp)
 	int		k;
 	// t_node	*tmp;
 	char	*line;
-	char	*temp;
 	char	**new_envp;
 
 	init_tokens_struct(&ast);
 	line = add_spaces(input);
 	if (!line)
 		return (NULL);
-	temp = handle_expandables(line, envp);
-	if (temp)
-		line = temp;
 	init_sections(&ast, line);
 	init_tokens(&ast);
 	if (lexer(&ast) < 0)
 		return (NULL);
-	handle_quotes(&ast);
+	handle_quotes(&ast, envp);
 	// tmp = ast.first;
 	// while (tmp)
 	// {
@@ -131,14 +134,6 @@ char	**minishell(char *input, char **envp)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
-	// int	i = 0;
-	// printf("-------------------FIRST:  copied envp in minishell---------------\n");
-	// while (envp[i])
-	// {
-	// 	printf("i: %d, %s\n", i, envp[i]);
-	// 	i++;
-	// }
-	// printf("-------------------THEN: envp in loop nodes struct init---------------\n");
 	new_envp = loop_nodes(ast.first, envp);
 	free_struct(&ast);
 	return (new_envp);
@@ -161,23 +156,22 @@ int	main(int ac, char **av, char **envp)
 		input = readline("minishell > ");
 		if (!input || !ft_strcmp(input, "exit"))
 		{
-			printf("exit\n");
+			ft_printf(1, "exit\n");
 			if (input)
 				free (input);
-			if (my_envp)
-				free_array(my_envp);
+			free_array(my_envp);
 			clear_history();
 			return (0);
 		}
 		if (input)
 			add_history(input);
+		tmp = NULL;
 		tmp = minishell(input, my_envp);
-		//free_array(my_envp);
-		my_envp = tmp;
+		if (tmp)
+			my_envp = tmp;
 		free (input);
 	}
-	if (my_envp)
-		free_array(my_envp);
+	free_array(my_envp);
 	clear_history();
 	return (0);
 }

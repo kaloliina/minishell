@@ -20,11 +20,11 @@ static int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
 	}
 	else
 	{
-		ft_putstr_fd("minishell: syntax error near unexpected token ", 2);
+		ft_printf(2, "minishell: syntax error near unexpected token ");
 		if (ast->tokens[i + 1])
-			ft_putstr_fd("`|'\n", 2);
+			ft_printf(2, "`|'\n");
 		else
-			ft_putstr_fd("`newline'\n", 2);
+			ft_printf(2, "`newline'\n");
 		free_struct(ast);
 		return (-1);
 	}

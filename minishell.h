@@ -5,11 +5,12 @@
 # include <fcntl.h>
 # include <stdio.h>
 # include <signal.h>
+# include <stdbool.h>
 # include "libft/libft.h"
 # include <readline/readline.h>
 # include <readline/history.h>
-# include <sys/types.h>
-# include <sys/wait.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 typedef enum s_type
 {
@@ -24,9 +25,10 @@ typedef enum s_type
 typedef struct s_node
 {
 	t_type			type;
+	char			**cmd;
 	char			*file;
 	char			*delimiter;
-	char			**cmd;
+	bool			delimiter_quote;
 	struct s_node	*prev;
 	struct s_node	*next;
 }					t_node;
@@ -35,26 +37,26 @@ typedef struct s_ast
 {
 	int			sections_amount;
 	char		**sections;
-	char		**my_envp;
 	char		***tokens;
 	t_node		*first;
 }				t_ast;
 
 typedef struct t_pipe
 {
-	int	*pipes;
-	char *command_path;
-	char	**my_envp;
-	struct s_node *infile;
-	struct s_node *outfile;
-	struct s_node *heredoc;
-	int	current_section;
-	int	pipe_amount;
-	int	stdinfd;
-	int	stdoutfd;
-	struct s_node *command_node;
-	int	read_end;
-	int	write_end;
+	int				*pipes;
+	char			*command_path;
+	char			**paths;
+	char			**my_envp;
+	int				current_section;
+	int				pipe_amount;
+	int				stdinfd;
+	int				stdoutfd;
+	int				infile_fd;
+	int				outfile_fd;
+	struct s_node	*command_node;
+	struct s_node	*heredoc_node;
+	int				read_end;
+	int				write_end;
 }					t_pipes;
 
 //init
@@ -73,15 +75,15 @@ char	**ft_ms_freearray(char **array, int j, int *error);
 char	**ft_ms_split(char const *s, char c, int *error);
 int		make_node(t_ast *ast, int i, int j, t_node **first);
 int		lexer(t_ast *ast);
-char	*handle_expandables(char *line, char **envp);
-char	*add_replacer(char *line, char *replacer, int k, int j);
-char	*find_envp(char *exp, char **envp);
 
 //parsing
 int		is_redirection(char *token);
 int		is_char_redirection(char c);
 int		is_redirection_char(char *s);
 void	make_pipe_node(t_ast *ast, t_node **first);
+char	*handle_expandables(char *line, char **envp);
+char	*add_replacer(char *line, char *replacer, int k, int j);
+char	*find_envp(char *exp, char **envp);
 
 //cleanup
 void	free_struct(t_ast *ast);
@@ -91,20 +93,22 @@ void	free_array(char **array);
 //utils
 int		count_elements(char **tokens);
 void	signal_handler(int sig);
-char	*handle_expandables(char *line, char **envp);
 void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
+int		is_valid_char(char c);
 
 //builtins
 void	execute_echo(t_node *node, char **envp);
 void	execute_env(char **envp);
 void	execute_pwd();
-char	**execute_export(char **cmd, char **envp);
+int		execute_export(char **cmd, char ***envp);
+void	execute_cd(char **cmd);
+int		execute_unset(char **cmd, char ***envp);
 
 //execution
-char **get_paths(char *envp[]);
-char *get_absolute_path(char **paths, char *command);
-int	open_infile(char *file);
-int	set_outfile(char *file, int append);
+char 	**get_paths(char *envp[]);
+char 	*get_absolute_path(char **paths, char *command);
+int		open_infile(char *file);
+int		set_outfile(char *file, enum s_type redir_type);
 char	**loop_nodes(t_node *list, char *envp[]);
 
 #endif

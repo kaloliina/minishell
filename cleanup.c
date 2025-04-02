@@ -37,5 +37,4 @@ void	free_struct(t_ast *ast)
 	while (ast->tokens[i])
 		free_array(ast->tokens[i++]);
 	free (ast->tokens);
-	free_array(ast->my_envp);
 }

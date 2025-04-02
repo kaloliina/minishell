@@ -6,7 +6,7 @@
 #    By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/02 15:25:43 by sojala            #+#    #+#              #
-#    Updated: 2025/03/14 13:08:25 by sojala           ###   ########.fr        #
+#    Updated: 2025/04/01 14:01:06 by sojala           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,7 +16,8 @@ SRC = ft_isalpha.c ft_isdigit.c ft_isalnum.c ft_isascii.c ft_isprint.c \
 	ft_strncmp.c ft_memchr.c ft_memcmp.c ft_strnstr.c ft_atoi.c ft_calloc.c \
 	ft_strdup.c ft_substr.c ft_strjoin.c ft_strtrim.c ft_split.c ft_itoa.c \
 	ft_strmapi.c ft_striteri.c ft_putchar_fd.c ft_putstr_fd.c ft_putendl_fd.c \
-	ft_putnbr_fd.c ft_strcmp.c
+	ft_strcmp.c ft_printf.c ft_printf_utils_csdi.c \
+	ft_printf_utils_pxxu.c
 
 OBJ = $(SRC:.c=.o)
 
