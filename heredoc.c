@@ -37,8 +37,7 @@ char	*heredoc_expandables(char *line, char **envp)
 				i++;
 				j++;
 			}
-			if (!(line[i] <= '9' && line[i] >= '0') && !(line[i] <= 'Z' && line[i] >= 'A')
-				&& !(line[i] <= 'z' && line[i] >= 'a' && line[i] != '_'))
+			if (!is_valid_char(line[i]))
 			{
 				exp = ft_substr(line, k, j);
 				if (exp && *exp)
@@ -55,8 +54,7 @@ char	*heredoc_expandables(char *line, char **envp)
 					}
 					else
 					{
-						while ((line[i] <= 'z' && line[i] >= 'a') || (line[i] <= 'Z' && line[i] >= 'A')
-						|| (line[i] <= '9' && line[i] >= '0') || line[i] == '_')
+						while (is_valid_char(line[i]))
 							i++;
 						new_start = ft_substr(line, 0, k - 1);
 						new_end = ft_substr(line, i, (ft_strlen(line) - i));
@@ -69,8 +67,7 @@ char	*heredoc_expandables(char *line, char **envp)
 			}
 			else
 			{
-				while ((line[i] <= 'z' && line[i] >= 'a') || (line[i] <= 'Z' && line[i] >= 'A')
-				|| (line[i] <= '9' && line[i] >= '0') || line[i] == '_')
+				while (is_valid_char(line[i]))
 					i++;
 				new_start = ft_substr(line, 0, k - 1);
 				new_end = ft_substr(line, i, (ft_strlen(line) - i));

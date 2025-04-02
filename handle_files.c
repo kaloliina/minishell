@@ -1,21 +1,11 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   handle_files.c                                     :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/13 17:44:40 by khiidenh          #+#    #+#             */
-/*   Updated: 2025/03/26 11:24:38 by khiidenh         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "../minishell.h"
 
 //remember error cases.. :)
 int	open_infile(char *file)
 {
-	int fd = open(file, O_RDONLY);
+	int fd;
+
+	fd = open(file, O_RDONLY);
 	return (fd);
 }
 

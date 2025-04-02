@@ -75,9 +75,9 @@ void	execute_export(char **cmd, char ***envp)
 	while (cmd[j])
 	{
 		new_envp[i] = ft_strdup(cmd[j]);
+		//malloc protection
 		i++;
 		j++;
-		//malloc protection
 	}
 	new_envp[i] = NULL;
 	free_array(*envp);

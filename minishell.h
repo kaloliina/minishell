@@ -93,6 +93,8 @@ void	free_array(char **array);
 //utils
 int		count_elements(char **tokens);
 void	signal_handler(int sig);
+void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
+int		is_valid_char(char c);
 
 //builtins
 void	execute_echo(t_node *node, char **envp);
@@ -102,11 +104,11 @@ void	execute_export(char **cmd, char ***envp);
 void	execute_cd(char **cmd);
 void	execute_unset(char **cmd, char ***envp);
 
-char **get_paths(char *envp[]);
-char *get_absolute_path(char **paths, char *command);
-int	open_infile(char *file);
-int	set_outfile(char *file, enum s_type redir_type);
+//execution
+char 	**get_paths(char *envp[]);
+char 	*get_absolute_path(char **paths, char *command);
+int		open_infile(char *file);
+int		set_outfile(char *file, enum s_type redir_type);
 char	**loop_nodes(t_node *list, char *envp[]);
-void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
 
 #endif

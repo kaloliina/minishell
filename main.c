@@ -56,7 +56,7 @@ static int	is_quote(char *s)
 	return (0);
 }
 
-void	handle_quotes(t_ast *ast)
+void	handle_quotes(t_ast *ast, char **envp)
 {
 	int		i;
 	t_node	*tmp;
@@ -70,11 +70,15 @@ void	handle_quotes(t_ast *ast)
 			while (tmp->cmd[i])
 			{
 				tmp->cmd[i] = handle_quotes_helper(tmp->cmd[i]);
+				tmp->cmd[i] = handle_expandables(tmp->cmd[i], envp);
 				i++;
 			}
 		}
 		if (tmp->file)
+		{
 			tmp->file = handle_quotes_helper(tmp->file);
+			tmp->file = handle_expandables(tmp->file, envp);
+		}
 		if (tmp->delimiter)
 		{
 			if (is_quote(tmp->delimiter))
@@ -90,9 +94,7 @@ char	**copy_envp(char **envp)
 	char	**my_envp;
 	int		i;
 
-	i = 0;
-	while (envp[i])
-		i++;
+	i = count_elements(envp);
 	my_envp = malloc(sizeof(char *) * (i + 1));
 	if (!my_envp)
 	{
@@ -121,21 +123,17 @@ char	**minishell(char *input, char **envp)
 	int		k;
 	// t_node	*tmp;
 	char	*line;
-	char	*temp;
 	char	**new_envp;
 
 	init_tokens_struct(&ast);
 	line = add_spaces(input);
 	if (!line)
 		return (NULL);
-	temp = handle_expandables(line, envp);
-	if (temp)
-		line = temp;
 	init_sections(&ast, line);
 	init_tokens(&ast);
 	if (lexer(&ast) < 0)
 		return (NULL);
-	handle_quotes(&ast);
+	handle_quotes(&ast, envp);
 	// tmp = ast.first;
 	// while (tmp)
 	// {
@@ -182,7 +180,8 @@ int	main(int ac, char **av, char **envp)
 			add_history(input);
 		tmp = NULL;
 		tmp = minishell(input, my_envp);
-		my_envp = tmp;
+		if (tmp)
+			my_envp = tmp;
 		free (input);
 	}
 	free_array(my_envp);

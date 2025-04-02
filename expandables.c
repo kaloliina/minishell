@@ -62,6 +62,14 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 	return (new_line);
 }
 
+int	is_valid_char(char c)
+{
+	if ((c <= 'z' && c >= 'a') || (c <= 'Z' && c >= 'A')
+		|| (c <= '9' && c >= '0') || c == '_')
+		return (1);
+	return (0);
+}
+
 char	*handle_expandables(char *line, char **envp)
 {
 	int		i;
@@ -114,8 +122,7 @@ char	*handle_expandables(char *line, char **envp)
 			}
 			else
 			{
-				while ((line[i] <= 'z' && line[i] >= 'a') || (line[i] <= 'Z' && line[i] >= 'A')
-				|| (line[i] <= '9' && line[i] >= '0') || line[i] == '_')
+				while (is_valid_char(line[i]))
 					i++;
 				new_start = ft_substr(line, 0, k - 1);
 				new_end = ft_substr(line, i, (ft_strlen(line) - i));
