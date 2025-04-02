@@ -43,6 +43,14 @@ void	reset_properties(t_pipes *my_pipes)
 	my_pipes->infile_fd = -1;
 	my_pipes->outfile_fd = -1;
 	my_pipes->heredoc_node = NULL;
+	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
+	{
+		my_pipes->read_end = my_pipes->write_end - 1;
+		if (my_pipes->current_section < my_pipes->pipe_amount)
+			my_pipes->write_end = my_pipes->write_end + 2;
+		printf("Moving to next pipeeez: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
+		printf("Curr section: %d\n", my_pipes->current_section);
+	}
 }
 
 //This function handles the actual pipe execution
@@ -63,24 +71,33 @@ void	close_pipes(t_node *node, t_pipes *my_pipes)
 {
 	if (my_pipes->pipe_amount > 0)
 	{
-		if (my_pipes->current_section > 1)
+		if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
-			close(my_pipes->pipes[my_pipes->write_end - 2]);
-			ft_printf(2, "Closing previous write end: %d\n", my_pipes->write_end - 2);
-		}
-		//Next pipies
-		if (node->next != NULL)
+		if (my_pipes->pipes[my_pipes->write_end] != -1)
 		{
-			my_pipes->read_end = my_pipes->write_end - 1;
-			my_pipes->write_end = my_pipes->write_end + 2;
-			ft_printf(2, "Moving to next pipeeez: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
+		close(my_pipes->pipes[my_pipes->write_end]);
+		printf("Closing previous write end: %d\n", my_pipes->write_end);
+		printf("Curr section: %d\n", my_pipes->current_section);
 		}
-		else
+		}
+	if (node->next != NULL)
+	{
+		if (my_pipes->current_section > 1 && my_pipes->pipes[my_pipes->read_end] != -1)
 		{
 			close(my_pipes->pipes[my_pipes->read_end]);
-			ft_printf(2, "Closing last read end: %d\n", my_pipes->read_end);
+			printf("Closing middle read end: %d\n", my_pipes->read_end);
 		}
-		reset_properties(my_pipes);
+	}
+	else
+	{
+	if (my_pipes->pipes[my_pipes->read_end] != -1)
+		{
+		close(my_pipes->pipes[my_pipes->read_end]);
+		printf("Closing last read end: %d\n", my_pipes->read_end);
+		printf("Curr section: %d\n", my_pipes->current_section);
+		}
+	}
+	reset_properties(my_pipes);
 	}
 }
 
@@ -93,9 +110,20 @@ void execute_builtin(t_node *node, t_pipes *my_pipes)
 	if (my_pipes->infile_fd >= 0)
 		redirection_infile(my_pipes);
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
+	{
 		dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
+		close(my_pipes->pipes[my_pipes->read_end]);
+		printf("we are closing here %d\n", my_pipes->read_end);
+		my_pipes->pipes[my_pipes->read_end] = -1;
+	}
 	if (node->next != NULL && my_pipes->outfile_fd == -1)
+	{
+	 printf("lala: %d\n", my_pipes->pipes[my_pipes->write_end]);
 		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
+		close(my_pipes->pipes[my_pipes->write_end]);
+		my_pipes->pipes[my_pipes->write_end] = -1;
+	 printf("lili: %d\n", my_pipes->pipes[my_pipes->write_end]);
+	}
 	if (!ft_strcmp(node->cmd[0], "echo"))
 		execute_echo(node, my_pipes->my_envp);
 	if (!ft_strcmp(node->cmd[0], "pwd"))
@@ -141,23 +169,18 @@ int execute_executable(t_node *node, t_pipes *my_pipes)
 			redirection_infile(my_pipes);
 		if (my_pipes->heredoc_node)
 			heredoc(node, my_pipes, my_pipes->my_envp, my_pipes->paths);
-		if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1
-			&& !my_pipes->heredoc_node)
+		if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
 		{
 			dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
-			close(my_pipes->pipes[my_pipes->read_end]);
 		}
-		if (node->next != NULL && my_pipes->outfile_fd == -1
-			&& !my_pipes->heredoc_node)
+		if (node->next != NULL && my_pipes->outfile_fd == -1)
 		{
 		//mby overthinking this but im actually sceptical do we get here always when we want to get here because we are sending the command node into
 		//this function, which doesnt necessarily mean that next is NULL. Maybe instead i should have if current section is not pipeamount + 1.
 			dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
-			close(my_pipes->pipes[my_pipes->write_end]);
 		}
 		while (i < my_pipes->pipe_amount * 2)
 		{
-			if (i != my_pipes->read_end && i != my_pipes->write_end)
 				close(my_pipes->pipes[i]);
 			i++;
 		}
@@ -271,7 +294,10 @@ char	**loop_nodes(t_node *list, char *envp[])
 		if ((curr->next == NULL) || (curr->next && my_pipes->pipe_amount > 0 && curr->next->type == PIPE))
 		{
 			if (is_builtin(my_pipes->command_node->cmd[0]) == 1)
+			{
 				execute_builtin(my_pipes->command_node, my_pipes);
+				i--;
+			}
 			else
 			{
 				child_pids[i] = execute_executable(my_pipes->command_node, my_pipes);
