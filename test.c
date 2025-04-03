@@ -245,7 +245,7 @@ void	free_my_pipes(t_pipes *my_pipes)
 //This function goes over the entire list of nodes, handling redirections and pipes
 //Heredoc yet remains to be handled...
 //We should wait for processes in loop nodes rather that in execute pipes and execute command!
-char	**loop_nodes(t_node *list, char *envp[], int *status)
+char	**loop_nodes(t_node *list, char *envp[])
 {
 	t_node	*curr;
 	t_pipes	*my_pipes;

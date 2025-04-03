@@ -37,7 +37,7 @@ char	*heredoc_expandables(char *line, char **envp)
 				i++;
 				j++;
 			}
-			if (!is_valid_char(line[i]))
+			if (is_exp_delimiter(line[i]))
 			{
 				exp = ft_substr(line, k, j);
 				if (exp && *exp)
@@ -54,7 +54,7 @@ char	*heredoc_expandables(char *line, char **envp)
 					}
 					else
 					{
-						while (is_valid_char(line[i]))
+						while (!is_exp_delimiter(line[i]))
 							i++;
 						new_start = ft_substr(line, 0, k - 1);
 						new_end = ft_substr(line, i, (ft_strlen(line) - i));
@@ -68,7 +68,7 @@ char	*heredoc_expandables(char *line, char **envp)
 			}
 			else
 			{
-				while (is_valid_char(line[i]))
+				while (!is_exp_delimiter(line[i]))
 					i++;
 				new_start = ft_substr(line, 0, k - 1);
 				new_end = ft_substr(line, i, (ft_strlen(line) - i));

@@ -81,7 +81,10 @@ int		is_redirection(char *token);
 int		is_char_redirection(char c);
 int		is_redirection_char(char *s);
 void	make_pipe_node(t_ast *ast, t_node **first);
-char	*handle_expandables(char *line, char **envp);
+char	*handle_expansion_cmd(char *line, char **envp);
+char	**handle_expansion_cmds(char **cmd, char **envp);
+char	*handle_expansion_filename(char *file, char **envp);
+int		is_exp_delimiter(char c);
 char	*add_replacer(char *line, char *replacer, int k, int j);
 char	*find_envp(char *exp, char **envp);
 
@@ -94,7 +97,6 @@ void	free_array(char **array);
 int		count_elements(char **tokens);
 void	signal_handler(int sig);
 void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
-int		is_valid_char(char c);
 
 //builtins
 void	execute_echo(t_node *node, char **envp);
@@ -109,6 +111,6 @@ char	**get_paths(char *envp[]);
 char	*get_absolute_path(char **paths, char *command);
 int		open_infile(char *file);
 int		set_outfile(char *file, enum s_type redir_type);
-char	**loop_nodes(t_node *list, char *envp[], int *status);
+char	**loop_nodes(t_node *list, char *envp[]);
 
 #endif

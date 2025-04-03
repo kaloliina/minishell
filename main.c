@@ -53,18 +53,18 @@ void	handle_quotes(t_ast *ast, char **envp)
 	{
 		if (tmp->cmd)
 		{
+			tmp->cmd = handle_expansion_cmds(tmp->cmd, envp);
 			i = 0;
 			while (tmp->cmd[i])
 			{
 				tmp->cmd[i] = handle_quotes_helper(tmp->cmd[i]);
-				tmp->cmd[i] = handle_expandables(tmp->cmd[i], envp);
 				i++;
 			}
 		}
 		if (tmp->file)
 		{
+			tmp->file = handle_expansion_filename(tmp->file, envp);
 			tmp->file = handle_quotes_helper(tmp->file);
-			tmp->file = handle_expandables(tmp->file, envp);
 		}
 		if (tmp->delimiter)
 		{
@@ -104,7 +104,7 @@ char	**copy_envp(char **envp)
 	return (my_envp);
 }
 
-char	**minishell(char *input, char **envp, int *status)
+char	**minishell(char *input, char **envp)
 {
 	t_ast	ast;
 	int		k;
@@ -120,7 +120,7 @@ char	**minishell(char *input, char **envp, int *status)
 	if (lexer(&ast) < 0)
 		return (NULL);
 	handle_quotes(&ast, envp);
-	new_envp = loop_nodes(ast.first, envp, status);
+	new_envp = loop_nodes(ast.first, envp);
 	free_struct(&ast);
 	return (new_envp);
 }
@@ -130,7 +130,7 @@ int	main(int ac, char **av, char **envp)
 	char	*input;
 	char	**my_envp;
 	char	**tmp;
-	int		status;
+	// int		status;
 
 	(void)av;
 	if (ac != 1)
@@ -150,12 +150,12 @@ int	main(int ac, char **av, char **envp)
 			clear_history();
 			return (0);
 		}
-		if (!ft_strcmp(input, "echo $?"))
-			ft_printf(1, "%d\n", status);
+		// if (!ft_strcmp(input, "echo $?"))
+		// 	ft_printf(1, "%d\n", status);
 		if (input)
 			add_history(input);
 		tmp = NULL;
-		tmp = minishell(input, my_envp, &status);
+		tmp = minishell(input, my_envp);
 		if (tmp)
 			my_envp = tmp;
 		free (input);

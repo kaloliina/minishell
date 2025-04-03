@@ -10,9 +10,9 @@ void	execute_echo(t_node *node, char **envp)
 		i++;
 	while (node->cmd[i])
 	{
-		temp = handle_expandables(node->cmd[i], envp);
-		if (temp)
-			node->cmd[i] = temp;
+		// temp = handle_expansion_cmd(node->cmd[i], envp);
+		// if (temp)
+		// 	node->cmd[i] = temp;
 		ft_printf(1, "%s", node->cmd[i]);
 		if (node->cmd[i + 1])
 			ft_printf(1, " ");
@@ -78,6 +78,31 @@ static int	fill_new_envp(char ***new_envp, char **envp, char **cmd, int args)
 	return (0);
 }
 
+int	export_no_args(char **envp)
+{
+	int	elements;
+	int	i;
+	int	j;
+	int	k;
+
+	elements = count_elements(envp);
+	i = 0;
+	while (i < elements)
+	{
+		j = 0;
+		k = 0;
+		while (j < elements)
+		{
+			if (envp[i][0] > envp[j][0])
+				k++;
+			j++;
+		}
+		printf("this line %s is at index %d\n", envp[i], k);
+		i++;
+	}
+	return (0);
+}
+
 int	execute_export(char **cmd, char ***envp)
 {
 	int		i;
@@ -86,6 +111,8 @@ int	execute_export(char **cmd, char ***envp)
 	char	**new_envp;
 
 	i = count_elements(*envp);
+	if (!cmd[1])
+		return (export_no_args(*envp));
 	args = 1;
 	while (cmd[args + 1])
 		args++;
