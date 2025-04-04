@@ -102,9 +102,9 @@ void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
 void	execute_echo(t_node *node, char **envp);
 void	execute_env(char **envp);
 void	execute_pwd(void);
-int		execute_export(char **cmd, char ***envp);
+void	execute_export(char **cmd, char ***envp);
 void	execute_cd(char **cmd);
-int		execute_unset(char **cmd, char ***envp);
+void	execute_unset(char **cmd, char ***envp);
 
 //execution
 char	**get_paths(char *envp[]);

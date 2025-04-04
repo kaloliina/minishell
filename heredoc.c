@@ -27,43 +27,40 @@ char	*heredoc_expandables(char *line, char **envp)
 	k = 0;
 	while (line[i])
 	{
-		if (line[i] == '$')
+		if (line[i] == '$' && line[i + 1])
 		{
 			j = 0;
 			i++;
 			k = i;
-			while (line[i] <= 'Z' && line[i] >= 'A')
+			while (!is_exp_delimiter(line[i]))
 			{
 				i++;
 				j++;
 			}
-			if (is_exp_delimiter(line[i]))
+			exp = ft_substr(line, k, j);
+			if (exp && *exp)
 			{
-				exp = ft_substr(line, k, j);
-				if (exp && *exp)
+				replacer = find_envp(exp, envp);
+				if (replacer)
 				{
-					replacer = find_envp(exp, envp);
-					if (replacer)
-					{
-						new_line = add_replacer(line, replacer, k - 1, j);
-						free (line);
-						free (replacer);
-						line = NULL;
-						line = new_line;
-						new_line = NULL;
-					}
-					else
-					{
-						while (!is_exp_delimiter(line[i]))
-							i++;
-						new_start = ft_substr(line, 0, k - 1);
-						new_end = ft_substr(line, i, (ft_strlen(line) - i));
-						new_line = ft_strjoin(new_start, new_end);
-						free (line);
-						line = NULL;
-						line = new_line;
-						new_line = NULL;
-					}
+					new_line = add_replacer(line, replacer, k, j);
+					free (line);
+					free (replacer);
+					line = NULL;
+					line = new_line;
+					new_line = NULL;
+				}
+				else
+				{
+					while (!is_exp_delimiter(line[i]))
+						i++;
+					new_start = ft_substr(line, 0, k - 1);
+					new_end = ft_substr(line, i, (ft_strlen(line) - i));
+					new_line = ft_strjoin(new_start, new_end);
+					free (line);
+					line = NULL;
+					line = new_line;
+					new_line = NULL;
 				}
 			}
 			else
@@ -71,7 +68,9 @@ char	*heredoc_expandables(char *line, char **envp)
 				while (!is_exp_delimiter(line[i]))
 					i++;
 				new_start = ft_substr(line, 0, k - 1);
-				new_end = ft_substr(line, i, (ft_strlen(line) - i));
+				printf("start %s\n", new_start);
+				new_end = ft_substr(line, (i + 1), (ft_strlen(line) - (i + 1)));
+				printf("end %s len %zu\n", new_end, (ft_strlen(line) - (i + 1)));
 				new_line = ft_strjoin(new_start, new_end);
 				free (line);
 				line = NULL;

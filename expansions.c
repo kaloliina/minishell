@@ -4,6 +4,7 @@ char	*find_envp(char *exp, char **envp)
 {
 	int		i;
 	int		len;
+	int		envp_len;
 	char	*replacer;
 
 	i = 0;
@@ -11,7 +12,10 @@ char	*find_envp(char *exp, char **envp)
 	replacer = NULL;
 	while (envp[i])
 	{
-		if (!ft_strncmp(exp, envp[i], len))
+		envp_len = 0;
+		while (envp[i][envp_len] && envp[i][envp_len] != '=')
+			envp_len++;
+		if (!ft_strncmp(exp, envp[i], envp_len) && !ft_strncmp(exp, envp[i], len))
 			replacer = ft_substr(envp[i], len + 1, ((ft_strlen(envp[i]) - len - 1)));
 		i++;
 	}
@@ -59,6 +63,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 	while (line[i])
 		new_line[l++] = line[i++];
 	new_line[l] = '\0';
+	printf("new line %s\n", new_line);
 	return (new_line);
 }
 
@@ -159,7 +164,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 				i++;
 			}
 		}
-		arg++;
+		if (cmd[arg])
+			arg++;
 	}
 	return (cmd);
 }
