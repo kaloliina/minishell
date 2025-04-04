@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ft_printf_utils_csdi.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: sonjaojala <sonjaojala@student.42.fr>      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/25 17:53:00 by sojala            #+#    #+#             */
-/*   Updated: 2025/04/01 13:52:33 by sojala           ###   ########.fr       */
+/*   Updated: 2025/04/04 08:36:06 by sonjaojala       ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,10 +37,8 @@ static int	ft_putnbr_write(int n, int neg, int fd)
 
 int	ft_putnbr_fd(int n, int fd)
 {
-	int		i;
 	int		neg;
 
-	i = 0;
 	neg = 0;
 	if (n == -2147483648)
 		return (ft_putstr_fd("-2147483648", fd));

@@ -135,7 +135,7 @@ int	main(int ac, char **av, char **envp)
 	(void)av;
 	if (ac != 1)
 		return (0);
-	signal(SIGINT, signal_handler);
+	//signal(SIGINT, signal_handler);
 	signal(SIGQUIT, SIG_IGN);
 	my_envp = copy_envp(envp);
 	while (1)

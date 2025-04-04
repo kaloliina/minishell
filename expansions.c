@@ -48,7 +48,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 		if (line[i] != '"')
 			new_line[l++] = line[i++];
 		else
-			quote = 2;
+			quote = 1;
 	}
 	while (replacer_len > 0)
 	{
@@ -134,7 +134,14 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 					else if (k > 1)
 					{
 						new_line = ft_substr(cmd[arg], 0, k - 1);
-						cmd[arg] = new_line;
+						if (cmd[arg][i + 1])
+						{
+							char	*end = ft_substr(cmd[arg], i, ft_strlen(cmd[arg]) - i);
+							char	*temp = ft_strjoin(new_line, end);
+							cmd[arg] = temp;
+						}
+						else
+							cmd[arg] = new_line;
 						//new_line = NULL;
 					}
 					else
