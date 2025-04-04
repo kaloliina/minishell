@@ -59,7 +59,8 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 		new_line[l++] = replacer[m++];
 		replacer_len--;
 	}
-	i += (j + 1 + quote);
+	i += (j + 2 + quote);
+	printf("i is %d j is %d quote is %d\n", i, j, quote);
 	while (line[i])
 		new_line[l++] = line[i++];
 	new_line[l] = '\0';
@@ -128,6 +129,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 				exp = ft_substr(cmd[arg], k, j);
 				if (exp && *exp)
 				{
+					printf("k %d\n", k);
 					replacer = find_envp(exp, envp);
 					if (replacer)
 					{
