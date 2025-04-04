@@ -19,6 +19,7 @@ char **get_paths(char *envp[])
 	return (paths);
 }
 
+//In this one I could already capture it but I could also let execve capture it
 char *get_absolute_path(char **paths, char *command)
 {
 	char *path_helper = NULL;
@@ -31,17 +32,20 @@ char *get_absolute_path(char **paths, char *command)
 		path_helper = ft_strjoin(paths[i], "/");
 		path = ft_strjoin(path_helper, command);
 		if (access(path, F_OK | X_OK) == 0)
-			break;
+		{
+			free (path_helper);
+			return (path);
+		}
 		free (path_helper);
 		free (path);
 		i++;
 	}
-	if (!paths[i])
-	{
-		ft_printf(2, "%s: command not found\n", command);
-		exit (1);
-	}
-	if (path_helper)
-		free (path_helper);
-	return (path);
+	// if (!paths[i])
+	// {
+	// 	ft_printf(2, "%s: command not found\n", command);
+	// 	exit (1);
+	// }
+//	if (path_helper)
+//		free (path_helper);
+	return (command);
 }

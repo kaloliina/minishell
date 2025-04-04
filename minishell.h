@@ -11,6 +11,7 @@
 # include <readline/history.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <errno.h>
 
 typedef enum s_type
 {
@@ -57,6 +58,7 @@ typedef struct t_pipe
 	struct s_node	*heredoc_node;
 	int				read_end;
 	int				write_end;
+	int				exit_status;
 }					t_pipes;
 
 //init
@@ -107,8 +109,8 @@ void	execute_unset(char **cmd, char ***envp);
 //execution
 char 	**get_paths(char *envp[]);
 char 	*get_absolute_path(char **paths, char *command);
-int		open_infile(char *file);
-int		set_outfile(char *file, enum s_type redir_type);
+void	open_infile(char *file, t_pipes *my_pipes);
+void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
 char	**loop_nodes(t_node *list, char *envp[]);
 
 #endif

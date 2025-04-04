@@ -1,21 +1,35 @@
 #include "../minishell.h"
 
-//remember error cases.. :)
-int	open_infile(char *file)
+//we also might need to check if open fails here..? do we need to exit at this point alrdy
+void	open_infile(char *file, t_pipes *my_pipes)
 {
 	int fd;
 
-	fd = open(file, O_RDONLY);
-	return (fd);
+	if (access(file, F_OK) != 0)
+	{
+		ft_printf(2, "%s: No such file or directory\n", file);
+		my_pipes->exit_status = 1;
+		return ;
+	}
+	else if (access(file, R_OK) != 0)
+	{
+		ft_printf(2, "%s: Permission denied\n", file);
+		my_pipes->exit_status = 1;
+		return ;
+	}
+	my_pipes->infile_fd = open(file, O_RDONLY);
 }
-
-int	set_outfile(char *file, enum s_type redir_type)
+//same thing here
+void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 {
-	int fd;
-
+	if (access(file, F_OK) == 0 && access(file, W_OK) != 0)
+	{
+		ft_printf(2, "%s: Permission denied\n", file);
+		my_pipes->exit_status = 1;
+		return ;
+	}
 	if (redir_type == REDIR_OUTF)
-		fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		my_pipes->outfile_fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (redir_type == REDIR_APPEND)
-		fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
-	return (fd);
+		my_pipes->outfile_fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 }

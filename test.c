@@ -1,5 +1,6 @@
 #include "../minishell.h"
 
+//Needs dup checks
 //Function to handle outfile redirection
 static void	redirection_outfile(t_pipes *my_pipes)
 {
@@ -9,6 +10,7 @@ static void	redirection_outfile(t_pipes *my_pipes)
 	close(my_pipes->outfile_fd);
 }
 
+//Needs dup checks
 //Function to handle infile redirection
 static void	redirection_infile(t_pipes *my_pipes)
 {
@@ -48,7 +50,7 @@ void	reset_properties(t_pipes *my_pipes)
 		my_pipes->read_end = my_pipes->write_end - 1;
 		if (my_pipes->current_section < my_pipes->pipe_amount)
 			my_pipes->write_end = my_pipes->write_end + 2;
-		printf("Moving to next pipeeez: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
+		printf("Moving to next pipe: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
 		printf("Curr section: %d\n", my_pipes->current_section);
 	}
 }
@@ -56,7 +58,7 @@ void	reset_properties(t_pipes *my_pipes)
 void	handle_redirections(t_node *node, t_pipes *my_pipes)
 {
 	int	i;
-	
+
 	i = 0;
 	if (my_pipes->outfile_fd >= 0)
 		redirection_outfile(my_pipes);
@@ -65,13 +67,9 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes)
 	if (my_pipes->heredoc_node)
 		heredoc(node, my_pipes, my_pipes->my_envp, my_pipes->paths);
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
-	{
 		dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
-	}
 	if ((my_pipes->current_section != my_pipes->pipe_amount + 1) && my_pipes->outfile_fd == -1)
-	{
 		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
-	}	
 	while (i < my_pipes->pipe_amount * 2)
 	{
 		close(my_pipes->pipes[i]);
@@ -90,7 +88,7 @@ void	close_pipes(t_node *node, t_pipes *my_pipes)
 		if (my_pipes->current_section == 1)
 		{
 			close(my_pipes->pipes[my_pipes->write_end]);
-			printf("Closing write endii %d\n", my_pipes->write_end);
+			printf("Closing write end: %d\n", my_pipes->write_end);
 			printf("Curr section: %d\n", my_pipes->current_section);
         }
 		else if (my_pipes->current_section <= my_pipes->pipe_amount)
@@ -132,13 +130,14 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 	else if (!ft_strcmp(node->cmd[0], "cd"))
 		execute_cd(node->cmd);
 }
-
-void	execute_builtin(t_node *node, t_pipes *my_pipes)
+//Check the return value here, I assume it's okay to return 0 when parent
+int	execute_builtin(t_node *node, t_pipes *my_pipes)
 {
+	int	pid;
 	my_pipes->current_section++;
-	if (my_pipes->pipe_amount > 0)  
+	if (my_pipes->pipe_amount > 0)
 	{
-		pid_t pid = fork();
+		pid = fork();
 		if (pid == 0)
 		{
 			handle_redirections(node, my_pipes);
@@ -148,9 +147,10 @@ void	execute_builtin(t_node *node, t_pipes *my_pipes)
 		else
 		{
 			close_pipes(node, my_pipes);
+			return (pid);
 		}
 	}
-	else  
+	else
 	{
 		handle_redirections(node, my_pipes);
 		run_builtin_command(node, my_pipes);
@@ -164,9 +164,13 @@ void	execute_builtin(t_node *node, t_pipes *my_pipes)
 			dup2(my_pipes->stdoutfd, STDOUT_FILENO);
 			close (my_pipes->stdoutfd);
 		}
+		return (0);
 	}
 }
-
+//Question is what should we track here, should we catch the wrong commands etc here
+//Or should we catch them already in the get_paths..?
+//Also right now if there's a problem with fd's, I still go here and I return from this stage
+//The reason is that this is in child so it's easier for me to get the exit status.
 int	execute_executable(t_node *node, t_pipes *my_pipes)
 {
 	int	pid;
@@ -179,13 +183,28 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 			my_pipes->paths = get_paths(my_pipes->my_envp);
 		handle_redirections(node, my_pipes);
 		my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
+		printf("absolute: %s\n", my_pipes->command_path);
+		if (my_pipes->exit_status == 1)
+			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], my_pipes->my_envp);
-		ft_printf(2, "minishell: execve failure\n");
+//rename the printf thingies
+		if (errno == ENOENT)
+		{
+			ft_printf(2, "%s: command not found\n", node->cmd[0]);
+			exit (127);
+		}
+		else if (errno == EACCES)
+		{
+			ft_printf(2, "%s: no permissions\n", &node->cmd[0]);
+			exit (126);
+		}
+		else
+			exit(1);
 	}
 	close_pipes(node, my_pipes);
 	return (pid);
 }
-
+//Wonder if these could be saved in the header
 int	is_builtin(char *command)
 {
 	const char *builtins[] = {"echo", "cd", "pwd", "export", "unset", "env", "exit"};
@@ -200,7 +219,6 @@ int	is_builtin(char *command)
 }
 
 //Initializing a struct to track stuffsies
-//I dont even know if I need the pipe_amount, look at what other things you may not need
 void	initialize_struct(t_pipes *my_pipes, t_node *list, char **envp)
 {
 	int	i;
@@ -259,19 +277,25 @@ void	free_my_pipes(t_pipes *my_pipes)
 	}
 }
 
-//This function goes over the entire list of nodes, handling redirections and pipes
-//Heredoc yet remains to be handled...
-//We should wait for processes in loop nodes rather that in execute pipes and execute command!
+//This functions needs to be divided
+//I also need to handle the exit status here in a neater way
+//If theres a pipeline and it contains of exexutables, we should be able to get the exit status here
+//If there's a pipeline and it contains both, we need to know which one was the last?
+//If theres one command which is executable, we can get the exit status
+//If there's one command which is builtiin, we need to get the exit status via struct..
+//Feels simpler if I would just purely update the statuses in a struct, but I will need to know
+//Also maybe we should be returning the exit status instead of the myenvp
 char	**loop_nodes(t_node *list, char *envp[])
 {
 	t_node	*curr;
 	t_pipes	*my_pipes;
 	char	**return_envp;
-	int status;
-	int i = 0;
+	int		status;
+	int		i = 0;
 
 	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
+	//error check here
 	initialize_struct(my_pipes, list, envp);
 	pid_t child_pids[my_pipes->pipe_amount + 1];
 	while (curr != NULL)
@@ -279,18 +303,19 @@ char	**loop_nodes(t_node *list, char *envp[])
 		if (curr->type == COMMAND)
 			my_pipes->command_node = curr;
 		if (curr->type == REDIR_APPEND || curr->type == REDIR_OUTF)
-			my_pipes->outfile_fd = set_outfile(curr->file, curr->type);
+			set_outfile(curr->file, curr->type, my_pipes);
 		if (curr->type == REDIR_INF)
-			my_pipes->infile_fd = open_infile(curr->file);
+			open_infile(curr->file, my_pipes);
 		if (curr->type == REDIR_HEREDOC)
 			my_pipes->heredoc_node = curr;
 		if ((curr->next == NULL) || (curr->next && my_pipes->pipe_amount > 0 && curr->next->type == PIPE))
 		{
-			if (is_builtin(my_pipes->command_node->cmd[0]) == 1)
+			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
 			{
-				execute_builtin(my_pipes->command_node, my_pipes);
+				child_pids[i] = execute_builtin(my_pipes->command_node, my_pipes);
+				i++;
 			}
-			else
+			else if (my_pipes->command_node != NULL)
 			{
 				child_pids[i] = execute_executable(my_pipes->command_node, my_pipes);
 				i++;
@@ -302,10 +327,23 @@ char	**loop_nodes(t_node *list, char *envp[])
 	int j = 0;
 	while (j < i)
 	{
+		printf("pidsies %d\n", child_pids[j]);
 		if (child_pids[j] > 0)
 			waitpid(child_pids[j], &status, 0);
 		j++;
 	}
 	free_my_pipes(my_pipes);
+//	printf("pids %d\n", status);
+//this is not correct.. instead we should be checking if something is not forked vs forked.
+//why is this not catching the status.. with utils.c | grep int i get something went wrong instead the status..?
+	if (WIFEXITED(status) == true)
+		printf("child exited with status of %d\n", WEXITSTATUS(status));
+	else
+		printf("something went wrong");
+
+		printf("exit status is %d", my_pipes->exit_status);
 	return (return_envp);
 }
+//echo hi > testi.txt fails
+//also echo hi > test.txt gets permission denied
+// cat < utils.c | grep int should work but if it's just <utils |  grep int, we get a segfalt
