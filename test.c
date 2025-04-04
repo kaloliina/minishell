@@ -45,6 +45,7 @@ void	reset_properties(t_pipes *my_pipes)
 	my_pipes->infile_fd = -1;
 	my_pipes->outfile_fd = -1;
 	my_pipes->heredoc_node = NULL;
+	my_pipes->exit_status = 0;
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 	{
 		my_pipes->read_end = my_pipes->write_end - 1;
@@ -53,6 +54,7 @@ void	reset_properties(t_pipes *my_pipes)
 		printf("Moving to next pipe: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
 		printf("Curr section: %d\n", my_pipes->current_section);
 	}
+	my_pipes->current_section++;
 }
 
 void	handle_redirections(t_node *node, t_pipes *my_pipes)
@@ -81,7 +83,7 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes)
 - We close always the write end except for the last section because that end was already closed
 - We close read always after we reach the second section, not in the first section because we still need it
 - Then in the end we reset properties as well as go over to the next pair or pipe ends. */
-void	close_pipes(t_node *node, t_pipes *my_pipes)
+void	close_pipes(t_pipes *my_pipes)
 {
 	if (my_pipes->pipe_amount > 0)
 	{
@@ -97,7 +99,7 @@ void	close_pipes(t_node *node, t_pipes *my_pipes)
 			printf("Closing write end: %d\n", my_pipes->write_end);
 			printf("Curr section: %d\n", my_pipes->current_section);
 		}
-		if (node->next != NULL)
+		if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 		{
 			if (my_pipes->current_section > 1)
 			{
@@ -131,27 +133,29 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 		execute_cd(node->cmd);
 }
 //Check the return value here, I assume it's okay to return 0 when parent
+//Also can these commands fail as well
 int	execute_builtin(t_node *node, t_pipes *my_pipes)
 {
 	int	pid;
-	my_pipes->current_section++;
+
 	if (my_pipes->pipe_amount > 0)
 	{
 		pid = fork();
 		if (pid == 0)
 		{
+			if (my_pipes->exit_status == 1)
+				exit (1);
 			handle_redirections(node, my_pipes);
 			run_builtin_command(node, my_pipes);
 			exit(0);
 		}
 		else
-		{
-			close_pipes(node, my_pipes);
 			return (pid);
-		}
 	}
 	else
 	{
+		if (my_pipes->exit_status == 1)
+			return (0);
 		handle_redirections(node, my_pipes);
 		run_builtin_command(node, my_pipes);
 		if (my_pipes->stdinfd != -1)
@@ -175,7 +179,6 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 {
 	int	pid;
 
-	my_pipes->current_section++;
 	pid = fork();
 	if (pid == 0)
 	{
@@ -201,7 +204,6 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 		else
 			exit(1);
 	}
-	close_pipes(node, my_pipes);
 	return (pid);
 }
 //Wonder if these could be saved in the header
@@ -235,8 +237,9 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char **envp)
 	my_pipes->stdinfd = -1;
 	my_pipes->infile_fd = -1;
 	my_pipes->outfile_fd = -1;
-	my_pipes->current_section = 0;
+	my_pipes->current_section = 1;
 	my_pipes->pipe_amount = get_pipe_amount(list);
+	my_pipes->exit_status = 0;
 	if (my_pipes->pipe_amount > 0)
 	{
 		my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));
@@ -277,14 +280,8 @@ void	free_my_pipes(t_pipes *my_pipes)
 	}
 }
 
-//This functions needs to be divided
-//I also need to handle the exit status here in a neater way
-//If theres a pipeline and it contains of exexutables, we should be able to get the exit status here
-//If there's a pipeline and it contains both, we need to know which one was the last?
-//If theres one command which is executable, we can get the exit status
-//If there's one command which is builtiin, we need to get the exit status via struct..
-//Feels simpler if I would just purely update the statuses in a struct, but I will need to know
-//Also maybe we should be returning the exit status instead of the myenvp
+//Maybe we could return exit status rather than envp
+//Double check the exit statuses, we can't catch all exit statuses because there are situations when we don't fork.
 char	**loop_nodes(t_node *list, char *envp[])
 {
 	t_node	*curr;
@@ -320,6 +317,7 @@ char	**loop_nodes(t_node *list, char *envp[])
 				child_pids[i] = execute_executable(my_pipes->command_node, my_pipes);
 				i++;
 			}
+			close_pipes(my_pipes);
 		}
 		curr = curr->next;
 	}
@@ -327,23 +325,19 @@ char	**loop_nodes(t_node *list, char *envp[])
 	int j = 0;
 	while (j < i)
 	{
-		printf("pidsies %d\n", child_pids[j]);
 		if (child_pids[j] > 0)
 			waitpid(child_pids[j], &status, 0);
 		j++;
 	}
 	free_my_pipes(my_pipes);
-//	printf("pids %d\n", status);
-//this is not correct.. instead we should be checking if something is not forked vs forked.
-//why is this not catching the status.. with utils.c | grep int i get something went wrong instead the status..?
+//This feels a bit messy still, can we really do it like this xdd
 	if (WIFEXITED(status) == true)
 		printf("child exited with status of %d\n", WEXITSTATUS(status));
 	else
-		printf("something went wrong");
-
-		printf("exit status is %d", my_pipes->exit_status);
+		printf("parent exited with status of %d\n", my_pipes->exit_status);
+	//we should return the status here
 	return (return_envp);
 }
-//echo hi > testi.txt fails
+//echo hi > testi.txt fails ()
 //also echo hi > test.txt gets permission denied
 // cat < utils.c | grep int should work but if it's just <utils |  grep int, we get a segfalt

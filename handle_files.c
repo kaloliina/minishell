@@ -26,7 +26,7 @@ void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 	{
 		ft_printf(2, "%s: Permission denied\n", file);
 		my_pipes->exit_status = 1;
-		return ;
+//		return ;
 	}
 	if (redir_type == REDIR_OUTF)
 		my_pipes->outfile_fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
