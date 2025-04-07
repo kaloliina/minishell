@@ -47,30 +47,67 @@ void	handle_quotes(t_ast *ast, char **envp)
 {
 	int		i;
 	t_node	*tmp;
+	char	**new_cmd;
+	char	*new_line;
+	// char	*new_file;
 
 	tmp = ast->first;
 	while (tmp)
 	{
 		if (tmp->cmd)
 		{
-			tmp->cmd = handle_expansion_cmds(tmp->cmd, envp);
+			new_cmd = handle_expansion_cmds(tmp->cmd, envp);
+			if (new_cmd)
+			{
+				free_array(tmp->cmd);
+				tmp->cmd = new_cmd;
+				new_cmd = NULL;
+			}
 			i = 0;
 			while (tmp->cmd[i])
 			{
-				tmp->cmd[i] = handle_quotes_helper(tmp->cmd[i]);
+				new_line = handle_quotes_helper(tmp->cmd[i]);
+				if (new_line)
+				{
+					free (tmp->cmd[i]);
+					tmp->cmd[i] = new_line;
+					new_line = NULL;
+				}
 				i++;
 			}
 		}
+/*THIS FILENAME CASE HAS TO BE MODIFIED: either always make a new string or do not return
+anything but just update(with **?)*/
 		if (tmp->file)
 		{
 			tmp->file = handle_expansion_filename(tmp->file, envp);
+			// if (new_file)
+			// {
+			// 	free (tmp->file);
+			// 	tmp->file = new_file;
+			// 	new_file = NULL;
+			// }
+			// printf("now file is %s\n", tmp->file);
 			tmp->file = handle_quotes_helper(tmp->file);
+			// if (new_line)
+			// {
+			// 	free (tmp->file);
+			// 	tmp->file = new_line;
+			// 	new_line = NULL;
+			// }
+			// printf("now file is %s\n", tmp->file);
 		}
 		if (tmp->delimiter)
 		{
 			if (is_quote(tmp->delimiter))
 				tmp->delimiter_quote = 1;
-			tmp->delimiter = handle_quotes_helper(tmp->delimiter);
+			new_line = handle_quotes_helper(tmp->delimiter);
+			if (new_line)
+			{
+				free (tmp->delimiter);
+				tmp->delimiter = new_line;
+				new_line = NULL;
+			}
 		}
 		tmp = tmp->next;
 	}
@@ -107,6 +144,7 @@ char	**copy_envp(char **envp)
 char	**minishell(char *input, char **envp)
 {
 	t_ast	ast;
+	t_node	*tmp;
 	int		k;
 	char	*line;
 	char	**new_envp;
@@ -120,6 +158,19 @@ char	**minishell(char *input, char **envp)
 	if (lexer(&ast) < 0)
 		return (NULL);
 	handle_quotes(&ast, envp);
+	tmp = ast.first;
+	while (tmp)
+	{
+		printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
+		k = 0;
+		if (tmp->cmd)
+		{
+			while (tmp->cmd[k])
+				printf(" cmd %s", tmp->cmd[k++]);
+		}
+		printf("\n");
+		tmp = tmp->next;
+	}
 	new_envp = loop_nodes(ast.first, envp);
 	free_struct(&ast);
 	return (new_envp);

@@ -30,7 +30,7 @@ static int	set_cmd_no_args(t_ast *ast, int i, int init_j, t_node *new_node)
 		ft_printf(2, "minishell: memory allocation failure\n");
 		exit (1);
 	}
-	new_node->cmd[k++] = ast->tokens[i][init_j++];
+	new_node->cmd[k++] = ft_strdup(ast->tokens[i][init_j++]);
 	new_node->cmd[k] = NULL;
 	return (init_j);
 }
@@ -40,14 +40,14 @@ static int	set_cmd_args(char **token, int init_j, int args, t_node *new_node)
 	int	k;
 
 	k = 0;
-	new_node->cmd[k++] = token[init_j++];
+	new_node->cmd[k++] = ft_strdup(token[init_j++]);
 	while (k <= args)
 	{
 		if (is_redirection(token[init_j]))
 			init_j += 2;
 		else
 		{
-			new_node->cmd[k] = token[init_j];
+			new_node->cmd[k] = ft_strdup(token[init_j]);
 			k++;
 			init_j++;
 		}

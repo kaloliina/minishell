@@ -90,8 +90,8 @@ char	*find_envp(char *exp, char **envp);
 
 //cleanup
 void	free_struct(t_ast *ast);
-void	free_sections(t_ast *ast, int i);
 void	free_array(char **array);
+void	free_sections_tokens(t_ast *ast);
 
 //utils
 int		count_elements(char **tokens);

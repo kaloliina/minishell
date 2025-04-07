@@ -1,5 +1,5 @@
 NAME = minishell
-CC = cc
+CC = cc -g
 CFLAGS =
 LIBFTDIR = ./libft
 LIBFT = $(LIBFTDIR)/libft.a

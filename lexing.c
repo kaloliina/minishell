@@ -13,9 +13,9 @@ static int	set_redir_file_node(t_node *new_node, t_ast *ast, int i, int j)
 	if (ast->tokens[i][j + 1])
 	{
 		if (new_node->type == REDIR_HEREDOC)
-			new_node->delimiter = ast->tokens[i][j + 1];
+			new_node->delimiter = ft_strdup(ast->tokens[i][j + 1]);
 		else
-			new_node->file = ast->tokens[i][j + 1];
+			new_node->file = ft_strdup(ast->tokens[i][j + 1]);
 	}
 	else
 	{
@@ -86,5 +86,6 @@ int	lexer(t_ast *ast)
 		}
 		i++;
 	}
+	free_sections_tokens(ast);
 	return (0);
 }

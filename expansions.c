@@ -59,12 +59,12 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 		new_line[l++] = replacer[m++];
 		replacer_len--;
 	}
-	i += (j + 2 + quote);
-	printf("i is %d j is %d quote is %d\n", i, j, quote);
+	i += (j + 1 + quote);
+	if (line[i] == '\\')
+		i++;
 	while (line[i])
 		new_line[l++] = line[i++];
 	new_line[l] = '\0';
-	printf("new line %s\n", new_line);
 	return (new_line);
 }
 
@@ -87,7 +87,7 @@ char	**delete_element(char **cmd, int arg)
 			new_cmd[j++] = ft_strdup(cmd[i++]);
 	}
 	new_cmd[j] = NULL;
-	free_array(cmd);
+//	free_array(cmd);
 	return (new_cmd);
 }
 
@@ -102,74 +102,108 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 	int		j;
 	int		k;
 	int		arg;
+	int		new_arg;
 	int		quote;
+	int		no_elem;
 	char	*exp;
 	char	*replacer;
 	char	*new_line;
+	char	*end;
+	char	*temp;
+	char	**new_cmd;
+	char	**tmp;
 
 	i = 0;
 	arg = 0;
 	k = 0;
 	quote = 0;
+	no_elem = 0;
+	new_cmd = malloc(sizeof(char *) * (count_elements(cmd) + 1));
+	//malloc protection
+	new_arg = 0;
 	while (cmd[arg])
 	{
-		i = 0;
-		while (cmd[arg][i])
+		if (!ft_strchr(cmd[arg], '$'))
+			new_cmd[new_arg] = ft_strdup(cmd[arg]);
+		else
 		{
-			if (cmd[arg][i] == '$' && cmd[arg][i + 1] && !quote)
+			i = 0;
+			while (cmd[arg][i])
 			{
-				j = 0;
-				i++;
-				k = i;
-				while (!is_exp_delimiter(cmd[arg][i]))
+				if (cmd[arg][i] == '$' && cmd[arg][i + 1] && !quote)
 				{
+					j = 0;
 					i++;
-					j++;
-				}
-				exp = ft_substr(cmd[arg], k, j);
-				if (exp && *exp)
-				{
-					printf("k %d\n", k);
-					replacer = find_envp(exp, envp);
-					if (replacer)
+					k = i;
+					while (!is_exp_delimiter(cmd[arg][i]) && cmd[arg][i])
 					{
-						new_line = add_replacer(cmd[arg], replacer, k, j);
-						free (replacer);
-						cmd[arg] = new_line;
-						//new_line = NULL;
+						i++;
+						j++;
 					}
-					else if (k > 1)
+					exp = ft_substr(cmd[arg], k, j);
+					if (exp && *exp)
 					{
-						new_line = ft_substr(cmd[arg], 0, k - 1);
-						if (cmd[arg][i + 1])
+						replacer = find_envp(exp, envp);
+						if (replacer)
 						{
-							char	*end = ft_substr(cmd[arg], i, ft_strlen(cmd[arg]) - i);
-							char	*temp = ft_strjoin(new_line, end);
-							cmd[arg] = temp;
+							new_line = add_replacer(cmd[arg], replacer, k, j);
+							free (replacer);
+							new_cmd[new_arg] = new_line;
+							new_line = NULL;
+						}
+						else if (k > 1)
+						{
+							new_line = ft_substr(cmd[arg], 0, k - 1);
+							if (cmd[arg][i] && cmd[arg][i + 1])
+							{
+								end = ft_substr(cmd[arg], i, (ft_strlen(cmd[arg]) - i));
+								temp = ft_strjoin(new_line, end);
+								new_cmd[new_arg] = temp;
+								free (new_line);
+								free (end);
+								end = NULL;
+								new_line = NULL;
+								temp = NULL;
+							}
+							else
+							{
+								new_cmd[new_arg] = new_line;
+								new_line = NULL;
+							}
 						}
 						else
-							cmd[arg] = new_line;
-						//new_line = NULL;
+						{
+							if (cmd[arg][i] && cmd[arg][i + 1])
+							{
+								new_line = ft_substr(cmd[arg], i, (ft_strlen(cmd[arg]) - i));
+								new_cmd[new_arg] = new_line;
+								new_line = NULL;
+							}
+							else
+							{
+								no_elem = 1;
+								break ;
+							}
+						}
 					}
-					else
-					{
-						cmd = delete_element(cmd, arg);
-						break ;
-					}
+					i = k;
 				}
-				i = k;
-			}
-			else
-			{
-				if (cmd[arg][i] == 39)
-					quote = !quote;
-				i++;
+				else
+				{
+					if (cmd[arg][i] == 39)
+						quote = !quote;
+					i++;
+				}
 			}
 		}
-		if (cmd[arg])
-			arg++;
+		if (no_elem)
+			no_elem = 0;
+		else
+			new_arg++;
+		arg++;
 	}
-	return (cmd);
+	new_cmd[new_arg] = NULL;
+	return (new_cmd);
 }
 
 char	*handle_expansion_cmd(char *line, char **envp)
