@@ -11,6 +11,7 @@
 # include <readline/history.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include <errno.h>
 # define MALLOC "minishell: memory allocation failure"
 
 typedef enum s_type
@@ -58,6 +59,7 @@ typedef struct t_pipe
 	struct s_node	*heredoc_node;
 	int				read_end;
 	int				write_end;
+	int				exit_status;
 }					t_pipes;
 
 //init
@@ -66,7 +68,7 @@ void	init_sections(t_data *data, char *line);
 void	init_tokens(t_data *data);
 void	init_tokens_struct(t_data *data);
 int		set_sections(t_data *data, char **tmp_sections);
-void	set_ldata_section(t_data *data, int i, char **tmp_sections);
+void	set_last_section(t_data *data, int i, char **tmp_sections);
 
 //lexing
 char	*add_spaces(char *input);
@@ -82,7 +84,6 @@ int		is_redirection(char *token);
 int		is_char_redirection(char c);
 int		is_redirection_char(char *s);
 void	make_pipe_node(t_data *data, t_node **first);
-char	*handle_expansion_cmd(char *line, char **envp);
 char	**handle_expansion_cmds(char **cmd, char **envp);
 char	*handle_expansion_filename(char *file, char **envp);
 int		is_exp_delimiter(char c);
@@ -115,8 +116,8 @@ int		find_unset_element(char **cmd, char *envp_element);
 //execution
 char	**get_paths(char *envp[]);
 char	*get_absolute_path(char **paths, char *command);
-int		open_infile(char *file);
-int		set_outfile(char *file, enum s_type redir_type);
+void	open_infile(char *file, t_pipes *my_pipes);
+void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
 char	**loop_nodes(t_node *list, char *envp[]);
 
 #endif
