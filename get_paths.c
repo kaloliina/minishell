@@ -1,15 +1,15 @@
 #include "../minishell.h"
 
-char	**get_paths(char *envp[])
+char	**get_paths(char ***envp)
 {
 	int		i = 0;
 	char	**paths;
 	char	*string;
-	while (envp[i] != NULL)
+	while ((*envp)[i] != NULL)
 	{
-		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
+		if (ft_strncmp((*envp)[i], "PATH=", 5) == 0)
 		{
-			string = ft_substr(envp[i], 5, (ft_strlen(envp[i]) - 5));
+			string = ft_substr((*envp)[i], 5, (ft_strlen((*envp)[i]) - 5));
 			break;
 		}
 		i++;

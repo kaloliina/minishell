@@ -48,7 +48,7 @@ typedef struct t_pipe
 	int				*pipes;
 	char			*command_path;
 	char			**paths;
-	char			**my_envp;
+	char			***my_envp;
 	int				current_section;
 	int				pipe_amount;
 	int				stdinfd;
@@ -91,7 +91,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j);
 char	*find_envp(char *exp, char **envp);
 
 //cleanup
-void	free_struct(t_data *data);
+void	free_nodes(t_node *node);
 void	free_array(char **array);
 void	free_sections_tokens(t_data *data);
 
@@ -102,8 +102,8 @@ void	signal_handler(int sig);
 void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
 
 //builtins
-void	execute_echo(t_node *node, char **envp);
-void	execute_env(char **envp);
+void	execute_echo(t_node *node, char ***envp);
+void	execute_env(char ***envp);
 void	execute_pwd(void);
 void	execute_export(char **cmd, char ***envp);
 void	execute_cd(char **cmd);
@@ -114,10 +114,10 @@ int		add_exported_envp(char **new_envp, char **cmd, int i);
 int		find_unset_element(char **cmd, char *envp_element);
 
 //execution
-char	**get_paths(char *envp[]);
+char	**get_paths(char ***envp);
 char	*get_absolute_path(char **paths, char *command);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
-char	**loop_nodes(t_node *list, char *envp[]);
+void	loop_nodes(t_node *list, char ***envp);
 
 #endif

@@ -24,7 +24,7 @@ static int	set_redir_file_node(t_node *new_node, t_data *data, int i, int j)
 			ft_printf(2, "`|'\n");
 		else
 			ft_printf(2, "`newline'\n");
-		free_struct(data);
+		free_nodes(data->first);
 		return (-1);
 	}
 	return (j + 2);

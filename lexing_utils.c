@@ -26,7 +26,7 @@ static int	set_cmd_no_args(t_data *data, int i, int init_j, t_node *new_node)
 	new_node->cmd = malloc(sizeof(char *) * 2);
 	if (!new_node->cmd)
 	{
-		free_struct(data);
+		free_nodes(data->first);
 		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
@@ -70,7 +70,7 @@ static int	set_cmd_node(t_data *data, int i, int j, t_node *new_node)
 		new_node->cmd = malloc(sizeof(char *) * (args + 2));
 		if (!new_node->cmd)
 		{
-			free_struct(data);
+			free_nodes(data->first);
 			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
