@@ -98,6 +98,7 @@ void	free_sections_tokens(t_data *data);
 //utils
 int		count_elements(char **tokens);
 int		is_quote(char *s);
+int		is_only_quotes(char *s);
 void	signal_handler(int sig);
 void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
 
@@ -118,6 +119,6 @@ char	**get_paths(char ***envp);
 char	*get_absolute_path(char **paths, char *command);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
-void	loop_nodes(t_node *list, char ***envp);
+int	loop_nodes(t_node *list, char ***envp);
 
 #endif

@@ -135,6 +135,17 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 					j = 0;
 					i++;
 					k = i;
+					if (cmd[arg][i] == '\'' || cmd[arg][i] == '"')
+					{
+						new_line = ft_substr(cmd[arg], i,
+							(ft_strlen(cmd[arg]) - i));
+						while (cmd[arg][i] != cmd[arg][j])
+							k++;
+						/*we need to change this function so that after finding and
+						handling a $ it doesnt finish that arg but goes back to loop
+						the rest of it, eg. echo $HOME$USER !!!
+						also, this part should handle echo $"HEIPPA" !!*/
+					}
 					while (!is_exp_delimiter(cmd[arg][i]) && cmd[arg][i])
 					{
 						i++;

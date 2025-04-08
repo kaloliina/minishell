@@ -53,12 +53,16 @@ void	handle_quotes(t_data *data, char **envp)
 			i = 0;
 			while (tmp->cmd[i])
 			{
-				new_line = handle_quotes_helper(tmp->cmd[i]);
-				if (new_line)
+				if (!((tmp->cmd[i][0] == '\'' && tmp->cmd[i][1] == '\'')
+					|| (tmp->cmd[i][0] == '"' && tmp->cmd[i][1] == '"')))
 				{
-					free (tmp->cmd[i]);
-					tmp->cmd[i] = new_line;
-					new_line = NULL;
+					new_line = handle_quotes_helper(tmp->cmd[i]);
+					if (new_line)
+					{
+						free (tmp->cmd[i]);
+						tmp->cmd[i] = new_line;
+						new_line = NULL;
+					}
 				}
 				i++;
 			}
@@ -123,22 +127,23 @@ char	**copy_envp(char **envp)
 	return (my_envp);
 }
 
-void	minishell(char *input, char ***envp)
+int	minishell(char *input, char ***envp)
 {
 	t_data	data;
 	// t_node	*tmp;
 	int		k;
 	char	*line;
 	// char	**new_envp;
+	int status;
 
 	init_tokens_struct(&data);
 	line = add_spaces(input);
 	if (!line)
-		return ;
+		return (-1);
 	init_sections(&data, line);
 	init_tokens(&data);
 	if (lexer(&data) < 0)
-		return ;
+		return (-1);
 	handle_quotes(&data, *envp);
 	// tmp = data.first;
 	// while (tmp)
@@ -153,8 +158,9 @@ void	minishell(char *input, char ***envp)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
-	loop_nodes(data.first, envp);
+	status = loop_nodes(data.first, envp);
 	free_nodes(data.first);
+	return (status);
 }
 
 int	main(int ac, char **av, char **envp)
@@ -162,7 +168,7 @@ int	main(int ac, char **av, char **envp)
 	char	*input;
 	char	**my_envp;
 	char	**tmp;
-	// int		status;
+	int		status = 0;
 
 	(void)av;
 	if (ac != 1)
@@ -182,12 +188,12 @@ int	main(int ac, char **av, char **envp)
 			clear_history();
 			return (0);
 		}
-		if (!ft_strcmp(input, ""))	//EMPTY SSTRING OR JUST "" OR ''
-		// if (!ft_strcmp(input, "echo $?"))
-		// 	ft_printf(1, "%d\n", status);
+		if (!ft_strcmp(input, "echo $?"))
+			ft_printf(1, "%d\n", status);
+		else if (input[0] != '\0')
+			status = minishell(input, &my_envp);
 		if (input)
 			add_history(input);
-		minishell(input, &my_envp);
 		free (input);
 	}
 	free_array(my_envp);

@@ -54,7 +54,6 @@ void	execute_pwd(void)
 	free (buf);
 }
 
-//THIS FUNCTION IS NOT READY, we have to put in alphab. order!//
 void	export_no_args(char **envp)
 {
 	int	elements;

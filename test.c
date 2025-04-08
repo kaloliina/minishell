@@ -282,12 +282,13 @@ void	free_my_pipes(t_pipes *my_pipes)
 
 //Maybe we could return exit status rather than envp
 //Double check the exit statuses, we can't catch all exit statuses because there are situations when we don't fork.
-void	loop_nodes(t_node *list, char ***envp)
+int	loop_nodes(t_node *list, char ***envp)
 {
 	t_node	*curr;
 	t_pipes	*my_pipes;
 	int		status = 0;
 	int		i = 0;
+	int	returnstatus;
 
 	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
@@ -330,10 +331,16 @@ void	loop_nodes(t_node *list, char ***envp)
 	free_my_pipes(my_pipes);
 //This feels a bit messy still, can we really do it like this xdd
 	if (WIFEXITED(status) == true)
+	{
+		returnstatus = WEXITSTATUS(status);
 		printf("child exited with status of %d\n", WEXITSTATUS(status));
+	}
 	else
+	{
+		returnstatus = my_pipes->exit_status;
 		printf("parent exited with status of %d\n", my_pipes->exit_status);
-	//we should return the status here
+	}
+	return (returnstatus);
 }
 //echo hi > testi.txt fails ()
 //also echo hi > test.txt gets permission denied

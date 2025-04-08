@@ -43,12 +43,21 @@ void	init_tokens(t_data *data)
 	while (data->sections[i])
 	{
 		error = 0;
-		data->tokens[i] = ft_ms_split(data->sections[i], ' ', &error);
-		if (!data->tokens[i] && error)
+		if (!is_only_quotes(data->sections[i]))
 		{
-			free_nodes(data->first);
-			ft_printf(2, "%s\n", MALLOC);
-			exit (1);
+			data->tokens[i] = ft_ms_split(data->sections[i], ' ', &error);
+			if (!data->tokens[i] && error)
+			{
+				free_nodes(data->first);
+				ft_printf(2, "%s\n", MALLOC);
+				exit (1);
+			}
+		}
+		else
+		{
+			data->tokens[i] = malloc(sizeof(char *) * 2);
+			data->tokens[i][0] = ft_strdup(data->sections[i]);
+			data->tokens[i][1] = NULL;
 		}
 		i++;
 	}
