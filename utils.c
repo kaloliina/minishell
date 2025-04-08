@@ -18,13 +18,27 @@ int	count_elements(char **sections)
 	return (i);
 }
 
-void	make_pipe_node(t_ast *ast, t_node **first)
+int	is_quote(char *s)
+{
+	int	i;
+
+	i = 0;
+	while (s[i])
+	{
+		if (s[i] == 34 || s[i] == 39)
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+void	make_pipe_node(t_data *data, t_node **first)
 {
 	t_node	*new_node;
 	t_node	*current;
 
 	new_node = NULL;
-	new_node = init_new_node(ast, new_node);
+	new_node = init_new_node(data, new_node);
 	if (!*first)
 		*first = new_node;
 	else

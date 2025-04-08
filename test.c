@@ -67,7 +67,7 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes)
 	if (my_pipes->infile_fd >= 0)
 		redirection_infile(my_pipes);
 	if (my_pipes->heredoc_node)
-		heredoc(node, my_pipes, my_pipes->my_envp, my_pipes->paths);
+		heredoc(node, my_pipes, *my_pipes->my_envp, my_pipes->paths);
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
 		dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
 	if ((my_pipes->current_section != my_pipes->pipe_amount + 1) && my_pipes->outfile_fd == -1)
@@ -126,9 +126,9 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 	else if (!ft_strcmp(node->cmd[0], "env"))
 		execute_env(my_pipes->my_envp);
 	else if (!ft_strcmp(node->cmd[0], "export"))
-		execute_export(node->cmd, &my_pipes->my_envp);
+		execute_export(node->cmd, my_pipes->my_envp);
 	else if (!ft_strcmp(node->cmd[0], "unset"))
-		execute_unset(node->cmd, &my_pipes->my_envp);
+		execute_unset(node->cmd, my_pipes->my_envp);
 	else if (!ft_strcmp(node->cmd[0], "cd"))
 		execute_cd(node->cmd);
 }
@@ -189,7 +189,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 		printf("absolute: %s\n", my_pipes->command_path);
 		if (my_pipes->exit_status == 1)
 			exit(1);
-		execve(my_pipes->command_path, &node->cmd[0], my_pipes->my_envp);
+		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
 //rename the printf thingies
 		if (errno == ENOENT)
 		{
@@ -221,7 +221,7 @@ int	is_builtin(char *command)
 }
 
 //Initializing a struct to track stuffsies
-void	initialize_struct(t_pipes *my_pipes, t_node *list, char **envp)
+void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
 
@@ -282,13 +282,13 @@ void	free_my_pipes(t_pipes *my_pipes)
 
 //Maybe we could return exit status rather than envp
 //Double check the exit statuses, we can't catch all exit statuses because there are situations when we don't fork.
-char	**loop_nodes(t_node *list, char *envp[])
+int	loop_nodes(t_node *list, char ***envp)
 {
 	t_node	*curr;
 	t_pipes	*my_pipes;
-	char	**return_envp;
-	int		status;
+	int		status = 0;
 	int		i = 0;
+	int	returnstatus;
 
 	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
@@ -321,7 +321,6 @@ char	**loop_nodes(t_node *list, char *envp[])
 		}
 		curr = curr->next;
 	}
-	return_envp = my_pipes->my_envp;
 	int j = 0;
 	while (j < i)
 	{
@@ -332,11 +331,16 @@ char	**loop_nodes(t_node *list, char *envp[])
 	free_my_pipes(my_pipes);
 //This feels a bit messy still, can we really do it like this xdd
 	if (WIFEXITED(status) == true)
+	{
+		returnstatus = WEXITSTATUS(status);
 		printf("child exited with status of %d\n", WEXITSTATUS(status));
+	}
 	else
+	{
+		returnstatus = my_pipes->exit_status;
 		printf("parent exited with status of %d\n", my_pipes->exit_status);
-	//we should return the status here
-	return (return_envp);
+	}
+	return (returnstatus);
 }
 //echo hi > testi.txt fails ()
 //also echo hi > test.txt gets permission denied

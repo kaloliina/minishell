@@ -1,44 +1,49 @@
 #include "minishell.h"
 
-void	execute_echo(t_node *node, char **envp)
+void	execute_echo(t_node *node, char ***envp)
 {
 	int		i;
 	char	*temp;
 
 	i = 1;
+	if (!node->cmd[i])
+	{
+		ft_printf(1, "\n");
+		return ;
+	}
+	if (node->cmd[i] && !ft_strcmp(node->cmd[i], "-n"))
+		i++;
 	while (node->cmd[i])
 	{
-		temp = handle_expandables(node->cmd[i], envp);
-		if (temp)
-			node->cmd[i] = temp;
 		ft_printf(1, "%s", node->cmd[i]);
 		if (node->cmd[i + 1])
 			ft_printf(1, " ");
 		i++;
 	}
-	printf("\n");
+	if (ft_strcmp(node->cmd[1], "-n"))
+		ft_printf(1, "\n");
 }
 
-void	execute_env(char **envp)
+void	execute_env(char ***envp)
 {
 	int	i;
 
 	i = 0;
-	while (envp[i])
+	while ((*envp)[i])
 	{
-		ft_printf(1, "%s\n", envp[i]);
+		ft_printf(1, "%s\n", (*envp)[i]);
 		i++;
 	}
 }
 
-void	execute_pwd()
+void	execute_pwd(void)
 {
 	char	*buf;
 
 	buf = malloc(100);
 	if (!buf)
 	{
-		ft_printf(2, "minishell: memory allocation failure\n");
+		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
 	getcwd(buf, 100);
@@ -49,6 +54,31 @@ void	execute_pwd()
 	free (buf);
 }
 
+/*THIS FUNCTION IS NOT READY, we have to put in alphab. order!//
+void	export_no_args(char **envp)
+{
+	int	elements;
+	int	i;
+	int	j;
+	int	k;
+
+	elements = count_elements(envp);
+	i = 0;
+	while (i < elements)
+	{
+		j = 0;
+		k = 0;
+		while (j < elements)
+		{
+			if (envp[i][0] > envp[j][0])
+				k++;
+			j++;
+		}
+		printf("this line %s is at index %d\n", envp[i], k);
+		i++;
+	}
+}*/
+
 void	execute_export(char **cmd, char ***envp)
 {
 	int		i;
@@ -56,29 +86,16 @@ void	execute_export(char **cmd, char ***envp)
 	int		args;
 	char	**new_envp;
 
-	i = 0;
-	while ((*envp)[i])
-		i++;
+	/*if (!cmd[1])
+		export_no_args(*envp);*/
+	i = count_elements(*envp);
 	args = 1;
 	while (cmd[args + 1])
 		args++;
 	new_envp = malloc(sizeof(char *) * (i + 1 + args));
 	//malloc protection
-	i = 0;
-	while ((*envp)[i])
-	{
-		new_envp[i] = ft_strdup((*envp)[i]);
-		//malloc protection
-		i++;
-	}
-	j = 1;
-	while (cmd[j])
-	{
-		new_envp[i] = ft_strdup(cmd[j]);
-		//malloc protection
-		i++;
-		j++;
-	}
+	i = add_existing_envp(new_envp, *envp);
+	i = add_exported_envp(new_envp, cmd, i);
 	new_envp[i] = NULL;
 	free_array(*envp);
 	*envp = NULL;
@@ -105,9 +122,7 @@ void	execute_unset(char **cmd, char ***envp)
 	int		args;
 	char	**new_envp;
 
-	i = 0;
-	while ((*envp)[i])
-		i++;
+	i = count_elements(*envp);
 	args = 1;
 	while (cmd[args + 1])
 		args++;
@@ -117,14 +132,9 @@ void	execute_unset(char **cmd, char ***envp)
 	k = 0;
 	while ((*envp)[i])
 	{
-		j = 1;
-		while (cmd[j])
-		{
-			if (!ft_strncmp((*envp)[i], cmd[j], ft_strlen(cmd[j])))
-				break ;
-			j++;
-		}
-		if (cmd[j] && !ft_strncmp((*envp)[i], cmd[j], ft_strlen(cmd[j])))
+		j = find_unset_element(cmd, (*envp)[i]);
+		if (cmd[j] && !ft_strncmp((*envp)[i], cmd[j], ft_strlen(cmd[j]))
+			&& (*envp)[i][ft_strlen(cmd[j])] == '=')
 			i++;
 		else
 		{
