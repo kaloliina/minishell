@@ -1,10 +1,10 @@
 #include "../minishell.h"
 
-char **get_paths(char *envp[])
+char	**get_paths(char *envp[])
 {
-	int i = 0;
-	char **paths;
-	char *string;
+	int		i = 0;
+	char	**paths;
+	char	*string;
 	while (envp[i] != NULL)
 	{
 		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
@@ -19,11 +19,12 @@ char **get_paths(char *envp[])
 	return (paths);
 }
 
-char *get_absolute_path(char **paths, char *command)
+char	*get_absolute_path(char **paths, char *command)
 {
-	char *path_helper = NULL;
-	char *path = NULL;
-	int i = 0;
+	char	*path_helper = NULL;
+	char	*path = NULL;
+	int		i = 0;
+
 	if (access(command, F_OK | X_OK) == 0)
 		return (command);
 	while (paths[i] != NULL)

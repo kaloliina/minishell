@@ -1,5 +1,5 @@
 NAME = minishell
-CC = cc
+CC = cc -g
 CFLAGS =
 LIBFTDIR = ./libft
 LIBFT = $(LIBFTDIR)/libft.a
@@ -8,8 +8,8 @@ HEADERS = minishell.h $(LIBFTDIR)/libft.h
 SRC = main.c input_init.c cleanup.c ft_ms_split.c \
 	ft_ms_split_utils.c utils.c signals.c init.c \
 	lexing.c lexing_utils.c get_paths.c \
-	handle_files.c test.c builtins.c expandables.c \
-	heredoc.c
+	handle_files.c test.c builtins.c expansions.c \
+	heredoc.c builtins_utils.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)

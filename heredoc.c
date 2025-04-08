@@ -11,8 +11,8 @@
 // 	if
 
 // }
-
-char	*heredoc_expandables(char *line, char **envp)
+/* SHOULD WE WRITE ONE CHAR AT A TIME TO FILE?
+char	*heredoc_expandables(char *line, char **envp, int fd)
 {
 	int		i;
 	int		j;
@@ -27,54 +27,129 @@ char	*heredoc_expandables(char *line, char **envp)
 	k = 0;
 	while (line[i])
 	{
-		if (line[i] == '$')
+		if (line[i] == '$' && line[i + 1])
 		{
 			j = 0;
 			i++;
 			k = i;
-			while (line[i] <= 'Z' && line[i] >= 'A')
+			while (!is_exp_delimiter(line[i]))
 			{
 				i++;
 				j++;
 			}
-			if (!is_valid_char(line[i]))
+			exp = ft_substr(line, k, j);
+			if (exp && *exp)
 			{
-				exp = ft_substr(line, k, j);
-				if (exp && *exp)
+				replacer = find_envp(exp, envp);
+				if (replacer)
 				{
-					replacer = find_envp(exp, envp);
-					if (replacer)
-					{
-						new_line = add_replacer(line, replacer, k - 1, j);
-						free (line);
-						free (replacer);
-						line = NULL;
-						line = new_line;
-						new_line = NULL;
-					}
-					else
-					{
-						while (is_valid_char(line[i]))
-							i++;
-						new_start = ft_substr(line, 0, k - 1);
-						new_end = ft_substr(line, i, (ft_strlen(line) - i));
-						new_line = ft_strjoin(new_start, new_end);
-						free (line);
-						line = NULL;
-						line = new_line;
-					}
+					new_line = add_replacer(line, replacer, k, j);
+					free (line);
+					free (replacer);
+					line = NULL;
+					line = new_line;
+					new_line = NULL;
+				}
+				else
+				{
+					while (!is_exp_delimiter(line[i]))
+						i++;
+					new_start = ft_substr(line, 0, k - 1);
+					new_end = ft_substr(line, i, (ft_strlen(line) - i));
+					new_line = ft_strjoin(new_start, new_end);
+					free (line);
+					line = NULL;
+					line = new_line;
+					new_line = NULL;
 				}
 			}
 			else
 			{
-				while (is_valid_char(line[i]))
+				while (!is_exp_delimiter(line[i]))
 					i++;
 				new_start = ft_substr(line, 0, k - 1);
-				new_end = ft_substr(line, i, (ft_strlen(line) - i));
+				printf("start %s\n", new_start);
+				new_end = ft_substr(line, (i + 1), (ft_strlen(line) - (i + 1)));
+				printf("end %s len %zu\n", new_end, (ft_strlen(line) - (i + 1)));
 				new_line = ft_strjoin(new_start, new_end);
 				free (line);
 				line = NULL;
 				line = new_line;
+				new_line = NULL;
+			}
+			i = k;
+		}
+		else
+			ft_printf(fd, "%c", line[i++]);
+	}
+	return (line);
+}*/
+
+// THIS IS CURRENT VERSION BUT DOESN'T WORK WITH "$HOME\n hello"
+char	*heredoc_expandables(char *line, char **envp, int fd)
+{
+	int		i;
+	int		j;
+	int		k;
+	char	*exp;
+	char	*replacer;
+	char	*new_line;
+	char	*new_start;
+	char	*new_end;
+
+	i = 0;
+	k = 0;
+	while (line[i])
+	{
+		if (line[i] == '$' && line[i + 1])
+		{
+			j = 0;
+			i++;
+			k = i;
+			while (!is_exp_delimiter(line[i]))
+			{
+				i++;
+				j++;
+			}
+			exp = ft_substr(line, k, j);
+			if (exp && *exp)
+			{
+				replacer = find_envp(exp, envp);
+				if (replacer)
+				{
+					new_line = add_replacer(line, replacer, k, j);
+					free (line);
+					free (replacer);
+					line = NULL;
+					line = new_line;
+					new_line = NULL;
+				}
+				else
+				{
+					while (!is_exp_delimiter(line[i]))
+						i++;
+					new_start = ft_substr(line, 0, k - 1);
+					new_end = ft_substr(line, i, (ft_strlen(line) - i));
+					new_line = ft_strjoin(new_start, new_end);
+					free (line);
+					line = NULL;
+					line = new_line;
+					new_line = NULL;
+				}
+			}
+			else
+			{
+				while (!is_exp_delimiter(line[i]))
+					i++;
+				new_start = ft_substr(line, 0, k - 1);
+				printf("start %s\n", new_start);
+				new_end = ft_substr(line, (i + 1), (ft_strlen(line) - (i + 1)));
+				printf("end %s len %zu\n", new_end, (ft_strlen(line) - (i + 1)));
+				new_line = ft_strjoin(new_start, new_end);
+				free (line);
+				line = NULL;
+				line = new_line;
+				new_line = NULL;
 			}
 			i = k;
 		}
@@ -98,7 +173,7 @@ static void	heredoc_rm(char **envp, char **paths)
 		rm_cmd = malloc(sizeof(char *) * 3);
 		if (!rm_cmd)
 		{
-			ft_printf(2, "minishell: memory allocation failure\n");
+			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
 		rm_cmd[0] = "rm";
@@ -123,7 +198,7 @@ static void	heredoc_rmdir(char **envp, char **paths)
 		rmdir_cmd = malloc(sizeof(char *) * 3);
 		if (!rmdir_cmd)
 		{
-			ft_printf(2, "minishell: memory allocation failure\n");
+			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
 		rmdir_cmd[0] = "rmdir";
@@ -148,7 +223,7 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
 			break ;
 		if (!delimiter_node->delimiter_quote)
 		{
-			temp = heredoc_expandables(line, my_pipes->my_envp);
+			temp = heredoc_expandables(line, my_pipes->my_envp, fd);
 			if (temp)
 				line = temp;
 		}
@@ -178,7 +253,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 		mkdir_cmd = malloc(sizeof(char *) * 3);
 		if (!mkdir_cmd)
 		{
-			ft_printf(2, "minishell: memory allocation failure\n");
+			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
 		mkdir_cmd[0] = "mkdir";
