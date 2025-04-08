@@ -1,12 +1,12 @@
 #include "minishell.h"
 
-t_node	*init_new_node(t_ast *ast, t_node *new_node)
+t_node	*init_new_node(t_data *data, t_node *new_node)
 {
 	new_node = malloc(sizeof(t_node));
 	if (!new_node)
 	{
-		free_struct(ast);
-		ft_printf(2, "minishell: memory allocation failure\n");
+		free_struct(data);
+		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
 	new_node->cmd = NULL;
@@ -18,47 +18,47 @@ t_node	*init_new_node(t_ast *ast, t_node *new_node)
 	return (new_node);
 }
 
-void	init_sections(t_ast *ast, char *line)
+void	init_sections(t_data *data, char *line)
 {
-	ast->sections = ft_split(line, '|');
-	if (!ast->sections)
+	data->sections = ft_split(line, '|');
+	if (!data->sections)
 		return ;
-	ast->sections_amount = count_elements(ast->sections);
+	data->sections_amount = count_elements(data->sections);
 	free (line);
 }
 
-void	init_tokens(t_ast *ast)
+void	init_tokens(t_data *data)
 {
 	int	i;
 	int	error;
 
-	ast->tokens = malloc(sizeof(char **) * (ast->sections_amount + 1));
-	if (!ast->tokens)
+	data->tokens = malloc(sizeof(char **) * (data->sections_amount + 1));
+	if (!data->tokens)
 	{
-		free_array(ast->sections);
-		ft_printf(2, "minishell: memory allocation failure\n");
+		free_array(data->sections);
+		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
 	i = 0;
-	while (ast->sections[i])
+	while (data->sections[i])
 	{
 		error = 0;
-		ast->tokens[i] = ft_ms_split(ast->sections[i], ' ', &error);
-		if (!ast->tokens[i] && error)
+		data->tokens[i] = ft_ms_split(data->sections[i], ' ', &error);
+		if (!data->tokens[i] && error)
 		{
-			free_struct(ast);
-			ft_printf(2, "minishell: memory allocation failure\n");
+			free_struct(data);
+			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
 		i++;
 	}
-	ast->tokens[i] = NULL;
+	data->tokens[i] = NULL;
 }
 
-void	init_tokens_struct(t_ast *ast)
+void	init_tokens_struct(t_data *data)
 {
-	ast->first = NULL;
-	ast->sections = NULL;
-	ast->sections_amount = 0;
-	ast->tokens = NULL;
+	data->first = NULL;
+	data->sections = NULL;
+	data->sections_amount = 0;
+	data->tokens = NULL;
 }

@@ -13,6 +13,7 @@ char	*handle_quotes_helper(char *s)
 	s_quote = 0;
 	d_quote = 0;
 	new = malloc(ft_strlen(s) + 1);
+	//malloc protection
 	while (s[i])
 	{
 		if ((s[i] == 34 && d_quote) || (s[i] == 39 && s_quote))
@@ -29,29 +30,15 @@ char	*handle_quotes_helper(char *s)
 	return (new);
 }
 
-static int	is_quote(char *s)
-{
-	int	i;
-
-	i = 0;
-	while (s[i])
-	{
-		if (s[i] == 34 || s[i] == 39)
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
-void	handle_quotes(t_ast *ast, char **envp)
+void	handle_quotes(t_data *data, char **envp)
 {
 	int		i;
 	t_node	*tmp;
 	char	**new_cmd;
 	char	*new_line;
-	// char	*new_file;
+	char	*new_file;
 
-	tmp = ast->first;
+	tmp = data->first;
 	while (tmp)
 	{
 		if (tmp->cmd)
@@ -76,26 +63,21 @@ void	handle_quotes(t_ast *ast, char **envp)
 				i++;
 			}
 		}
-/*THIS FILENAME CASE HAS TO BE MODIFIED: either always make a new string or do not return
-anything but just update(with **?)*/
 		if (tmp->file)
 		{
-			tmp->file = handle_expansion_filename(tmp->file, envp);
-			// if (new_file)
-			// {
-			// 	free (tmp->file);
-			// 	tmp->file = new_file;
-			// 	new_file = NULL;
-			// }
-			// printf("now file is %s\n", tmp->file);
-			tmp->file = handle_quotes_helper(tmp->file);
-			// if (new_line)
-			// {
-			// 	free (tmp->file);
-			// 	tmp->file = new_line;
-			// 	new_line = NULL;
-			// }
-			// printf("now file is %s\n", tmp->file);
+			new_file = handle_expansion_filename(tmp->file, envp);
+			if (new_file)
+			{
+				tmp->file = new_file;
+				new_file = NULL;
+			}
+			new_file = handle_quotes_helper(tmp->file);
+			if (new_file)
+			{
+				free (tmp->file);
+				tmp->file = new_file;
+				new_line = NULL;
+			}
 		}
 		if (tmp->delimiter)
 		{
@@ -122,7 +104,7 @@ char	**copy_envp(char **envp)
 	my_envp = malloc(sizeof(char *) * (i + 1));
 	if (!my_envp)
 	{
-		ft_printf(2, "minishell: memory allocation failure\n");
+		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
 	i = 0;
@@ -131,7 +113,7 @@ char	**copy_envp(char **envp)
 		my_envp[i] = ft_strdup(envp[i]);
 		if (!my_envp[i])
 		{
-			ft_printf(2, "minishell: memory allocation failure\n");
+			ft_printf(2, "%s\n", MALLOC);
 			free_array(my_envp);
 			exit (1);
 		}
@@ -143,36 +125,36 @@ char	**copy_envp(char **envp)
 
 char	**minishell(char *input, char **envp)
 {
-	t_ast	ast;
-	t_node	*tmp;
+	t_data	data;
+	// t_node	*tmp;
 	int		k;
 	char	*line;
 	char	**new_envp;
 
-	init_tokens_struct(&ast);
+	init_tokens_struct(&data);
 	line = add_spaces(input);
 	if (!line)
 		return (NULL);
-	init_sections(&ast, line);
-	init_tokens(&ast);
-	if (lexer(&ast) < 0)
+	init_sections(&data, line);
+	init_tokens(&data);
+	if (lexer(&data) < 0)
 		return (NULL);
-	handle_quotes(&ast, envp);
-	tmp = ast.first;
-	while (tmp)
-	{
-		printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
-		k = 0;
-		if (tmp->cmd)
-		{
-			while (tmp->cmd[k])
-				printf(" cmd %s", tmp->cmd[k++]);
-		}
-		printf("\n");
-		tmp = tmp->next;
-	}
-	new_envp = loop_nodes(ast.first, envp);
-	free_struct(&ast);
+	handle_quotes(&data, envp);
+	// tmp = data.first;
+	// while (tmp)
+	// {
+	// 	printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
+	// 	k = 0;
+	// 	if (tmp->cmd)
+	// 	{
+	// 		while (tmp->cmd[k])
+	// 			printf(" cmd %s", tmp->cmd[k++]);
+	// 	}
+	// 	printf("\n");
+	// 	tmp = tmp->next;
+	// }
+	new_envp = loop_nodes(data.first, envp);
+	free_struct(&data);
 	return (new_envp);
 }
 
@@ -186,7 +168,7 @@ int	main(int ac, char **av, char **envp)
 	(void)av;
 	if (ac != 1)
 		return (0);
-	//signal(SIGINT, signal_handler);
+	signal(SIGINT, signal_handler);
 	signal(SIGQUIT, SIG_IGN);
 	my_envp = copy_envp(envp);
 	while (1)

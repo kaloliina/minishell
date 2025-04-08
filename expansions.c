@@ -15,7 +15,8 @@ char	*find_envp(char *exp, char **envp)
 		envp_len = 0;
 		while (envp[i][envp_len] && envp[i][envp_len] != '=')
 			envp_len++;
-		if (!ft_strncmp(exp, envp[i], envp_len) && !ft_strncmp(exp, envp[i], len))
+		if (!ft_strncmp(exp, envp[i], envp_len)
+			&& !ft_strncmp(exp, envp[i], len))
 			replacer = ft_substr(envp[i], len + 1, ((ft_strlen(envp[i]) - len - 1)));
 		i++;
 	}
@@ -42,7 +43,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 	new_line = malloc(len + 1);
 	if (!new_line)
 	{
-		ft_printf(2, "minishell: memory allocation failure\n");
+		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
 	if (k > 1)
@@ -60,7 +61,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 		replacer_len--;
 	}
 	i += (j + 1 + quote);
-	if (line[i] == '\\')
+	if (line[i] && line[i] == '\\')
 		i++;
 	while (line[i])
 		new_line[l++] = line[i++];
@@ -87,7 +88,6 @@ char	**delete_element(char **cmd, int arg)
 			new_cmd[j++] = ft_strdup(cmd[i++]);
 	}
 	new_cmd[j] = NULL;
-//	free_array(cmd);
 	return (new_cmd);
 }
 
@@ -95,7 +95,7 @@ int	is_exp_delimiter(char c)
 {
 	return (!(ft_isalnum(c) || c == '_'));
 }
-/*THIS LEAKS!! NEW_LINE IS SOMEHOW NOT FREED. HOW??*/
+
 char	**handle_expansion_cmds(char **cmd, char **envp)
 {
 	int		i;
@@ -206,61 +206,6 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 	return (new_cmd);
 }
 
-char	*handle_expansion_cmd(char *line, char **envp)
-{
-	int		i;
-	int		j;
-	int		k;
-	int		quote;
-	char	*exp;
-	char	*replacer;
-	char	*new_line;
-
-	i = 0;
-	k = 0;
-	quote = 0;
-	while (line[i])
-	{
-		if (line[i] == '$' && line[i + 1] && !quote)
-		{
-			j = 0;
-			i++;
-			k = i;
-			while (!is_exp_delimiter(line[i]))
-			{
-				i++;
-				j++;
-			}
-				exp = ft_substr(line, k, j);
-				if (exp && *exp)
-				{
-					replacer = find_envp(exp, envp);
-					if (replacer)
-					{
-						new_line = add_replacer(line, replacer, k, j);
-						free (replacer);
-					}
-					else
-					{
-						new_line = ft_strdup("");
-					}
-					free (line);
-					line = NULL;
-					line = new_line;
-					new_line = NULL;
-				}
-			i = k;
-		}
-		else
-		{
-			if (line[i] == 39)
-				quote = !quote;
-			i++;
-		}
-	}
-	return (line);
-}
-
 char	*handle_expansion_filename(char *file, char **envp)
 {
 	int		i;
@@ -274,6 +219,8 @@ char	*handle_expansion_filename(char *file, char **envp)
 	i = 0;
 	k = 0;
 	quote = 0;
+	if (!ft_strchr(file, '$'))
+		return (NULL);
 	while (file[i])
 	{
 		if (file[i] == '$' && file[i + 1] && !quote)

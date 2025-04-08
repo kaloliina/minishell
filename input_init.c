@@ -110,7 +110,7 @@ char	*add_spaces(char *input)
 	line = malloc(ft_strlen(input) + extras + 1);
 	if (!line)
 	{
-		ft_printf(2, "minishell: memory allocation failure\n");
+		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
 	return (add_spaces_helper(line, input, 0));

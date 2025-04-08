@@ -43,7 +43,7 @@ void	execute_pwd(void)
 	buf = malloc(100);
 	if (!buf)
 	{
-		ft_printf(2, "minishell: memory allocation failure\n");
+		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
 	getcwd(buf, 100);
@@ -52,32 +52,6 @@ void	execute_pwd(void)
 	else
 		ft_printf(1, "%s\n", buf);
 	free (buf);
-}
-
-static int	fill_new_envp(char ***new_envp, char **envp, char **cmd, int args)
-{
-	int		i;
-	int		j;
-
-	i = 0;
-	while ((envp)[i])
-	{
-		(*new_envp)[i] = ft_strdup(envp[i]);
-		if (!(*new_envp)[i])
-			return (-1);
-		i++;
-	}
-	j = 1;
-	while (cmd[j])
-	{
-		(*new_envp)[i] = ft_strdup(cmd[j]);
-		if (!(*new_envp)[i])
-			return (-1);
-		i++;
-		j++;
-	}
-	(*new_envp)[i] = NULL;
-	return (0);
 }
 
 /*THIS FUNCTION IS NOT READY, we have to put in alphab. order!//
@@ -104,35 +78,6 @@ void	export_no_args(char **envp)
 		i++;
 	}
 }*/
-
-static int	add_existing_envp(char **new_envp, char **envp)
-{
-	int	i;
-
-	i = 0;
-	while (envp[i])
-	{
-		new_envp[i] = ft_strdup(envp[i]);
-		//malloc protection
-		i++;
-	}
-	return (i);
-}
-
-static int	add_exported_envp(char **new_envp, char **cmd, int i)
-{
-	int	j;
-
-	j = 1;
-	while (cmd[j])
-	{
-		new_envp[i] = ft_strdup(cmd[j]);
-		//malloc protection
-		i++;
-		j++;
-	}
-	return (i);
-}
 
 void	execute_export(char **cmd, char ***envp)
 {
@@ -167,21 +112,6 @@ void	execute_cd(char **cmd)
 	}
 	if (chdir(cmd[1]) == -1)
 		perror("minishell");
-}
-
-static int	find_unset_element(char **cmd, char *envp_element)
-{
-	int	j;
-
-	j = 1;
-	while (cmd[j])
-	{
-		if (!ft_strncmp(envp_element, cmd[j], ft_strlen(cmd[j]))
-			&& envp_element[ft_strlen(cmd[j])] == '=')
-			break ;
-		j++;
-	}
-	return (j);
 }
 
 void	execute_unset(char **cmd, char ***envp)

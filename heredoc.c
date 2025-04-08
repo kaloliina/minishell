@@ -173,7 +173,7 @@ static void	heredoc_rm(char **envp, char **paths)
 		rm_cmd = malloc(sizeof(char *) * 3);
 		if (!rm_cmd)
 		{
-			ft_printf(2, "minishell: memory allocation failure\n");
+			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
 		rm_cmd[0] = "rm";
@@ -198,7 +198,7 @@ static void	heredoc_rmdir(char **envp, char **paths)
 		rmdir_cmd = malloc(sizeof(char *) * 3);
 		if (!rmdir_cmd)
 		{
-			ft_printf(2, "minishell: memory allocation failure\n");
+			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
 		rmdir_cmd[0] = "rmdir";
@@ -253,7 +253,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 		mkdir_cmd = malloc(sizeof(char *) * 3);
 		if (!mkdir_cmd)
 		{
-			ft_printf(2, "minishell: memory allocation failure\n");
+			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
 		mkdir_cmd[0] = "mkdir";

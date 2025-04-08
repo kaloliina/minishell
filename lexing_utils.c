@@ -1,13 +1,13 @@
 #include "minishell.h"
 
-static int	count_args(t_ast *ast, int i, int j)
+static int	count_args(t_data *data, int i, int j)
 {
 	int	args;
 
 	args = 0;
-	while (ast->tokens[i][j])
+	while (data->tokens[i][j])
 	{
-		if (is_redirection(ast->tokens[i][j]))
+		if (is_redirection(data->tokens[i][j]))
 			j += 2;
 		else
 		{
@@ -18,7 +18,7 @@ static int	count_args(t_ast *ast, int i, int j)
 	return (args);
 }
 
-static int	set_cmd_no_args(t_ast *ast, int i, int init_j, t_node *new_node)
+static int	set_cmd_no_args(t_data *data, int i, int init_j, t_node *new_node)
 {
 	int	k;
 
@@ -26,11 +26,11 @@ static int	set_cmd_no_args(t_ast *ast, int i, int init_j, t_node *new_node)
 	new_node->cmd = malloc(sizeof(char *) * 2);
 	if (!new_node->cmd)
 	{
-		free_struct(ast);
-		ft_printf(2, "minishell: memory allocation failure\n");
+		free_struct(data);
+		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
-	new_node->cmd[k++] = ft_strdup(ast->tokens[i][init_j++]);
+	new_node->cmd[k++] = ft_strdup(data->tokens[i][init_j++]);
 	new_node->cmd[k] = NULL;
 	return (init_j);
 }
@@ -56,39 +56,39 @@ static int	set_cmd_args(char **token, int init_j, int args, t_node *new_node)
 	return (init_j);
 }
 
-static int	set_cmd_node(t_ast *ast, int i, int j, t_node *new_node)
+static int	set_cmd_node(t_data *data, int i, int j, t_node *new_node)
 {
 	int	init_j;
 	int	args;
 
 	new_node->type = COMMAND;
 	init_j = j;
-	if (ast->tokens[i][j + 1])
+	if (data->tokens[i][j + 1])
 	{
 		j++;
-		args = count_args(ast, i, j);
+		args = count_args(data, i, j);
 		new_node->cmd = malloc(sizeof(char *) * (args + 2));
 		if (!new_node->cmd)
 		{
-			free_struct(ast);
-			ft_printf(2, "minishell: memory allocation failure\n");
+			free_struct(data);
+			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}
-		return (set_cmd_args(ast->tokens[i], init_j, args, new_node));
+		return (set_cmd_args(data->tokens[i], init_j, args, new_node));
 	}
 	else
-		return (set_cmd_no_args(ast, i, init_j, new_node));
+		return (set_cmd_no_args(data, i, init_j, new_node));
 }
 
-int	make_node(t_ast *ast, int i, int j, t_node **first)
+int	make_node(t_data *data, int i, int j, t_node **first)
 {
 	t_node	*new_node;
 	t_node	*current;
 
-	if (is_redirection(ast->tokens[i][j]))
+	if (is_redirection(data->tokens[i][j]))
 		return (j + 2);
 	new_node = NULL;
-	new_node = init_new_node(ast, new_node);
+	new_node = init_new_node(data, new_node);
 	if (!*first)
 		*first = new_node;
 	else
@@ -99,5 +99,5 @@ int	make_node(t_ast *ast, int i, int j, t_node **first)
 		current->next = new_node;
 		new_node->prev = current;
 	}
-	return (set_cmd_node(ast, i, j, new_node));
+	return (set_cmd_node(data, i, j, new_node));
 }

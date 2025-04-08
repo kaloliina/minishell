@@ -13,19 +13,15 @@ void	free_array(char **array)
 	}
 }
 
-void	free_struct(t_ast *ast)
+void	free_struct(t_data *data)
 {
 	int		i;
 	t_node	*tmp;
 
-	// i = 0;
-	// while (ast->sections[i])
-	// 	free (ast->sections[i++]);
-	// free (ast->sections);
-	while (ast->first)
+	while (data->first)
 	{
-		tmp = ast->first;
-		ast->first = ast->first->next;
+		tmp = data->first;
+		data->first = data->first->next;
 		free_array(tmp->cmd);
 		if (tmp->file)
 			free (tmp->file);
@@ -33,22 +29,18 @@ void	free_struct(t_ast *ast)
 			free (tmp->delimiter);
 		free (tmp);
 	}
-	// i = 0;
-	// while (ast->tokens[i])
-	// 	free_array(ast->tokens[i++]);
-	// free (ast->tokens);
 }
 
-void	free_sections_tokens(t_ast *ast)
+void	free_sections_tokens(t_data *data)
 {
 	int	i;
 
 	i = 0;
-	while (ast->sections[i])
-		free (ast->sections[i++]);
-	free (ast->sections);
+	while (data->sections[i])
+		free (data->sections[i++]);
+	free (data->sections);
 	i = 0;
-	while (ast->tokens[i])
-		free_array(ast->tokens[i++]);
-	free (ast->tokens);
+	while (data->tokens[i])
+		free_array(data->tokens[i++]);
+	free (data->tokens);
 }
