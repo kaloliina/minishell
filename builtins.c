@@ -54,15 +54,18 @@ void	execute_pwd(void)
 	free (buf);
 }
 
-/*THIS FUNCTION IS NOT READY, we have to put in alphab. order!//
+//THIS FUNCTION IS NOT READY, we have to put in alphab. order!//
 void	export_no_args(char **envp)
 {
 	int	elements;
 	int	i;
 	int	j;
 	int	k;
+	char	**export;
 
 	elements = count_elements(envp);
+	export = malloc(sizeof(char *) * (elements + 1));
+	//malloc protection
 	i = 0;
 	while (i < elements)
 	{
@@ -70,14 +73,19 @@ void	export_no_args(char **envp)
 		k = 0;
 		while (j < elements)
 		{
-			if (envp[i][0] > envp[j][0])
+			if (ft_strcmp(envp[i], envp[j]) > 0)
 				k++;
 			j++;
 		}
-		printf("this line %s is at index %d\n", envp[i], k);
+		export[k] = ft_strdup(envp[i]);
 		i++;
 	}
-}*/
+	export[elements] = NULL;
+	i = 0;
+	while (export[i])
+		ft_printf(1, "declare -x %s\n", export[i++]);
+	free_array(export);
+}
 
 void	execute_export(char **cmd, char ***envp)
 {
@@ -86,8 +94,8 @@ void	execute_export(char **cmd, char ***envp)
 	int		args;
 	char	**new_envp;
 
-	/*if (!cmd[1])
-		export_no_args(*envp);*/
+	if (!cmd[1])
+		export_no_args(*envp);
 	i = count_elements(*envp);
 	args = 1;
 	while (cmd[args + 1])
