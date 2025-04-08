@@ -223,7 +223,7 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
 			break ;
 		if (!delimiter_node->delimiter_quote)
 		{
-			temp = heredoc_expandables(line, my_pipes->my_envp, fd);
+			temp = heredoc_expandables(line, *my_pipes->my_envp, fd);
 			if (temp)
 				line = temp;
 		}

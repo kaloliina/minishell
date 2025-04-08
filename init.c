@@ -5,7 +5,7 @@ t_node	*init_new_node(t_data *data, t_node *new_node)
 	new_node = malloc(sizeof(t_node));
 	if (!new_node)
 	{
-		free_struct(data);
+		free_nodes(data->first);
 		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
@@ -46,7 +46,7 @@ void	init_tokens(t_data *data)
 		data->tokens[i] = ft_ms_split(data->sections[i], ' ', &error);
 		if (!data->tokens[i] && error)
 		{
-			free_struct(data);
+			free_nodes(data->first);
 			ft_printf(2, "%s\n", MALLOC);
 			exit (1);
 		}

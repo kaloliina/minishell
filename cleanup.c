@@ -13,15 +13,18 @@ void	free_array(char **array)
 	}
 }
 
-void	free_struct(t_data *data)
+void	free_nodes(t_node *node)
 {
 	int		i;
 	t_node	*tmp;
+	t_node	*first;
 
-	while (data->first)
+	while (node->prev)
+		node = node->prev;
+	while (node)
 	{
-		tmp = data->first;
-		data->first = data->first->next;
+		tmp = node;
+		node = node->next;
 		free_array(tmp->cmd);
 		if (tmp->file)
 			free (tmp->file);

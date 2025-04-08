@@ -123,23 +123,23 @@ char	**copy_envp(char **envp)
 	return (my_envp);
 }
 
-char	**minishell(char *input, char **envp)
+void	minishell(char *input, char ***envp)
 {
 	t_data	data;
 	// t_node	*tmp;
 	int		k;
 	char	*line;
-	char	**new_envp;
+	// char	**new_envp;
 
 	init_tokens_struct(&data);
 	line = add_spaces(input);
 	if (!line)
-		return (NULL);
+		return ;
 	init_sections(&data, line);
 	init_tokens(&data);
 	if (lexer(&data) < 0)
-		return (NULL);
-	handle_quotes(&data, envp);
+		return ;
+	handle_quotes(&data, *envp);
 	// tmp = data.first;
 	// while (tmp)
 	// {
@@ -153,9 +153,8 @@ char	**minishell(char *input, char **envp)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
-	new_envp = loop_nodes(data.first, envp);
-	free_struct(&data);
-	return (new_envp);
+	loop_nodes(data.first, envp);
+	free_nodes(data.first);
 }
 
 int	main(int ac, char **av, char **envp)
@@ -183,14 +182,12 @@ int	main(int ac, char **av, char **envp)
 			clear_history();
 			return (0);
 		}
+		if (!ft_strcmp(input, ""))	//EMPTY SSTRING OR JUST "" OR ''
 		// if (!ft_strcmp(input, "echo $?"))
 		// 	ft_printf(1, "%d\n", status);
 		if (input)
 			add_history(input);
-		tmp = NULL;
-		tmp = minishell(input, my_envp);
-		if (tmp)
-			my_envp = tmp;
+		minishell(input, &my_envp);
 		free (input);
 	}
 	free_array(my_envp);

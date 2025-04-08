@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-void	execute_echo(t_node *node, char **envp)
+void	execute_echo(t_node *node, char ***envp)
 {
 	int		i;
 	char	*temp;
@@ -24,14 +24,14 @@ void	execute_echo(t_node *node, char **envp)
 		ft_printf(1, "\n");
 }
 
-void	execute_env(char **envp)
+void	execute_env(char ***envp)
 {
 	int	i;
 
 	i = 0;
-	while (envp[i])
+	while ((*envp)[i])
 	{
-		ft_printf(1, "%s\n", envp[i]);
+		ft_printf(1, "%s\n", (*envp)[i]);
 		i++;
 	}
 }
