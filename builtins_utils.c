@@ -1,6 +1,32 @@
 #include "minishell.h"
 
 //fill new envp with existing elements
+int	fill_new_envp(char ***new_envp, char **envp, char **cmd, int args)
+{
+	int		i;
+	int		j;
+
+	i = 0;
+	while ((envp)[i])
+	{
+		(*new_envp)[i] = ft_strdup(envp[i]);
+		if (!(*new_envp)[i])
+			return (-1);
+		i++;
+	}
+	j = 1;
+	while (cmd[j])
+	{
+		(*new_envp)[i] = ft_strdup(cmd[j]);
+		if (!(*new_envp)[i])
+			return (-1);
+		i++;
+		j++;
+	}
+	(*new_envp)[i] = NULL;
+	return (0);
+}
+
 int	add_existing_envp(char **new_envp, char **envp)
 {
 	int	i;

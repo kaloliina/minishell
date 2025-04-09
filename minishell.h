@@ -13,6 +13,15 @@
 # include <sys/wait.h>
 # include <errno.h>
 # define MALLOC "minishell: memory allocation failure"
+# define ERR_PIPE "minishell: failed to create pipe"
+# define ERR_WAITPID "minishell: waitpid failed"
+# define ERR_COMMAND "command not found"
+# define ERR_FORK "failed to fork"
+# define ERR_NUM "numeric argument required"
+# define ERR_INVFILE "No such file or directory"
+# define ERR_INVPERMS "Permission denied"
+# define ERR_FD "failed to return a file descriptor"
+# define ERR_CLOSE "failed to close a file descriptor"
 
 typedef enum s_type
 {
@@ -111,7 +120,8 @@ void	execute_pwd(void);
 void	execute_export(char **cmd, char ***envp);
 void	execute_cd(char **cmd);
 void	execute_unset(char **cmd, char ***envp);
-void	execute_exit(int status, t_pipes *my_pipes);
+void	execute_exit(char **cmd, t_pipes *my_pipes);
+int		fill_new_envp(char ***new_envp, char **envp, char **cmd, int args);
 int		add_existing_envp(char **new_envp, char **envp);
 int		add_exported_envp(char **new_envp, char **cmd, int i);
 int		find_unset_element(char **cmd, char *envp_element);

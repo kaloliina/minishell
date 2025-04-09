@@ -1,5 +1,4 @@
 #include "minishell.h"
-
 char	*heredoc_expandables(char *line, char **envp, int fd)
 {
 	int		i;
