@@ -157,9 +157,33 @@ void	execute_unset(char **cmd, char ***envp)
 	*envp = new_envp;
 }
 
-void	execute_exit(int status, t_pipes *my_pipes)
+void	execute_exit(char **cmd, t_pipes *my_pipes)
 {
-	free_array(my_pipes->my_envp);
+	int	status;
+	int	i;
+	int	is_num;
+
+	status = 0;
+	is_num = 1;
+	i = 0;
+	if (cmd[1] != NULL)
+	{
+		while (cmd[1][i] != '\0')
+		{
+			if (!(cmd[1][i] >= 48 && cmd[1][i] <= 57))
+				is_num = 0;
+			i++;
+		}
+		if (is_num == 0)
+		{
+			ft_printf(2, "%s: %s: %s\n", cmd[0], cmd[1], ERR_NUM);
+			status = 2;
+		}
+		else
+			status = ft_atoi(cmd[1]);
+	}
+	printf("exit status: %d\n", status);
+	free_array(*my_pipes->my_envp);
 	free_my_pipes(my_pipes);
 	exit (status);
 }

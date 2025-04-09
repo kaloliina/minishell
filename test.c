@@ -8,16 +8,19 @@ static void	redirection_outfile(t_pipes *my_pipes)
 		my_pipes->stdoutfd = dup(STDOUT_FILENO);
 		if (my_pipes->stdoutfd == -1)
 		{
-			//error
+			ft_printf(2, "%s\n", ERR_FD);
+			my_pipes->exit_status = 1;
 		}
 	}
 	if (dup2(my_pipes->outfile_fd, STDOUT_FILENO) < 0)
 	{
-		//error
+		ft_printf(2, "%s\n", ERR_FD);
+		my_pipes->exit_status = 1;
 	}
 	if (close(my_pipes->outfile_fd) < 0)
 	{
-		//error
+		ft_printf(2, "%s\n", ERR_CLOSE);
+		my_pipes->exit_status = 1;
 	}
 }
 
@@ -29,16 +32,19 @@ static void	redirection_infile(t_pipes *my_pipes)
 		my_pipes->stdinfd = dup(STDIN_FILENO);
 		if (my_pipes->stdinfd == -1)
 		{
-			//error
+			ft_printf(2, "%s\n", ERR_FD);
+			my_pipes->exit_status = 1;
 		}
 	}
 	if (dup2(my_pipes->infile_fd, STDIN_FILENO) < 0)
 	{
-		//error
+		ft_printf(2, "%s\n", ERR_FD);
+		my_pipes->exit_status = 1;
 	}
 	if (close(my_pipes->infile_fd) < 0)
 	{
-		//error
+		ft_printf(2, "%s\n", ERR_CLOSE);
+		my_pipes->exit_status = 1;
 	}
 }
 
@@ -132,7 +138,7 @@ void	close_pipes(t_pipes *my_pipes)
 			}
 			printf("Closing write end: %d\n", my_pipes->write_end);
 			printf("Curr section: %d\n", my_pipes->current_section);
-        }
+		}
 		else if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
 			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
@@ -178,6 +184,8 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 		execute_export(node->cmd, my_pipes->my_envp);
 	else if (!ft_strcmp(node->cmd[0], "unset"))
 		execute_unset(node->cmd, my_pipes->my_envp);
+	else if (!ft_strcmp(node->cmd[0], "exit"))
+		execute_exit(node->cmd, my_pipes);
 	else if (!ft_strcmp(node->cmd[0], "cd"))
 		execute_cd(node->cmd);
 }
@@ -192,7 +200,8 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 		pid = fork();
 		if (pid < 0)
 		{
-			//error
+			ft_printf(2, "%s\n", ERR_FORK);
+			exit (1);
 		}
 		if (pid == 0)
 		{
@@ -211,6 +220,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 			return (0);
 		handle_redirections(node, my_pipes);
 		run_builtin_command(node, my_pipes);
+//Im not even sure if this should be done here. Basically yes but this is also a "last thing to do"
 		if (my_pipes->stdinfd != -1)
 		{
 			if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
@@ -247,7 +257,10 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 	pid = fork();
 	if (pid < 0)
 	{
-		//error
+		free_array(*my_pipes->my_envp);
+		free_my_pipes(my_pipes);
+		ft_printf(2, "%s\n", ERR_FORK);
+		exit (1);
 	}
 	if (pid == 0)
 	{
@@ -259,12 +272,12 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 		if (my_pipes->exit_status == 1)
 			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
-//rename the printf thingies
 		if (errno == ENOENT)
 		{
-			ft_printf(2, "%s: command not found\n", node->cmd[0]);
+			ft_printf(2, "%s: %s\n", node->cmd[0], ERR_COMMAND);
 			exit (127);
 		}
+//double check this
 		else if (errno == EACCES)
 		{
 			ft_printf(2, "%s: no permissions\n", &node->cmd[0]);
@@ -276,6 +289,8 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 	return (pid);
 }
 
+//Also right now if we write exit XX, it exits with 0 when in reality it should exit with the number told
+//We also need to implement exit function
 int	is_builtin(char *command)
 {
 	const char	*builtins[7];
@@ -297,7 +312,7 @@ int	is_builtin(char *command)
 	return (0);
 }
 
-//Make this shorter :D
+//Make this shorter
 void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
@@ -320,10 +335,19 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 	if (my_pipes->pipe_amount > 0)
 	{
 		my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));
+		if (my_pipes->pipes == NULL)
+		{
+			ft_printf(2, "%s\n", MALLOC);
+			exit (1);
+		}
 		i = 0;
 		while (i < my_pipes->pipe_amount)
 		{
-			pipe(&my_pipes->pipes[i * 2]);
+			if (pipe(&my_pipes->pipes[i * 2]) < 0)
+			{
+				ft_printf(2, "%s\n", ERR_PIPE);
+				exit (1);
+			}
 			i++;
 		}
 	}
@@ -345,11 +369,16 @@ void	free_my_pipes(t_pipes *my_pipes)
 		}
 		if (my_pipes->pipes)
 		{
-			while (i < my_pipes->pipe_amount * 2)
-			{
-				close(my_pipes->pipes[i]);
-				i++;
-			}
+//I actually doubt we even need to close pipes here because I'm closing them step by step!!
+//However I might need to do some sort of closing here just in case if closing or fork fails..
+			// while (i < my_pipes->pipe_amount * 2)
+			// {
+			// 	if (close(my_pipes->pipes[i]) < 0)
+			// 	{
+			// 		//close failed
+			// 	}
+			// 	i++;
+			// }
 			free(my_pipes->pipes);
 			my_pipes->pipes = NULL;
 		}
@@ -357,6 +386,8 @@ void	free_my_pipes(t_pipes *my_pipes)
 	}
 }
 
+//Double check the exit statuses, they seem to work but test with edgecases!
+//Also there might be a situation with sleep where you explicitly have to mark the last process but I was unable to repro the behaviour
 int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 {
 	int	status;
@@ -368,7 +399,11 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	{
 		if (child_pids[i] > 0)
 		{
-			waitpid(child_pids[i], &status, 0);
+			if (waitpid(child_pids[i], &status, 0) < 0)
+			{
+				ft_printf(2, "%s\n", ERR_WAITPID);
+				exit (1);
+			}
 		}
 		i++;
 	}
@@ -386,14 +421,17 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	return (exit_status);
 }
 
-//Double check the exit statuses, we can't catch all exit statuses because there are situations when we don't fork.
 int	loop_nodes(t_node *list, char ***envp)
 {
 	t_pipes	*my_pipes;
 	int		i = 0;
 
 	my_pipes = malloc(sizeof(t_pipes));
-	//error check here
+	if (my_pipes == NULL)
+	{
+		ft_printf(2, "%s\n", MALLOC);
+		exit (1);
+	}
 	initialize_struct(my_pipes, list, envp);
 	pid_t child_pids[my_pipes->pipe_amount + 1];
 	while (list != NULL)
