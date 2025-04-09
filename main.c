@@ -53,12 +53,16 @@ void	handle_quotes(t_data *data, char **envp)
 			i = 0;
 			while (tmp->cmd[i])
 			{
-				new_line = handle_quotes_helper(tmp->cmd[i]);
-				if (new_line)
+				if (!((tmp->cmd[i][0] == '\'' && tmp->cmd[i][1] == '\'')
+					|| (tmp->cmd[i][0] == '"' && tmp->cmd[i][1] == '"')))
 				{
-					free (tmp->cmd[i]);
-					tmp->cmd[i] = new_line;
-					new_line = NULL;
+					new_line = handle_quotes_helper(tmp->cmd[i]);
+					if (new_line)
+					{
+						free (tmp->cmd[i]);
+						tmp->cmd[i] = new_line;
+						new_line = NULL;
+					}
 				}
 				i++;
 			}
@@ -184,10 +188,9 @@ int	main(int ac, char **av, char **envp)
 			clear_history();
 			return (0);
 		}
-//		if (!ft_strcmp(input, ""))	//EMPTY SSTRING OR JUST "" OR ''
 		if (!ft_strcmp(input, "echo $?"))
 			ft_printf(1, "%d\n", status);
-		else
+		else if (input[0] != '\0')
 			status = minishell(input, &my_envp);
 		if (input)
 			add_history(input);

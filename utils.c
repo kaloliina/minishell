@@ -32,6 +32,11 @@ int	is_quote(char *s)
 	return (0);
 }
 
+int	is_exp_delimiter(char c)
+{
+	return (!(ft_isalnum(c) || c == '_'));
+}
+
 void	make_pipe_node(t_data *data, t_node **first)
 {
 	t_node	*new_node;
@@ -70,5 +75,14 @@ int	is_redirection_char(char *s)
 			return (1);
 		i++;
 	}
+	return (0);
+}
+
+int	is_only_quotes(char *s)
+{
+	if (((s[0] == '\'' && s[1] == '\'')
+		|| (s[0] == '"' && s[1] == '"'))
+		&& s[2] == '\0')
+		return (1);
 	return (0);
 }
