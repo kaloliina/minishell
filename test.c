@@ -1,26 +1,47 @@
 #include "../minishell.h"
 
-//Needs dup checks
-//Function to handle outfile redirection
+//Needs proper error trigger
 static void	redirection_outfile(t_pipes *my_pipes)
 {
 	if (my_pipes->stdoutfd == -1)
+	{
 		my_pipes->stdoutfd = dup(STDOUT_FILENO);
-	dup2(my_pipes->outfile_fd, STDOUT_FILENO);
-	close(my_pipes->outfile_fd);
+		if (my_pipes->stdoutfd == -1)
+		{
+			//error
+		}
+	}
+	if (dup2(my_pipes->outfile_fd, STDOUT_FILENO) < 0)
+	{
+		//error
+	}
+	if (close(my_pipes->outfile_fd) < 0)
+	{
+		//error
+	}
 }
 
-//Needs dup checks
-//Function to handle infile redirection
+//Needs proper error trigger
 static void	redirection_infile(t_pipes *my_pipes)
 {
 	if (my_pipes->stdinfd == -1)
+	{
 		my_pipes->stdinfd = dup(STDIN_FILENO);
-	dup2(my_pipes->infile_fd, STDIN_FILENO);
-	close(my_pipes->infile_fd);
+		if (my_pipes->stdinfd == -1)
+		{
+			//error
+		}
+	}
+	if (dup2(my_pipes->infile_fd, STDIN_FILENO) < 0)
+	{
+		//error
+	}
+	if (close(my_pipes->infile_fd) < 0)
+	{
+		//error
+	}
 }
 
-//Helper function to get pipe amount
 int	get_pipe_amount(t_node *list)
 {
 	t_node	*curr;
@@ -69,12 +90,25 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes)
 	if (my_pipes->heredoc_node)
 		heredoc(node, my_pipes, *my_pipes->my_envp, my_pipes->paths);
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
-		dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO);
+	{
+		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) < 0)
+		{
+			//error
+		}
+	}
 	if ((my_pipes->current_section != my_pipes->pipe_amount + 1) && my_pipes->outfile_fd == -1)
-		dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO);
+	{
+		if (dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO) < 0)
+		{
+			//error
+		}
+	}
 	while (i < my_pipes->pipe_amount * 2)
 	{
-		close(my_pipes->pipes[i]);
+		if (close(my_pipes->pipes[i]) < 0)
+		{
+			//error
+		}
 		i++;
 	}
 }
@@ -82,20 +116,29 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes)
 /*Function to close pipes in the parent.
 - We close always the write end except for the last section because that end was already closed
 - We close read always after we reach the second section, not in the first section because we still need it
-- Then in the end we reset properties as well as go over to the next pair or pipe ends. */
+- Then in the end we reset properties as well as go over to the next pair or pipe ends.
+
+Needs proper error trigger
+*/
 void	close_pipes(t_pipes *my_pipes)
 {
 	if (my_pipes->pipe_amount > 0)
 	{
 		if (my_pipes->current_section == 1)
 		{
-			close(my_pipes->pipes[my_pipes->write_end]);
+			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
+			{
+				//error
+			}
 			printf("Closing write end: %d\n", my_pipes->write_end);
 			printf("Curr section: %d\n", my_pipes->current_section);
         }
 		else if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
-			close(my_pipes->pipes[my_pipes->write_end]);
+			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
+			{
+				//error
+			}
 			printf("Closing write end: %d\n", my_pipes->write_end);
 			printf("Curr section: %d\n", my_pipes->current_section);
 		}
@@ -103,13 +146,19 @@ void	close_pipes(t_pipes *my_pipes)
 		{
 			if (my_pipes->current_section > 1)
 			{
-				close(my_pipes->pipes[my_pipes->read_end]);
+				if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
+				{
+					//error
+				}
 				printf("Closing middle read end: %d\n", my_pipes->read_end);
 			}
 		}
 		else
 		{
-			close(my_pipes->pipes[my_pipes->read_end]);
+			if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
+			{
+				//error
+			}
 			printf("Closing last read end: %d\n", my_pipes->read_end);
 			printf("Curr section: %d\n", my_pipes->current_section);
 		}
@@ -141,6 +190,10 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 	if (my_pipes->pipe_amount > 0)
 	{
 		pid = fork();
+		if (pid < 0)
+		{
+			//error
+		}
 		if (pid == 0)
 		{
 			if (my_pipes->exit_status == 1)
@@ -160,13 +213,25 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 		run_builtin_command(node, my_pipes);
 		if (my_pipes->stdinfd != -1)
 		{
-			dup2(my_pipes->stdinfd, STDIN_FILENO);
-			close (my_pipes->stdinfd);
+			if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
+			{
+				//error
+			}
+			if (close (my_pipes->stdinfd) < 0)
+			{
+				//error
+			}
 		}
 		if (my_pipes->stdoutfd != -1)
 		{
-			dup2(my_pipes->stdoutfd, STDOUT_FILENO);
-			close (my_pipes->stdoutfd);
+			if (dup2(my_pipes->stdoutfd, STDOUT_FILENO) < 0)
+			{
+				//error
+			}
+			if (close (my_pipes->stdoutfd) < 0)
+			{
+				//error
+			}
 		}
 		return (0);
 	}
@@ -180,6 +245,10 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 	int	pid;
 
 	pid = fork();
+	if (pid < 0)
+	{
+		//error
+	}
 	if (pid == 0)
 	{
 		if (my_pipes->paths == NULL)
@@ -206,10 +275,18 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 	}
 	return (pid);
 }
-//Wonder if these could be saved in the header
+
 int	is_builtin(char *command)
 {
-	const char *builtins[] = {"echo", "cd", "pwd", "export", "unset", "env", "exit"};
+	const char	*builtins[7];
+
+	builtins[0] = "echo";
+	builtins[1] = "cd";
+	builtins[2] = "pwd";
+	builtins[3] = "export";
+	builtins[4] = "unset";
+	builtins[5] = "env";
+	builtins[6] = "exit";
 	int i = 0;
 	while (i <= 6)
 	{
@@ -220,7 +297,7 @@ int	is_builtin(char *command)
 	return (0);
 }
 
-//Initializing a struct to track stuffsies
+//Make this shorter :D
 void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
@@ -280,32 +357,56 @@ void	free_my_pipes(t_pipes *my_pipes)
 	}
 }
 
-//Maybe we could return exit status rather than envp
+int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
+{
+	int	status;
+	int	exit_status;
+	int	i;
+
+	i = 0;
+	while (i < amount)
+	{
+		if (child_pids[i] > 0)
+		{
+			waitpid(child_pids[i], &status, 0);
+		}
+		i++;
+	}
+	free_my_pipes(my_pipes);
+	if (WIFEXITED(status) == true)
+	{
+		exit_status = WEXITSTATUS(status);
+		printf("child exited with status of %d\n", WEXITSTATUS(status));
+	}
+	else
+	{
+		exit_status = my_pipes->exit_status;
+		printf("parent exited with status of %d\n", my_pipes->exit_status);
+	}
+	return (exit_status);
+}
+
 //Double check the exit statuses, we can't catch all exit statuses because there are situations when we don't fork.
 int	loop_nodes(t_node *list, char ***envp)
 {
-	t_node	*curr;
 	t_pipes	*my_pipes;
-	int		status = 0;
 	int		i = 0;
-	int	returnstatus;
 
-	curr = list;
 	my_pipes = malloc(sizeof(t_pipes));
 	//error check here
 	initialize_struct(my_pipes, list, envp);
 	pid_t child_pids[my_pipes->pipe_amount + 1];
-	while (curr != NULL)
+	while (list != NULL)
 	{
-		if (curr->type == COMMAND)
-			my_pipes->command_node = curr;
-		if (curr->type == REDIR_APPEND || curr->type == REDIR_OUTF)
-			set_outfile(curr->file, curr->type, my_pipes);
-		if (curr->type == REDIR_INF)
-			open_infile(curr->file, my_pipes);
-		if (curr->type == REDIR_HEREDOC)
-			my_pipes->heredoc_node = curr;
-		if ((curr->next == NULL) || (curr->next && my_pipes->pipe_amount > 0 && curr->next->type == PIPE))
+		if (list->type == COMMAND)
+			my_pipes->command_node = list;
+		if (list->type == REDIR_APPEND || list->type == REDIR_OUTF)
+			set_outfile(list->file, list->type, my_pipes);
+		if (list->type == REDIR_INF)
+			open_infile(list->file, my_pipes);
+		if (list->type == REDIR_HEREDOC)
+			my_pipes->heredoc_node = list;
+		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
 			{
@@ -319,29 +420,13 @@ int	loop_nodes(t_node *list, char ***envp)
 			}
 			close_pipes(my_pipes);
 		}
-		curr = curr->next;
+		list = list->next;
 	}
-	int j = 0;
-	while (j < i)
-	{
-		if (child_pids[j] > 0)
-			waitpid(child_pids[j], &status, 0);
-		j++;
-	}
-	free_my_pipes(my_pipes);
-//This feels a bit messy still, can we really do it like this xdd
-	if (WIFEXITED(status) == true)
-	{
-		returnstatus = WEXITSTATUS(status);
-		printf("child exited with status of %d\n", WEXITSTATUS(status));
-	}
-	else
-	{
-		returnstatus = my_pipes->exit_status;
-		printf("parent exited with status of %d\n", my_pipes->exit_status);
-	}
-	return (returnstatus);
+	return (get_exit_status(child_pids, i, my_pipes));
 }
-//echo hi > testi.txt fails ()
-//also echo hi > test.txt gets permission denied
-// cat < utils.c | grep int should work but if it's just <utils |  grep int, we get a segfalt
+/*
+- Clean up the My_pipes struct
+- Rename the struct
+- Add child pids int array into the struct(?)
+- Clean up the initialize struct section
+*/
