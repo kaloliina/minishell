@@ -32,6 +32,11 @@ int	is_quote(char *s)
 	return (0);
 }
 
+int	is_exp_delimiter(char c)
+{
+	return (!(ft_isalnum(c) || c == '_'));
+}
+
 void	make_pipe_node(t_data *data, t_node **first)
 {
 	t_node	*new_node;

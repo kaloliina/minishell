@@ -99,6 +99,7 @@ void	free_sections_tokens(t_data *data);
 int		count_elements(char **tokens);
 int		is_quote(char *s);
 int		is_only_quotes(char *s);
+int		is_exp_delimiter(char c);
 void	signal_handler(int sig);
 void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
 
@@ -109,6 +110,7 @@ void	execute_pwd(void);
 void	execute_export(char **cmd, char ***envp);
 void	execute_cd(char **cmd);
 void	execute_unset(char **cmd, char ***envp);
+void	execute_exit(int status, t_pipes *my_pipes);
 int		fill_new_envp(char ***new_envp, char **envp, char **cmd, int args);
 int		add_existing_envp(char **new_envp, char **envp);
 int		add_exported_envp(char **new_envp, char **cmd, int i);
@@ -119,6 +121,7 @@ char	**get_paths(char ***envp);
 char	*get_absolute_path(char **paths, char *command);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
-int	loop_nodes(t_node *list, char ***envp);
+int		loop_nodes(t_node *list, char ***envp);
+void	free_my_pipes(t_pipes *my_pipes);
 
 #endif

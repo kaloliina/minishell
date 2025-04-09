@@ -1,5 +1,6 @@
 #include "minishell.h"
 
+//finds the correct line of envp to match the expandable in input
 char	*find_envp(char *exp, char **envp)
 {
 	int		i;
@@ -24,6 +25,7 @@ char	*find_envp(char *exp, char **envp)
 	return (replacer);
 }
 
+//makes a new string that is expanded
 char	*add_replacer(char *line, char *replacer, int k, int j)
 {
 	int		i;
@@ -69,6 +71,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 	return (new_line);
 }
 
+//makes a new cmd array without the invalid element
 char	**delete_element(char **cmd, int arg)
 {
 	int		i;
@@ -91,11 +94,7 @@ char	**delete_element(char **cmd, int arg)
 	return (new_cmd);
 }
 
-int	is_exp_delimiter(char c)
-{
-	return (!(ft_isalnum(c) || c == '_'));
-}
-
+//goes through cmd array and handles expansions, making a completely new cmd array
 char	**handle_expansion_cmds(char **cmd, char **envp)
 {
 	int		i;
@@ -213,6 +212,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 	return (new_cmd);
 }
 
+//goes through filename string and expands it
 char	*handle_expansion_filename(char *file, char **envp)
 {
 	int		i;

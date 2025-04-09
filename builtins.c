@@ -156,3 +156,10 @@ void	execute_unset(char **cmd, char ***envp)
 	*envp = NULL;
 	*envp = new_envp;
 }
+
+void	execute_exit(int status, t_pipes *my_pipes)
+{
+	free_array(my_pipes->my_envp);
+	free_my_pipes(my_pipes);
+	exit (status);
+}
