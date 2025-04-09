@@ -43,7 +43,7 @@ void	execute_pwd(void)
 	buf = malloc(100);
 	if (!buf)
 	{
-		ft_printf(2, "%s\n", MALLOC);
+		ft_printf(2, "%s\n", MALLOC); //must free my_pipes and nodes
 		exit (1);
 	}
 	getcwd(buf, 100);

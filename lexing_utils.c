@@ -31,6 +31,7 @@ static int	set_cmd_no_args(t_data *data, int i, int init_j, t_node *new_node)
 		exit (1);
 	}
 	new_node->cmd[k++] = ft_strdup(data->tokens[i][init_j++]);
+	//malloc protection
 	new_node->cmd[k] = NULL;
 	return (init_j);
 }
@@ -41,6 +42,7 @@ static int	set_cmd_args(char **token, int init_j, int args, t_node *new_node)
 
 	k = 0;
 	new_node->cmd[k++] = ft_strdup(token[init_j++]);
+	//malloc protection
 	while (k <= args)
 	{
 		if (is_redirection(token[init_j]))
@@ -48,6 +50,7 @@ static int	set_cmd_args(char **token, int init_j, int args, t_node *new_node)
 		else
 		{
 			new_node->cmd[k] = ft_strdup(token[init_j]);
+			//malloc protection
 			k++;
 			init_j++;
 		}

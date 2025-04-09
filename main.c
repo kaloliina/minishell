@@ -50,23 +50,6 @@ void	handle_quotes(t_data *data, char **envp, int status)
 				tmp->cmd = new_cmd;
 				new_cmd = NULL;
 			}
-			// printf("%s\n", tmp->cmd[1]);
-			// i = 0;
-			// while (tmp->cmd[i])
-			// {
-			// 	if (!((tmp->cmd[i][0] == '\'' && tmp->cmd[i][1] == '\'')
-			// 		|| (tmp->cmd[i][0] == '"' && tmp->cmd[i][1] == '"')))
-			// 	{
-			// 		new_line = handle_quotes_helper(tmp->cmd[i]);
-			// 		if (new_line)
-			// 		{
-			// 			free (tmp->cmd[i]);
-			// 			tmp->cmd[i] = new_line;
-			// 			new_line = NULL;
-			// 		}
-			// 	}
-			// 	i++;
-			// }
 		}
 		if (tmp->file)
 		{
@@ -134,15 +117,14 @@ int	minishell(char *input, char ***envp, int status)
 	// t_node	*tmp;
 	int		k;
 	char	*line;
-	// char	**new_envp;
 
 	init_tokens_struct(&data);
 	line = add_spaces(input);
-	if (!line)
+	if (!line) //what is this case?
 		return (-1);
 	init_sections(&data, line);
 	init_tokens(&data);
-	if (lexer(&data) < 0)
+	if (lexer(&data) < 0) //what is this case?
 		return (-1);
 	handle_quotes(&data, *envp, status);
 	// tmp = data.first;

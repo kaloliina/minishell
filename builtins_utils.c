@@ -18,8 +18,7 @@ int	fill_new_envp(char ***new_envp, char **envp, char **cmd, int args)
 	while (cmd[j])
 	{
 		(*new_envp)[i] = ft_strdup(cmd[j]);
-		if (!(*new_envp)[i])
-			return (-1);
+		//malloc protection
 		i++;
 		j++;
 	}
@@ -93,8 +92,8 @@ char	**sort_for_export(char **export, char **envp, int elements)
 		export[k] = ft_strdup(envp[i]);
 		if (!export[k])
 		{
-			ft_printf(2, MALLOC);
-			free_array(export);
+			ft_printf(2, "%s\n", MALLOC);
+			free_array(export); //must also free everything else
 			exit (1);
 		}
 		i++;
@@ -121,8 +120,8 @@ char	**fill_unset_envp(char **new_envp, char **cmd, char **envp)
 			new_envp[k] = ft_strdup(envp[i]);
 			if (!new_envp[k])
 			{
-				ft_printf(2, MALLOC);
-				free_array(new_envp);
+				ft_printf(2, "%s\n", MALLOC);
+				free_array(new_envp); //must also free everything else
 				exit (1);
 			}
 			i++;

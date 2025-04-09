@@ -25,9 +25,10 @@ char	*heredoc_expandables(char *line, char **envp, int fd, int status)
 				j++;
 			}
 			exp = ft_substr(line, k, j);
-			if ((exp && *exp) || line[i] == '?')
+			//malloc protection
+			if ((exp && *exp) || (line[i] == '?' && line[i - 1] == '$'))
 			{
-				if (line[i] == '?')
+				if (line[i] == '?' && line[i - 1] == '$')
 				{
 					j = 1;
 					replacer = ft_itoa(status);
@@ -48,8 +49,11 @@ char	*heredoc_expandables(char *line, char **envp, int fd, int status)
 					while (!is_exp_delimiter(line[i]))
 						i++;
 					new_start = ft_substr(line, 0, k - 1);
+					//malloc protection
 					new_end = ft_substr(line, i, (ft_strlen(line) - i));
+					//malloc protection
 					new_line = ft_strjoin(new_start, new_end);
+					//malloc protection
 					free (line);
 					line = NULL;
 					line = new_line;
@@ -61,8 +65,11 @@ char	*heredoc_expandables(char *line, char **envp, int fd, int status)
 				while (!is_exp_delimiter(line[i]))
 					i++;
 				new_start = ft_substr(line, 0, k - 1);
+				//malloc protection
 				new_end = ft_substr(line, (i + 1), (ft_strlen(line) - (i + 1)));
+				//malloc protection
 				new_line = ft_strjoin(new_start, new_end);
+				//malloc protection
 				free (line);
 				line = NULL;
 				line = new_line;
@@ -88,11 +95,7 @@ static void	heredoc_rm(char **envp, char **paths)
 	{
 		rm_path = get_absolute_path(paths, "rm");
 		rm_cmd = malloc(sizeof(char *) * 3);
-		if (!rm_cmd)
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			exit (1);
-		}
+		//malloc protection
 		rm_cmd[0] = "rm";
 		rm_cmd[1] = "tmpfile";
 		rm_cmd[2] = NULL;
@@ -113,11 +116,7 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	{
 		rmdir_path = get_absolute_path(paths, "rmdir");
 		rmdir_cmd = malloc(sizeof(char *) * 3);
-		if (!rmdir_cmd)
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			exit (1);
-		}
+		//malloc protection
 		rmdir_cmd[0] = "rmdir";
 		rmdir_cmd[1] = "tmp";
 		rmdir_cmd[2] = NULL;
@@ -168,11 +167,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	{
 		mkdir_path = get_absolute_path(paths, "mkdir");
 		mkdir_cmd = malloc(sizeof(char *) * 3);
-		if (!mkdir_cmd)
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			exit (1);
-		}
+		//malloc protection
 		mkdir_cmd[0] = "mkdir";
 		mkdir_cmd[1] = "tmp";
 		mkdir_cmd[2] = NULL;

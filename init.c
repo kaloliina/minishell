@@ -20,7 +20,7 @@ t_node	*init_new_node(t_data *data, t_node *new_node)
 
 void	init_sections(t_data *data, char *line)
 {
-	data->sections = ft_split(line, '|');
+	data->sections = ft_split(line, '|'); //malloc protection
 	if (!data->sections)
 		return ;
 	data->sections_amount = count_elements(data->sections);
@@ -56,7 +56,9 @@ void	init_tokens(t_data *data)
 		else
 		{
 			data->tokens[i] = malloc(sizeof(char *) * 2);
+			//malloc protection
 			data->tokens[i][0] = ft_strdup(data->sections[i]);
+			//malloc protection
 			data->tokens[i][1] = NULL;
 		}
 		i++;
