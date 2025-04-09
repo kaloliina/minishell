@@ -94,7 +94,7 @@ void	execute_export(char **cmd, char ***envp)
 	char	**new_envp;
 
 	if (!cmd[1])
-		export_no_args(*envp);
+		return (export_no_args(*envp));
 	i = count_elements(*envp);
 	args = 1;
 	while (cmd[args + 1])

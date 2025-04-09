@@ -124,7 +124,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			new_cmd[new_arg] = ft_strdup(cmd[arg]);
+			new_cmd[new_arg++] = ft_strdup(cmd[arg++]);
 		else
 		{
 			i = 0;
@@ -135,17 +135,6 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 					j = 0;
 					i++;
 					k = i;
-					if (cmd[arg][i] == '\'' || cmd[arg][i] == '"')
-					{
-						new_line = ft_substr(cmd[arg], i,
-							(ft_strlen(cmd[arg]) - i));
-						while (cmd[arg][i] != cmd[arg][j])
-							k++;
-						/*we need to change this function so that after finding and
-						handling a $ it doesnt finish that arg but goes back to loop
-						the rest of it, eg. echo $HOME$USER !!!
-						also, this part should handle echo $"HEIPPA" !!*/
-					}
 					while (!is_exp_delimiter(cmd[arg][i]) && cmd[arg][i])
 					{
 						i++;
@@ -159,7 +148,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 						{
 							new_line = add_replacer(cmd[arg], replacer, k, j);
 							free (replacer);
-							new_cmd[new_arg] = new_line;
+							free (cmd[arg]);
+							cmd[arg] = new_line;
 							new_line = NULL;
 						}
 						else if (k > 1)
@@ -169,7 +159,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 							{
 								end = ft_substr(cmd[arg], i, (ft_strlen(cmd[arg]) - i));
 								temp = ft_strjoin(new_line, end);
-								new_cmd[new_arg] = temp;
+								free (cmd[arg]);
+								cmd[arg] = temp;
 								free (new_line);
 								free (end);
 								end = NULL;
@@ -178,7 +169,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 							}
 							else
 							{
-								new_cmd[new_arg] = new_line;
+								free (cmd[arg]);
+								cmd[arg] = new_line;
 								new_line = NULL;
 							}
 						}
@@ -187,7 +179,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 							if (cmd[arg][i] && cmd[arg][i + 1])
 							{
 								new_line = ft_substr(cmd[arg], i, (ft_strlen(cmd[arg]) - i));
-								new_cmd[new_arg] = new_line;
+								free (cmd[arg]);
+								cmd[arg] = new_line;
 								new_line = NULL;
 							}
 							else
@@ -206,12 +199,15 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 					i++;
 				}
 			}
+			if (no_elem)
+				no_elem = 0;
+			else
+			{
+				new_cmd[new_arg] = ft_strdup(cmd[arg]);
+				new_arg++;
+			}
+			arg++;
 		}
-		if (no_elem)
-			no_elem = 0;
-		else
-			new_arg++;
-		arg++;
 	}
 	new_cmd[new_arg] = NULL;
 	return (new_cmd);
