@@ -72,3 +72,63 @@ int	find_unset_element(char **cmd, char *envp_element)
 	}
 	return (j);
 }
+
+char	**sort_for_export(char **export, char **envp, int elements)
+{
+	int	i;
+	int	j;
+	int	k;
+
+	i = 0;
+	while (i < elements)
+	{
+		j = 0;
+		k = 0;
+		while (j < elements)
+		{
+			if (ft_strcmp(envp[i], envp[j]) > 0)
+				k++;
+			j++;
+		}
+		export[k] = ft_strdup(envp[i]);
+		if (!export[k])
+		{
+			ft_printf(2, MALLOC);
+			free_array(export);
+			exit (1);
+		}
+		i++;
+	}
+	return (export);
+}
+
+char	**fill_unset_envp(char **new_envp, char **cmd, char **envp)
+{
+	int	i;
+	int	j;
+	int	k;
+
+	i = 0;
+	k = 0;
+	while ((envp)[i])
+	{
+		j = find_unset_element(cmd, envp[i]);
+		if (cmd[j] && !ft_strncmp(envp[i], cmd[j], ft_strlen(cmd[j]))
+			&& envp[i][ft_strlen(cmd[j])] == '=')
+			i++;
+		else
+		{
+			new_envp[k] = ft_strdup(envp[i]);
+			if (!new_envp[k])
+			{
+				ft_printf(2, MALLOC);
+				free_array(new_envp);
+				exit (1);
+			}
+			i++;
+			k++;
+		}
+	}
+	new_envp[k] = NULL;
+	return (new_envp);
+}

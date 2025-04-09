@@ -65,20 +65,7 @@ void	export_no_args(char **envp)
 	elements = count_elements(envp);
 	export = malloc(sizeof(char *) * (elements + 1));
 	//malloc protection
-	i = 0;
-	while (i < elements)
-	{
-		j = 0;
-		k = 0;
-		while (j < elements)
-		{
-			if (ft_strcmp(envp[i], envp[j]) > 0)
-				k++;
-			j++;
-		}
-		export[k] = ft_strdup(envp[i]);
-		i++;
-	}
+	export = sort_for_export(export, envp, elements);
 	export[elements] = NULL;
 	i = 0;
 	while (export[i])
@@ -124,8 +111,6 @@ void	execute_cd(char **cmd)
 void	execute_unset(char **cmd, char ***envp)
 {
 	int		i;
-	int		j;
-	int		k;
 	int		args;
 	char	**new_envp;
 
@@ -135,23 +120,7 @@ void	execute_unset(char **cmd, char ***envp)
 		args++;
 	new_envp = malloc(sizeof(char *) * ((i - args) + 2));
 	//malloc protection
-	i = 0;
-	k = 0;
-	while ((*envp)[i])
-	{
-		j = find_unset_element(cmd, (*envp)[i]);
-		if (cmd[j] && !ft_strncmp((*envp)[i], cmd[j], ft_strlen(cmd[j]))
-			&& (*envp)[i][ft_strlen(cmd[j])] == '=')
-			i++;
-		else
-		{
-			new_envp[k] = ft_strdup((*envp)[i]);
-			//malloc protection
-			i++;
-			k++;
-		}
-	}
-	new_envp[k] = NULL;
+	new_envp = fill_unset_envp(new_envp, cmd, *envp);
 	free_array(*envp);
 	*envp = NULL;
 	*envp = new_envp;

@@ -84,7 +84,7 @@ void	reset_properties(t_pipes *my_pipes)
 	my_pipes->current_section++;
 }
 
-void	handle_redirections(t_node *node, t_pipes *my_pipes)
+void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	i;
 
@@ -94,7 +94,7 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes)
 	if (my_pipes->infile_fd >= 0)
 		redirection_infile(my_pipes);
 	if (my_pipes->heredoc_node)
-		heredoc(node, my_pipes, *my_pipes->my_envp, my_pipes->paths);
+		heredoc(node, my_pipes, *my_pipes->my_envp, my_pipes->paths, status);
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
 	{
 		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) < 0)
@@ -191,7 +191,7 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 }
 //Check the return value here, I assume it's okay to return 0 when parent
 //Also can these commands fail as well
-int	execute_builtin(t_node *node, t_pipes *my_pipes)
+int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
 
@@ -207,7 +207,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 		{
 			if (my_pipes->exit_status == 1)
 				exit (1);
-			handle_redirections(node, my_pipes);
+			handle_redirections(node, my_pipes, status);
 			run_builtin_command(node, my_pipes);
 			exit(0);
 		}
@@ -218,7 +218,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 	{
 		if (my_pipes->exit_status == 1)
 			return (0);
-		handle_redirections(node, my_pipes);
+		handle_redirections(node, my_pipes, status);
 		run_builtin_command(node, my_pipes);
 //Im not even sure if this should be done here. Basically yes but this is also a "last thing to do"
 		if (my_pipes->stdinfd != -1)
@@ -250,7 +250,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 //Or should we catch them already in the get_paths..?
 //Also right now if there's a problem with fd's, I still go here and I return from this stage
 //The reason is that this is in child so it's easier for me to get the exit status.
-int	execute_executable(t_node *node, t_pipes *my_pipes)
+int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
 
@@ -266,7 +266,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 	{
 		if (my_pipes->paths == NULL)
 			my_pipes->paths = get_paths(my_pipes->my_envp);
-		handle_redirections(node, my_pipes);
+		handle_redirections(node, my_pipes, status);
 		my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
 		printf("absolute: %s\n", my_pipes->command_path);
 		if (my_pipes->exit_status == 1)
@@ -421,7 +421,7 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	return (exit_status);
 }
 
-int	loop_nodes(t_node *list, char ***envp)
+int	loop_nodes(t_node *list, char ***envp, int status)
 {
 	t_pipes	*my_pipes;
 	int		i = 0;
@@ -448,12 +448,12 @@ int	loop_nodes(t_node *list, char ***envp)
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
 			{
-				child_pids[i] = execute_builtin(my_pipes->command_node, my_pipes);
+				child_pids[i] = execute_builtin(my_pipes->command_node, my_pipes, status);
 				i++;
 			}
 			else if (my_pipes->command_node != NULL)
 			{
-				child_pids[i] = execute_executable(my_pipes->command_node, my_pipes);
+				child_pids[i] = execute_executable(my_pipes->command_node, my_pipes, status);
 				i++;
 			}
 			close_pipes(my_pipes);

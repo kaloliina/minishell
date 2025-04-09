@@ -55,7 +55,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 		if (line[i] != '"')
 			new_line[l++] = line[i++];
 		else
-			quote = 1;
+			quote = 2;
 	}
 	while (replacer_len > 0)
 	{
@@ -93,7 +93,7 @@ char	**delete_element(char **cmd, int arg)
 }
 
 //goes through cmd array and handles expansions, making a completely new cmd array
-char	**handle_expansion_cmds(char **cmd, char **envp)
+char	**handle_expansion_cmds(char **cmd, char **envp, int status)
 {
 	int		i;
 	int		j;
@@ -140,17 +140,24 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 						j++;
 					}
 					exp = ft_substr(cmd[arg], k, j);
-					if (exp && *exp)
+					if ((exp && *exp) || cmd[arg][i] == '?')
 					{
-						replacer = find_envp(exp, envp);
+						if (cmd[arg][i] == '?')
+						{
+							j = 1;
+							replacer = ft_itoa(status);
+						}
+						else
+							replacer = find_envp(exp, envp);
 						if (replacer)
 						{
+							if (!is_quote(cmd[arg]))
+								expanded = 1;
 							new_line = add_replacer(cmd[arg], replacer, k, j);
 							free (replacer);
 							free (cmd[arg]);
 							cmd[arg] = new_line;
 							new_line = NULL;
-							expanded = 1;
 						}
 						else if (k > 1)
 						{
@@ -203,6 +210,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 				no_elem = 0;
 			else
 			{
+				printf("expanded is %d\n", expanded);
 				if (!expanded)
 				{
 					new_line = handle_quotes_helper(cmd[arg]);
@@ -224,7 +232,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 }
 
 //goes through filename string and expands it
-char	*handle_expansion_filename(char *file, char **envp)
+char	*handle_expansion_filename(char *file, char **envp, int status)
 {
 	int		i;
 	int		j;
@@ -252,9 +260,15 @@ char	*handle_expansion_filename(char *file, char **envp)
 				j++;
 			}
 			exp = ft_substr(file, k, j);
-			if (exp && *exp)
+			if ((exp && *exp) || file[i] == '?')
 			{
-				replacer = find_envp(exp, envp);
+				if (file[i] == '?')
+				{
+					j = 1;
+					replacer = ft_itoa(status);
+				}
+				else
+					replacer = find_envp(exp, envp);
 				if (replacer)
 				{
 					new_file = add_replacer(file, replacer, k, j);

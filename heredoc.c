@@ -1,5 +1,5 @@
 #include "minishell.h"
-char	*heredoc_expandables(char *line, char **envp, int fd)
+char	*heredoc_expandables(char *line, char **envp, int fd, int status)
 {
 	int		i;
 	int		j;
@@ -25,9 +25,15 @@ char	*heredoc_expandables(char *line, char **envp, int fd)
 				j++;
 			}
 			exp = ft_substr(line, k, j);
-			if (exp && *exp)
+			if ((exp && *exp) || line[i] == '?')
 			{
-				replacer = find_envp(exp, envp);
+				if (line[i] == '?')
+				{
+					j = 1;
+					replacer = ft_itoa(status);
+				}
+				else
+					replacer = find_envp(exp, envp);
 				if (replacer)
 				{
 					new_line = add_replacer(line, replacer, k, j);
@@ -120,7 +126,7 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	waitpid(rmdir_pid, &status, 0);
 }
 
-static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
+static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status)
 {
 	int		fd;
 	char	*line;
@@ -134,7 +140,7 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
 			break ;
 		if (!delimiter_node->delimiter_quote)
 		{
-			temp = heredoc_expandables(line, *my_pipes->my_envp, fd);
+			temp = heredoc_expandables(line, *my_pipes->my_envp, fd, status);
 			if (temp)
 				line = temp;
 		}
@@ -181,7 +187,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	chdir("./tmp");
 }
 
-void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths)
+void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status)
 {
 	int		fd;
 	int		newdir;
@@ -196,7 +202,7 @@ void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths)
 			heredoc_mkdir(envp, paths);
 		}
 	}
-	heredoc_read(my_pipes->heredoc_node, my_pipes);
+	heredoc_read(my_pipes->heredoc_node, my_pipes, status);
 	heredoc_rm(envp, paths);
 	chdir("..");
 	if (newdir)

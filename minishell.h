@@ -93,8 +93,8 @@ int		is_redirection(char *token);
 int		is_char_redirection(char c);
 int		is_redirection_char(char *s);
 void	make_pipe_node(t_data *data, t_node **first);
-char	**handle_expansion_cmds(char **cmd, char **envp);
-char	*handle_expansion_filename(char *file, char **envp);
+char	**handle_expansion_cmds(char **cmd, char **envp, int status);
+char	*handle_expansion_filename(char *file, char **envp, int status);
 int		is_exp_delimiter(char c);
 char	*add_replacer(char *line, char *replacer, int k, int j);
 char	*find_envp(char *exp, char **envp);
@@ -111,7 +111,7 @@ int		is_quote(char *s);
 int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 void	signal_handler(int sig);
-void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths);
+void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);
@@ -125,13 +125,15 @@ int		fill_new_envp(char ***new_envp, char **envp, char **cmd, int args);
 int		add_existing_envp(char **new_envp, char **envp);
 int		add_exported_envp(char **new_envp, char **cmd, int i);
 int		find_unset_element(char **cmd, char *envp_element);
+char	**sort_for_export(char **export, char **envp, int elements);
+char	**fill_unset_envp(char **new_envp, char **cmd, char **envp);
 
 //execution
 char	**get_paths(char ***envp);
 char	*get_absolute_path(char **paths, char *command);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
-int		loop_nodes(t_node *list, char ***envp);
+int		loop_nodes(t_node *list, char ***envp, int status);
 void	free_my_pipes(t_pipes *my_pipes);
 
 #endif
