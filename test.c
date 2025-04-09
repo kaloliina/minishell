@@ -288,13 +288,6 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 	}
 	return (pid);
 }
-//Question is what should we track here, should we catch the wrong commands etc here
-//Or should we catch them already in the get_paths..?
-//Also right now if there's a problem with fd's, I still go here and I return from this stage
-//The reason is that this is in child so it's easier for me to get the exit status.
-int	execute_executable(t_node *node, t_pipes *my_pipes)
-{
-	int	pid;
 
 //Also right now if we write exit XX, it exits with 0 when in reality it should exit with the number told
 //We also need to implement exit function
