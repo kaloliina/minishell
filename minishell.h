@@ -89,6 +89,7 @@ char	*handle_expansion_filename(char *file, char **envp);
 int		is_exp_delimiter(char c);
 char	*add_replacer(char *line, char *replacer, int k, int j);
 char	*find_envp(char *exp, char **envp);
+char	*handle_quotes_helper(char *s);
 
 //cleanup
 void	free_nodes(t_node *node);
@@ -111,7 +112,6 @@ void	execute_export(char **cmd, char ***envp);
 void	execute_cd(char **cmd);
 void	execute_unset(char **cmd, char ***envp);
 void	execute_exit(int status, t_pipes *my_pipes);
-int		fill_new_envp(char ***new_envp, char **envp, char **cmd, int args);
 int		add_existing_envp(char **new_envp, char **envp);
 int		add_exported_envp(char **new_envp, char **cmd, int i);
 int		find_unset_element(char **cmd, char *envp_element);

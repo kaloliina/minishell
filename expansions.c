@@ -63,8 +63,6 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 		replacer_len--;
 	}
 	i += (j + 1 + quote);
-	if (line[i] && line[i] == '\\')
-		i++;
 	while (line[i])
 		new_line[l++] = line[i++];
 	new_line[l] = '\0';
@@ -104,6 +102,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 	int		new_arg;
 	int		quote;
 	int		no_elem;
+	int		expanded;
 	char	*exp;
 	char	*replacer;
 	char	*new_line;
@@ -117,13 +116,14 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 	k = 0;
 	quote = 0;
 	no_elem = 0;
+	expanded = 0;
 	new_cmd = malloc(sizeof(char *) * (count_elements(cmd) + 1));
 	//malloc protection
 	new_arg = 0;
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			new_cmd[new_arg++] = ft_strdup(cmd[arg++]);
+			new_cmd[new_arg++] = handle_quotes_helper(cmd[arg++]);
 		else
 		{
 			i = 0;
@@ -150,6 +150,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 							free (cmd[arg]);
 							cmd[arg] = new_line;
 							new_line = NULL;
+							expanded = 1;
 						}
 						else if (k > 1)
 						{
@@ -202,7 +203,17 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 				no_elem = 0;
 			else
 			{
-				new_cmd[new_arg] = ft_strdup(cmd[arg]);
+				if (!expanded)
+				{
+					new_line = handle_quotes_helper(cmd[arg]);
+					if (new_line)
+					{
+						new_cmd[new_arg] = new_line;
+						new_line = NULL;
+					}
+				}
+				else
+					new_cmd[new_arg] = ft_strdup(cmd[arg]);
 				new_arg++;
 			}
 			arg++;

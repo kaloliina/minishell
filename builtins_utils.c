@@ -1,31 +1,6 @@
 #include "minishell.h"
 
-int	fill_new_envp(char ***new_envp, char **envp, char **cmd, int args)
-{
-	int		i;
-	int		j;
-
-	i = 0;
-	while ((envp)[i])
-	{
-		(*new_envp)[i] = ft_strdup(envp[i]);
-		if (!(*new_envp)[i])
-			return (-1);
-		i++;
-	}
-	j = 1;
-	while (cmd[j])
-	{
-		(*new_envp)[i] = ft_strdup(cmd[j]);
-		if (!(*new_envp)[i])
-			return (-1);
-		i++;
-		j++;
-	}
-	(*new_envp)[i] = NULL;
-	return (0);
-}
-
+//fill new envp with existing elements
 int	add_existing_envp(char **new_envp, char **envp)
 {
 	int	i;
@@ -40,6 +15,7 @@ int	add_existing_envp(char **new_envp, char **envp)
 	return (i);
 }
 
+//add exported element(s) to envp
 int	add_exported_envp(char **new_envp, char **cmd, int i)
 {
 	int	j;
@@ -55,6 +31,7 @@ int	add_exported_envp(char **new_envp, char **cmd, int i)
 	return (i);
 }
 
+//go through envp to find the element to unset
 int	find_unset_element(char **cmd, char *envp_element)
 {
 	int	j;

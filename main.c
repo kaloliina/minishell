@@ -50,22 +50,23 @@ void	handle_quotes(t_data *data, char **envp)
 				tmp->cmd = new_cmd;
 				new_cmd = NULL;
 			}
-			i = 0;
-			while (tmp->cmd[i])
-			{
-				if (!((tmp->cmd[i][0] == '\'' && tmp->cmd[i][1] == '\'')
-					|| (tmp->cmd[i][0] == '"' && tmp->cmd[i][1] == '"')))
-				{
-					new_line = handle_quotes_helper(tmp->cmd[i]);
-					if (new_line)
-					{
-						free (tmp->cmd[i]);
-						tmp->cmd[i] = new_line;
-						new_line = NULL;
-					}
-				}
-				i++;
-			}
+			// printf("%s\n", tmp->cmd[1]);
+			// i = 0;
+			// while (tmp->cmd[i])
+			// {
+			// 	if (!((tmp->cmd[i][0] == '\'' && tmp->cmd[i][1] == '\'')
+			// 		|| (tmp->cmd[i][0] == '"' && tmp->cmd[i][1] == '"')))
+			// 	{
+			// 		new_line = handle_quotes_helper(tmp->cmd[i]);
+			// 		if (new_line)
+			// 		{
+			// 			free (tmp->cmd[i]);
+			// 			tmp->cmd[i] = new_line;
+			// 			new_line = NULL;
+			// 		}
+			// 	}
+			// 	i++;
+			// }
 		}
 		if (tmp->file)
 		{
