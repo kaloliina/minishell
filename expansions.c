@@ -1,5 +1,6 @@
 #include "minishell.h"
 
+//finds the correct line of envp to match the expandable in input
 char	*find_envp(char *exp, char **envp)
 {
 	int		i;
@@ -24,6 +25,7 @@ char	*find_envp(char *exp, char **envp)
 	return (replacer);
 }
 
+//makes a new string that is expanded
 char	*add_replacer(char *line, char *replacer, int k, int j)
 {
 	int		i;
@@ -69,6 +71,7 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 	return (new_line);
 }
 
+//makes a new cmd array without the invalid element
 char	**delete_element(char **cmd, int arg)
 {
 	int		i;
@@ -91,11 +94,7 @@ char	**delete_element(char **cmd, int arg)
 	return (new_cmd);
 }
 
-int	is_exp_delimiter(char c)
-{
-	return (!(ft_isalnum(c) || c == '_'));
-}
-
+//goes through cmd array and handles expansions, making a completely new cmd array
 char	**handle_expansion_cmds(char **cmd, char **envp)
 {
 	int		i;
@@ -124,7 +123,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			new_cmd[new_arg] = ft_strdup(cmd[arg]);
+			new_cmd[new_arg++] = ft_strdup(cmd[arg++]);
 		else
 		{
 			i = 0;
@@ -148,7 +147,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 						{
 							new_line = add_replacer(cmd[arg], replacer, k, j);
 							free (replacer);
-							new_cmd[new_arg] = new_line;
+							free (cmd[arg]);
+							cmd[arg] = new_line;
 							new_line = NULL;
 						}
 						else if (k > 1)
@@ -158,7 +158,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 							{
 								end = ft_substr(cmd[arg], i, (ft_strlen(cmd[arg]) - i));
 								temp = ft_strjoin(new_line, end);
-								new_cmd[new_arg] = temp;
+								free (cmd[arg]);
+								cmd[arg] = temp;
 								free (new_line);
 								free (end);
 								end = NULL;
@@ -167,7 +168,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 							}
 							else
 							{
-								new_cmd[new_arg] = new_line;
+								free (cmd[arg]);
+								cmd[arg] = new_line;
 								new_line = NULL;
 							}
 						}
@@ -176,7 +178,8 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 							if (cmd[arg][i] && cmd[arg][i + 1])
 							{
 								new_line = ft_substr(cmd[arg], i, (ft_strlen(cmd[arg]) - i));
-								new_cmd[new_arg] = new_line;
+								free (cmd[arg]);
+								cmd[arg] = new_line;
 								new_line = NULL;
 							}
 							else
@@ -195,17 +198,21 @@ char	**handle_expansion_cmds(char **cmd, char **envp)
 					i++;
 				}
 			}
+			if (no_elem)
+				no_elem = 0;
+			else
+			{
+				new_cmd[new_arg] = ft_strdup(cmd[arg]);
+				new_arg++;
+			}
+			arg++;
 		}
-		if (no_elem)
-			no_elem = 0;
-		else
-			new_arg++;
-		arg++;
 	}
 	new_cmd[new_arg] = NULL;
 	return (new_cmd);
 }
 
+//goes through filename string and expands it
 char	*handle_expansion_filename(char *file, char **envp)
 {
 	int		i;
