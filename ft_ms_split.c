@@ -2,10 +2,6 @@
 
 static char	*ft_ms_makestring(char const *s, int start, int len)
 {
-	// if ((s[start] == 39 && s[i - 1] == 39)
-	// 	|| (s[start] == 34 && s[i - 1] == 34))
-	// 	return (ft_substr(s, start + 1, len - 2));
-	// else
 	return (ft_substr(s, start, len));
 }
 

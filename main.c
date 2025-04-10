@@ -30,7 +30,7 @@ char	*handle_quotes_helper(char *s)
 	return (new);
 }
 
-void	handle_quotes(t_data *data, char **envp)
+void	handle_quotes(t_data *data, char **envp, int status)
 {
 	int		i;
 	t_node	*tmp;
@@ -43,33 +43,17 @@ void	handle_quotes(t_data *data, char **envp)
 	{
 		if (tmp->cmd)
 		{
-			new_cmd = handle_expansion_cmds(tmp->cmd, envp);
+			new_cmd = handle_expansion_cmds(tmp->cmd, envp, status);
 			if (new_cmd)
 			{
 				free_array(tmp->cmd);
 				tmp->cmd = new_cmd;
 				new_cmd = NULL;
 			}
-			i = 0;
-			while (tmp->cmd[i])
-			{
-				if (!((tmp->cmd[i][0] == '\'' && tmp->cmd[i][1] == '\'')
-					|| (tmp->cmd[i][0] == '"' && tmp->cmd[i][1] == '"')))
-				{
-					new_line = handle_quotes_helper(tmp->cmd[i]);
-					if (new_line)
-					{
-						free (tmp->cmd[i]);
-						tmp->cmd[i] = new_line;
-						new_line = NULL;
-					}
-				}
-				i++;
-			}
 		}
 		if (tmp->file)
 		{
-			new_file = handle_expansion_filename(tmp->file, envp);
+			new_file = handle_expansion_filename(tmp->file, envp, status);
 			if (new_file)
 			{
 				tmp->file = new_file;
@@ -127,24 +111,22 @@ char	**copy_envp(char **envp)
 	return (my_envp);
 }
 
-int	minishell(char *input, char ***envp)
+int	minishell(char *input, char ***envp, int status)
 {
 	t_data	data;
 	// t_node	*tmp;
 	int		k;
 	char	*line;
-	// char	**new_envp;
-	int status;
 
 	init_tokens_struct(&data);
 	line = add_spaces(input);
-	if (!line)
+	if (!line) //what is this case?
 		return (-1);
 	init_sections(&data, line);
 	init_tokens(&data);
-	if (lexer(&data) < 0)
+	if (lexer(&data) < 0) //what is this case?
 		return (-1);
-	handle_quotes(&data, *envp);
+	handle_quotes(&data, *envp, status);
 	// tmp = data.first;
 	// while (tmp)
 	// {
@@ -158,7 +140,7 @@ int	minishell(char *input, char ***envp)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
-	status = loop_nodes(data.first, envp);
+	status = loop_nodes(data.first, envp, status);
 	free_nodes(data.first);
 	return (status);
 }
@@ -188,10 +170,8 @@ int	main(int ac, char **av, char **envp)
 			clear_history();
 			return (0);
 		}
-		if (!ft_strcmp(input, "echo $?"))
-			ft_printf(1, "%d\n", status);
 		else if (input[0] != '\0')
-			status = minishell(input, &my_envp);
+			status = minishell(input, &my_envp, status);
 		if (input)
 			add_history(input);
 		free (input);

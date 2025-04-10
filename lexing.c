@@ -13,9 +13,9 @@ static int	set_redir_file_node(t_node *new_node, t_data *data, int i, int j)
 	if (data->tokens[i][j + 1])
 	{
 		if (new_node->type == REDIR_HEREDOC)
-			new_node->delimiter = ft_strdup(data->tokens[i][j + 1]);
+			new_node->delimiter = ft_strdup(data->tokens[i][j + 1]); //malloc protection
 		else
-			new_node->file = ft_strdup(data->tokens[i][j + 1]);
+			new_node->file = ft_strdup(data->tokens[i][j + 1]); //malloc protection
 	}
 	else
 	{

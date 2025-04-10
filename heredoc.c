@@ -1,18 +1,5 @@
 #include "minishell.h"
-#include <errno.h>
-
-// int		handle_heredoc_exp(char *line, int i, char **envp)
-// {
-// 	int	j;
-
-// 	j = i;
-// 	while (line[i] <= 'A' && line[i] >= 'Z')
-// 		j++;
-// 	if
-
-// }
-/* SHOULD WE WRITE ONE CHAR AT A TIME TO FILE?
-char	*heredoc_expandables(char *line, char **envp, int fd)
+char	*heredoc_expandables(char *line, char **envp, int fd, int status)
 {
 	int		i;
 	int		j;
@@ -38,9 +25,16 @@ char	*heredoc_expandables(char *line, char **envp, int fd)
 				j++;
 			}
 			exp = ft_substr(line, k, j);
-			if (exp && *exp)
+			//malloc protection
+			if ((exp && *exp) || (line[i] == '?' && line[i - 1] == '$'))
 			{
-				replacer = find_envp(exp, envp);
+				if (line[i] == '?' && line[i - 1] == '$')
+				{
+					j = 1;
+					replacer = ft_itoa(status);
+				}
+				else
+					replacer = find_envp(exp, envp);
 				if (replacer)
 				{
 					new_line = add_replacer(line, replacer, k, j);
@@ -55,8 +49,11 @@ char	*heredoc_expandables(char *line, char **envp, int fd)
 					while (!is_exp_delimiter(line[i]))
 						i++;
 					new_start = ft_substr(line, 0, k - 1);
+					//malloc protection
 					new_end = ft_substr(line, i, (ft_strlen(line) - i));
+					//malloc protection
 					new_line = ft_strjoin(new_start, new_end);
+					//malloc protection
 					free (line);
 					line = NULL;
 					line = new_line;
@@ -68,84 +65,11 @@ char	*heredoc_expandables(char *line, char **envp, int fd)
 				while (!is_exp_delimiter(line[i]))
 					i++;
 				new_start = ft_substr(line, 0, k - 1);
-				printf("start %s\n", new_start);
+				//malloc protection
 				new_end = ft_substr(line, (i + 1), (ft_strlen(line) - (i + 1)));
-				printf("end %s len %zu\n", new_end, (ft_strlen(line) - (i + 1)));
+				//malloc protection
 				new_line = ft_strjoin(new_start, new_end);
-				free (line);
-				line = NULL;
-				line = new_line;
-				new_line = NULL;
-			}
-			i = k;
-		}
-		else
-			ft_printf(fd, "%c", line[i++]);
-	}
-	return (line);
-}*/
-
-// THIS IS CURRENT VERSION BUT DOESN'T WORK WITH "$HOME\n hello"
-char	*heredoc_expandables(char *line, char **envp, int fd)
-{
-	int		i;
-	int		j;
-	int		k;
-	char	*exp;
-	char	*replacer;
-	char	*new_line;
-	char	*new_start;
-	char	*new_end;
-
-	i = 0;
-	k = 0;
-	while (line[i])
-	{
-		if (line[i] == '$' && line[i + 1])
-		{
-			j = 0;
-			i++;
-			k = i;
-			while (!is_exp_delimiter(line[i]))
-			{
-				i++;
-				j++;
-			}
-			exp = ft_substr(line, k, j);
-			if (exp && *exp)
-			{
-				replacer = find_envp(exp, envp);
-				if (replacer)
-				{
-					new_line = add_replacer(line, replacer, k, j);
-					free (line);
-					free (replacer);
-					line = NULL;
-					line = new_line;
-					new_line = NULL;
-				}
-				else
-				{
-					while (!is_exp_delimiter(line[i]))
-						i++;
-					new_start = ft_substr(line, 0, k - 1);
-					new_end = ft_substr(line, i, (ft_strlen(line) - i));
-					new_line = ft_strjoin(new_start, new_end);
-					free (line);
-					line = NULL;
-					line = new_line;
-					new_line = NULL;
-				}
-			}
-			else
-			{
-				while (!is_exp_delimiter(line[i]))
-					i++;
-				new_start = ft_substr(line, 0, k - 1);
-				printf("start %s\n", new_start);
-				new_end = ft_substr(line, (i + 1), (ft_strlen(line) - (i + 1)));
-				printf("end %s len %zu\n", new_end, (ft_strlen(line) - (i + 1)));
-				new_line = ft_strjoin(new_start, new_end);
+				//malloc protection
 				free (line);
 				line = NULL;
 				line = new_line;
@@ -171,11 +95,7 @@ static void	heredoc_rm(char **envp, char **paths)
 	{
 		rm_path = get_absolute_path(paths, "rm");
 		rm_cmd = malloc(sizeof(char *) * 3);
-		if (!rm_cmd)
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			exit (1);
-		}
+		//malloc protection
 		rm_cmd[0] = "rm";
 		rm_cmd[1] = "tmpfile";
 		rm_cmd[2] = NULL;
@@ -196,11 +116,7 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	{
 		rmdir_path = get_absolute_path(paths, "rmdir");
 		rmdir_cmd = malloc(sizeof(char *) * 3);
-		if (!rmdir_cmd)
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			exit (1);
-		}
+		//malloc protection
 		rmdir_cmd[0] = "rmdir";
 		rmdir_cmd[1] = "tmp";
 		rmdir_cmd[2] = NULL;
@@ -209,7 +125,7 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	waitpid(rmdir_pid, &status, 0);
 }
 
-static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
+static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status)
 {
 	int		fd;
 	char	*line;
@@ -223,7 +139,7 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes)
 			break ;
 		if (!delimiter_node->delimiter_quote)
 		{
-			temp = heredoc_expandables(line, *my_pipes->my_envp, fd);
+			temp = heredoc_expandables(line, *my_pipes->my_envp, fd, status);
 			if (temp)
 				line = temp;
 		}
@@ -251,11 +167,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	{
 		mkdir_path = get_absolute_path(paths, "mkdir");
 		mkdir_cmd = malloc(sizeof(char *) * 3);
-		if (!mkdir_cmd)
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			exit (1);
-		}
+		//malloc protection
 		mkdir_cmd[0] = "mkdir";
 		mkdir_cmd[1] = "tmp";
 		mkdir_cmd[2] = NULL;
@@ -270,7 +182,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	chdir("./tmp");
 }
 
-void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths)
+void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status)
 {
 	int		fd;
 	int		newdir;
@@ -285,7 +197,7 @@ void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths)
 			heredoc_mkdir(envp, paths);
 		}
 	}
-	heredoc_read(my_pipes->heredoc_node, my_pipes);
+	heredoc_read(my_pipes->heredoc_node, my_pipes, status);
 	heredoc_rm(envp, paths);
 	chdir("..");
 	if (newdir)
