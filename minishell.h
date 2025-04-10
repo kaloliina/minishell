@@ -95,8 +95,11 @@ int		is_redirection_char(char *s);
 void	make_pipe_node(t_data *data, t_node **first);
 char	**handle_expansion_cmds(char **cmd, char **envp, int status);
 char	*handle_expansion_filename(char *file, char **envp, int status);
+void	append_char(char **new_string, char *s, int i);
 int		is_exp_delimiter(char c);
 char	*add_replacer(char *line, char *replacer, int k, int j);
+void	append_replacer(char **new_string, char *replacer);
+int		fill_replacer(char *new_line, char *line, int k, int j, int *l);
 char	*find_envp(char *exp, char **envp);
 char	*handle_quotes_helper(char *s);
 

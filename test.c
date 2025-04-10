@@ -78,8 +78,8 @@ void	reset_properties(t_pipes *my_pipes)
 		my_pipes->read_end = my_pipes->write_end - 1;
 		if (my_pipes->current_section < my_pipes->pipe_amount)
 			my_pipes->write_end = my_pipes->write_end + 2;
-		printf("Moving to next pipe: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
-		printf("Curr section: %d\n", my_pipes->current_section);
+	//	printf("Moving to next pipe: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
+	//	printf("Curr section: %d\n", my_pipes->current_section);
 	}
 	my_pipes->current_section++;
 }
@@ -136,8 +136,8 @@ void	close_pipes(t_pipes *my_pipes)
 			{
 				//error
 			}
-			printf("Closing write end: %d\n", my_pipes->write_end);
-			printf("Curr section: %d\n", my_pipes->current_section);
+		//	printf("Closing write end: %d\n", my_pipes->write_end);
+		//	printf("Curr section: %d\n", my_pipes->current_section);
 		}
 		else if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
@@ -145,8 +145,8 @@ void	close_pipes(t_pipes *my_pipes)
 			{
 				//error
 			}
-			printf("Closing write end: %d\n", my_pipes->write_end);
-			printf("Curr section: %d\n", my_pipes->current_section);
+		//	printf("Closing write end: %d\n", my_pipes->write_end);
+		//	printf("Curr section: %d\n", my_pipes->current_section);
 		}
 		if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 		{
@@ -156,7 +156,7 @@ void	close_pipes(t_pipes *my_pipes)
 				{
 					//error
 				}
-				printf("Closing middle read end: %d\n", my_pipes->read_end);
+		//		printf("Closing middle read end: %d\n", my_pipes->read_end);
 			}
 		}
 		else
@@ -165,8 +165,8 @@ void	close_pipes(t_pipes *my_pipes)
 			{
 				//error
 			}
-			printf("Closing last read end: %d\n", my_pipes->read_end);
-			printf("Curr section: %d\n", my_pipes->current_section);
+		//	printf("Closing last read end: %d\n", my_pipes->read_end);
+		//	printf("Curr section: %d\n", my_pipes->current_section);
 		}
 	}
 	reset_properties(my_pipes);
@@ -268,7 +268,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 			my_pipes->paths = get_paths(my_pipes->my_envp);
 		handle_redirections(node, my_pipes, status);
 		my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
-		printf("absolute: %s\n", my_pipes->command_path);
+	//	printf("absolute: %s\n", my_pipes->command_path);
 		if (my_pipes->exit_status == 1)
 			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
@@ -411,12 +411,12 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	if (WIFEXITED(status) == true)
 	{
 		exit_status = WEXITSTATUS(status);
-		printf("child exited with status of %d\n", WEXITSTATUS(status));
+		//printf("child exited with status of %d\n", WEXITSTATUS(status));
 	}
 	else
 	{
 		exit_status = my_pipes->exit_status;
-		printf("parent exited with status of %d\n", my_pipes->exit_status);
+		//printf("parent exited with status of %d\n", my_pipes->exit_status);
 	}
 	return (exit_status);
 }
