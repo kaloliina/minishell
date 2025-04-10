@@ -69,3 +69,110 @@ char	*add_replacer(char *line, char *replacer, int k, int j)
 	new_line[l] = '\0';
 	return (new_line);
 }
+
+char	*find_replacer(char *arg, int i, t_exp *expand, char *exp)
+{
+	if (arg[i] == '?' && arg[i - 1] == '$')
+		return (ft_itoa(expand->status));
+	else
+		return (find_envp(exp, expand->envp));
+}
+
+void	count_expandable(char *arg, int *i, int *j)
+{
+	while (!is_exp_delimiter(arg[*i]) && arg[*i])
+	{
+		(*i)++;
+		(*j)++;
+	}
+}
+
+int	handle_expansion_helper(char *arg, t_exp *expand, int new_arg, int i)
+{
+	int		j;
+	int		k;
+	char	*exp;
+	char	*replacer;
+
+	j = 0;
+	k = i;
+	count_expandable(arg, &i, &j);
+	exp = ft_substr(arg, k, j);
+	//malloc protection
+	if ((exp && *exp) || (arg[i] == '?' && arg[i - 1] == '$'))
+	{
+		if (arg[i] == '?' && arg[i - 1] == '$')
+			j = 1;
+		replacer = find_replacer(arg, i, expand, exp);
+		if (replacer)
+		{
+			if (!is_quote(arg))
+				expand->expanded = 1;
+			append_replacer(&(expand->new_cmd[new_arg]), replacer);
+			i = k + ft_strlen(exp);
+			free  (replacer);
+		}
+		else if (arg[i] && arg[i + 1])
+			i = k;
+		else if (k == 1)
+			expand->no_element = 1;
+		free (exp);
+	}
+	return (i);
+}
+
+void	init_exp(t_exp *exp, int status, char **envp)
+{
+	exp->expanded = 0;
+	exp->no_element = 0;
+	exp->status = status;
+	exp->envp = envp;
+	exp->new_cmd = NULL;
+}
+
+void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
+{
+	char	*temp;
+
+	if (expand->no_element)
+		expand->no_element = 0;
+	else
+	{
+		if (!expand->expanded)
+		{
+			temp = handle_quotes(expand->new_cmd[*new_arg]);
+			if (temp)
+			{
+				expand->new_cmd[*new_arg] = temp;
+				temp = NULL;
+			}
+		}
+		(*new_arg)++;
+	}
+	(*arg)++;
+}
+
+void	handle_expansion_in_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
+{
+	int		i;
+	int		quote;
+	// char	*temp;
+
+	i = 0;
+	quote = 0;
+	expand->new_cmd[*new_arg] = ft_strdup("");
+	//malloc protection
+	while (cmd[*arg][i])
+	{
+		if (cmd[*arg][i] == '$' && cmd[*arg][i + 1] && !quote)
+			i = handle_expansion_helper(cmd[*arg], expand, *new_arg, i + 1);
+		else
+		{
+			if (cmd[*arg][i] == 39)
+				quote = !quote;
+			append_char(&expand->new_cmd[*new_arg], cmd[*arg], i);
+			i++;
+		}
+	}
+	handle_quotes_in_expansion(expand, new_arg, arg);
+}

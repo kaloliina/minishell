@@ -55,254 +55,30 @@ char	**delete_element(char **cmd, int arg)
 	new_cmd[j] = NULL;
 	return (new_cmd);
 }
-/*
+
 char	**handle_expansion_cmds(char **cmd, char **envp, int status)
 {
 	int		i;
-	int		j;
-	int		k;
 	int		arg;
 	int		new_arg;
-	int		quote;
-	int		no_elem;
-	int		expanded;
-	char	*exp;
-	char	*replacer;
 	char	*temp;
-	char	**new_cmd;
+	t_exp	expand;
 
 	i = 0;
 	arg = 0;
-	k = 0;
-	quote = 0;
-	no_elem = 0;
-	expanded = 0;
-	new_cmd = malloc(sizeof(char *) * (count_elements(cmd) + 1));
-	//malloc protection
 	new_arg = 0;
+	init_exp(&expand, status, envp);
+	expand.new_cmd = malloc(sizeof(char *) * (count_elements(cmd) + 1));
+	//malloc protection
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			new_cmd[new_arg++] = handle_quotes_helper(cmd[arg++]);
+			expand.new_cmd[new_arg++] = handle_quotes(cmd[arg++]);
 		else
-		{
-			i = 0;
-			new_cmd[new_arg] = ft_strdup("");
-			//malloc protection
-			while (cmd[arg][i])
-			{
-				if (cmd[arg][i] == '$' && cmd[arg][i + 1] && !quote)
-				{
-					j = 0;
-					i++;
-					k = i;
-					while (!is_exp_delimiter(cmd[arg][i]) && cmd[arg][i])
-					{
-						i++;
-						j++;
-					}
-					exp = ft_substr(cmd[arg], k, j);
-					//malloc protection
-					if ((exp && *exp) || (cmd[arg][i] == '?' && cmd[arg][i - 1] == '$'))
-					{
-						if (cmd[arg][i] == '?' && cmd[arg][i - 1] == '$')
-						{
-							j = 1;
-							replacer = ft_itoa(status);
-						}
-						else
-							replacer = find_envp(exp, envp);
-						if (replacer)
-						{
-							if (!is_quote(cmd[arg]))
-								expanded = 1;
-							append_replacer(&(new_cmd[new_arg]), replacer);
-							i = k + ft_strlen(exp);
-							free (exp);
-						}
-						else
-						{
-							if (cmd[arg][i] && cmd[arg][i + 1])
-							{
-								i = k;
-								printf("now we here %c\n", cmd[arg][i]);
-							}
-							else
-							{
-								no_elem = 1;
-								break ;
-							}
-						}
-					}
-				}
-				else
-				{
-					if (cmd[arg][i] == 39)
-						quote = !quote;
-					append_char(&(new_cmd[new_arg]), cmd[arg], i);
-					i++;
-				}
-			}
-			if (no_elem)
-				no_elem = 0;
-			else
-			{
-				if (!expanded)
-				{
-					temp = handle_quotes_helper(new_cmd[new_arg]);
-					if (temp)
-					{
-						new_cmd[new_arg] = temp;
-						temp = NULL;
-					}
-				}
-				new_arg++;
-			}
-			arg++;
-		}
+			handle_expansion_in_cmd(cmd, &expand, &arg, &new_arg);
 	}
-	new_cmd[new_arg] = NULL;
-	return (new_cmd);
-}*/
-
-//goes through cmd array and handles expansions, making a completely new cmd array
-char	**handle_expansion_cmds(char **cmd, char **envp, int status)
-{
-	int		i;
-	int		j;
-	int		k;
-	int		arg;
-	int		new_arg;
-	int		quote;
-	int		no_elem;
-	int		expanded;
-	char	*exp;
-	char	*replacer;
-	char	*new_line;
-	char	*end;
-	char	*temp;
-	char	**new_cmd;
-	char	**tmp;
-
-	i = 0;
-	arg = 0;
-	k = 0;
-	quote = 0;
-	no_elem = 0;
-	expanded = 0;
-	new_cmd = malloc(sizeof(char *) * (count_elements(cmd) + 1));
-	//malloc protection
-	new_arg = 0;
-	while (cmd[arg])
-	{
-		if (!ft_strchr(cmd[arg], '$'))
-			new_cmd[new_arg++] = handle_quotes_helper(cmd[arg++]);
-		else
-		{
-			i = 0;
-			while (cmd[arg][i])
-			{
-				if (cmd[arg][i] == '$' && cmd[arg][i + 1] && !quote)
-				{
-					j = 0;
-					i++;
-					k = i;
-					while (!is_exp_delimiter(cmd[arg][i]) && cmd[arg][i])
-					{
-						i++;
-						j++;
-					}
-					exp = ft_substr(cmd[arg], k, j);
-					//malloc protection
-					if ((exp && *exp) || (cmd[arg][i] == '?' && cmd[arg][i - 1] == '$'))
-					{
-						if (cmd[arg][i] == '?' && cmd[arg][i - 1] == '$')
-						{
-							j = 1;
-							replacer = ft_itoa(status);
-						}
-						else
-							replacer = find_envp(exp, envp);
-						if (replacer)
-						{
-							if (!is_quote(cmd[arg]))
-								expanded = 1;
-							new_line = add_replacer(cmd[arg], replacer, k, j);
-							free (replacer);
-							free (cmd[arg]);
-							cmd[arg] = new_line;
-							new_line = NULL;
-						}
-						else if (k > 1)
-						{
-							new_line = ft_substr(cmd[arg], 0, k - 1);
-							if (cmd[arg][i] && cmd[arg][i + 1])
-							{
-								end = ft_substr(cmd[arg], i, (ft_strlen(cmd[arg]) - i));
-								//malloc protection
-								temp = ft_strjoin(new_line, end);
-								//malloc protection
-								free (cmd[arg]);
-								cmd[arg] = temp;
-								free (new_line);
-								free (end);
-								end = NULL;
-								new_line = NULL;
-								temp = NULL;
-							}
-							else
-							{
-								free (cmd[arg]);
-								cmd[arg] = new_line;
-								new_line = NULL;
-							}
-						}
-						else
-						{
-							if (cmd[arg][i] && cmd[arg][i + 1])
-							{
-								new_line = ft_substr(cmd[arg], i, (ft_strlen(cmd[arg]) - i));
-								//malloc protection
-								free (cmd[arg]);
-								cmd[arg] = new_line;
-								new_line = NULL;
-							}
-							else
-							{
-								no_elem = 1;
-								break ;
-							}
-						}
-					}
-					i = k;
-				}
-				else
-				{
-					if (cmd[arg][i] == 39)
-						quote = !quote;
-					i++;
-				}
-			}
-			if (no_elem)
-				no_elem = 0;
-			else
-			{
-				if (!expanded)
-				{
-					new_line = handle_quotes_helper(cmd[arg]);
-					if (new_line)
-					{
-						new_cmd[new_arg] = new_line;
-						new_line = NULL;
-					}
-				}
-				new_arg++;
-			}
-			arg++;
-		}
-	}
-	new_cmd[new_arg] = NULL;
-	return (new_cmd);
+	expand.new_cmd[new_arg] = NULL;
+	return (expand.new_cmd);
 }
 
 //goes through filename string and expands it
@@ -315,53 +91,54 @@ char	*handle_expansion_filename(char *file, char **envp, int status)
 	char	*exp;
 	char	*replacer;
 	char	*new_file;
+	t_exp	expand;
 
 	i = 0;
 	k = 0;
 	quote = 0;
+	init_exp(&expand, status, envp);
 	if (!ft_strchr(file, '$'))
-		return (NULL);
-	while (file[i])
+		new_file = handle_quotes(file);
+	else
 	{
-		if (file[i] == '$' && file[i + 1] && !quote)
+		new_file = ft_strdup("");
+		//malloc protection
+		while (file[i])
 		{
-			j = 0;
-			i++;
-			k = i;
-			while (!is_exp_delimiter(file[i]))
+			if (file[i] == '$' && file[i + 1] && !quote)
 			{
+				j = 0;
 				i++;
-				j++;
+				k = i;
+				count_expandable(file, &i, &j);
+				exp = ft_substr(file, k, j);
+				//malloc protection
+				if ((exp && *exp) || (file[i] == '?' && file[i - 1] == '$'))
+				{
+					if (file[i] == '?' && file[i - 1] == '$')
+						j = 1;
+					replacer = find_replacer(file, i, &expand, exp);
+					if (replacer)
+					{
+						append_replacer(&new_file, replacer);
+						i = k + ft_strlen(exp);
+						free (replacer);
+					}
+					else if (file[i] && file[i + 1])
+						i = k;
+					else
+						append_replacer(&new_file, file);
+					free (exp);
+				}
 			}
-			exp = ft_substr(file, k, j);
-			//malloc protection
-			if ((exp && *exp) || (file[i] == '?' && file[i - 1] == '$'))
+			else
 			{
-				if (file[i] == '?' && file[i - 1] == '$')
-				{
-					j = 1;
-					replacer = ft_itoa(status);
-				}
-				else
-					replacer = find_envp(exp, envp);
-				if (replacer)
-				{
-					new_file = add_replacer(file, replacer, k, j);
-					free (replacer);
-					free (file);
-					file = NULL;
-					file = new_file;
-					new_file = NULL;
-				}
+				if (file[i] == 39)
+					quote = !quote;
+				append_char(&new_file, file, i);
+				i++;
 			}
-			i = k;
-		}
-		else
-		{
-			if (file[i] == 39)
-				quote = !quote;
-			i++;
 		}
 	}
-	return (file);
+	return (new_file);
 }

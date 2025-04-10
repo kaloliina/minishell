@@ -44,6 +44,15 @@ typedef struct s_node
 	struct s_node	*next;
 }					t_node;
 
+typedef struct s_exp
+{
+	bool	expanded;
+	bool	no_element;
+	int		status;
+	char	**envp;
+	char	**new_cmd;
+}		t_exp;
+
 typedef struct s_data
 {
 	int			sections_amount;
@@ -95,13 +104,18 @@ int		is_redirection_char(char *s);
 void	make_pipe_node(t_data *data, t_node **first);
 char	**handle_expansion_cmds(char **cmd, char **envp, int status);
 char	*handle_expansion_filename(char *file, char **envp, int status);
+int		handle_expansion_helper(char *arg, t_exp *expand, int new_arg, int i);
 void	append_char(char **new_string, char *s, int i);
 int		is_exp_delimiter(char c);
 char	*add_replacer(char *line, char *replacer, int k, int j);
 void	append_replacer(char **new_string, char *replacer);
 int		fill_replacer(char *new_line, char *line, int k, int j, int *l);
 char	*find_envp(char *exp, char **envp);
-char	*handle_quotes_helper(char *s);
+char	*handle_quotes(char *s);
+void	init_exp(t_exp *exp, int status, char **envp);
+void	handle_expansion_in_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg);
+void	count_expandable(char *arg, int *i, int *j);
+char	*find_replacer(char *arg, int i, t_exp *expand, char *exp);
 
 //cleanup
 void	free_nodes(t_node *node);

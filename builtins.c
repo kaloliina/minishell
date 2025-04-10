@@ -40,13 +40,13 @@ void	execute_pwd(void)
 {
 	char	*buf;
 
-	buf = malloc(100);
+	buf = malloc(4096);
 	if (!buf)
 	{
 		ft_printf(2, "%s\n", MALLOC); //must free my_pipes and nodes
 		exit (1);
 	}
-	getcwd(buf, 100);
+	getcwd(buf, 4096);
 	if (!buf)
 		perror("minishell");
 	else

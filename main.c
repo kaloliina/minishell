@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-char	*handle_quotes_helper(char *s)
+char	*handle_quotes(char *s)
 {
 	int		i;
 	int		j;
@@ -30,7 +30,7 @@ char	*handle_quotes_helper(char *s)
 	return (new);
 }
 
-void	handle_quotes(t_data *data, char **envp, int status)
+void	handle_exp_and_quotes(t_data *data, char **envp, int status)
 {
 	int		i;
 	t_node	*tmp;
@@ -56,22 +56,16 @@ void	handle_quotes(t_data *data, char **envp, int status)
 			new_file = handle_expansion_filename(tmp->file, envp, status);
 			if (new_file)
 			{
-				tmp->file = new_file;
-				new_file = NULL;
-			}
-			new_file = handle_quotes_helper(tmp->file);
-			if (new_file)
-			{
 				free (tmp->file);
 				tmp->file = new_file;
-				new_line = NULL;
+				new_file = NULL;
 			}
 		}
 		if (tmp->delimiter)
 		{
 			if (is_quote(tmp->delimiter))
 				tmp->delimiter_quote = 1;
-			new_line = handle_quotes_helper(tmp->delimiter);
+			new_line = handle_quotes(tmp->delimiter);
 			if (new_line)
 			{
 				free (tmp->delimiter);
@@ -126,7 +120,7 @@ int	minishell(char *input, char ***envp, int status)
 	init_tokens(&data);
 	if (lexer(&data) < 0) //what is this case?
 		return (-1);
-	handle_quotes(&data, *envp, status);
+	handle_exp_and_quotes(&data, *envp, status);
 	// tmp = data.first;
 	// while (tmp)
 	// {
