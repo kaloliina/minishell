@@ -1,5 +1,6 @@
 #include "../minishell.h"
 
+//MALLOC
 char	**get_paths(char ***envp)
 {
 	int		i = 0;
@@ -21,6 +22,7 @@ char	**get_paths(char ***envp)
 	return (paths);
 }
 
+//MALLOC
 char	*get_absolute_path(char **paths, char *command)
 {
 	char	*path_helper = NULL;

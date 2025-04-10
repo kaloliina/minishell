@@ -1,6 +1,56 @@
 #include "../minishell.h"
 
-//Needs proper error trigger
+//This one feels okay but can probably be cleaned up slightly (remove my_pipes check as it always should be true)
+//We are also closing fd's here even though they should be closed already at this point. But if fork fails for example, we need to do it here.
+void	free_my_pipes(t_pipes *my_pipes)
+{
+	int	i;
+
+	i = 0;
+	if (my_pipes)
+	{
+		if (my_pipes->paths)
+			free_array(my_pipes->paths);
+		if (my_pipes->command_path)
+		{
+			free(my_pipes->command_path);
+			my_pipes->command_path = NULL;
+		}
+		if (my_pipes->pipes)
+		{
+			while (i < my_pipes->pipe_amount * 2)
+			{
+				if (my_pipes->pipes[i] != -1)
+				{
+					if (close(my_pipes->pipes[i]) < 0)
+						ft_printf(2, "%s\n", ERR_CLOSE);
+				}
+				i++;
+			}
+			free(my_pipes->pipes);
+			my_pipes->pipes = NULL;
+		}
+		free(my_pipes);
+	}
+}
+
+//Malloc, Fork, Waitpid...
+static void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list)
+{
+	if (list == NULL)
+		free_nodes(my_pipes->command_node);
+	else
+		free_nodes(list);
+	if (my_pipes != NULL)
+	{
+		free_array(*my_pipes->my_envp);
+		free_my_pipes(my_pipes);
+	}
+	ft_printf(2, "%s\n", msg);
+	exit (1);
+}
+
+//MOVE THE ORIGINAL DUPPING TO START
 static void	redirection_outfile(t_pipes *my_pipes)
 {
 	if (my_pipes->stdoutfd == -1)
@@ -18,13 +68,10 @@ static void	redirection_outfile(t_pipes *my_pipes)
 		my_pipes->exit_status = 1;
 	}
 	if (close(my_pipes->outfile_fd) < 0)
-	{
 		ft_printf(2, "%s\n", ERR_CLOSE);
-		my_pipes->exit_status = 1;
-	}
 }
 
-//Needs proper error trigger
+//MOVE THE ORIGINAL DUPPING TO START
 static void	redirection_infile(t_pipes *my_pipes)
 {
 	if (my_pipes->stdinfd == -1)
@@ -42,10 +89,7 @@ static void	redirection_infile(t_pipes *my_pipes)
 		my_pipes->exit_status = 1;
 	}
 	if (close(my_pipes->infile_fd) < 0)
-	{
 		ft_printf(2, "%s\n", ERR_CLOSE);
-		my_pipes->exit_status = 1;
-	}
 }
 
 int	get_pipe_amount(t_node *list)
@@ -84,6 +128,7 @@ void	reset_properties(t_pipes *my_pipes)
 	my_pipes->current_section++;
 }
 
+//ADD PROPER ERROR FOR DUP
 void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	i;
@@ -111,9 +156,10 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 	}
 	while (i < my_pipes->pipe_amount * 2)
 	{
-		if (close(my_pipes->pipes[i]) < 0)
+		if (my_pipes->pipes[i] != -1)
 		{
-			//error
+			if (close(my_pipes->pipes[i]) < 0)
+				ft_printf(2, "%s\n", ERR_CLOSE);
 		}
 		i++;
 	}
@@ -124,7 +170,7 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 - We close read always after we reach the second section, not in the first section because we still need it
 - Then in the end we reset properties as well as go over to the next pair or pipe ends.
 
-Needs proper error trigger
+CLEAN THIS UP
 */
 void	close_pipes(t_pipes *my_pipes)
 {
@@ -133,18 +179,16 @@ void	close_pipes(t_pipes *my_pipes)
 		if (my_pipes->current_section == 1)
 		{
 			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
-			{
-				//error
-			}
+				ft_printf(2, "%s\n", ERR_CLOSE);
+			my_pipes->pipes[my_pipes->write_end] = -1;
 		//	printf("Closing write end: %d\n", my_pipes->write_end);
 		//	printf("Curr section: %d\n", my_pipes->current_section);
 		}
 		else if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
 			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
-			{
-				//error
-			}
+				ft_printf(2, "%s\n", ERR_CLOSE);
+			my_pipes->pipes[my_pipes->write_end] = -1;
 		//	printf("Closing write end: %d\n", my_pipes->write_end);
 		//	printf("Curr section: %d\n", my_pipes->current_section);
 		}
@@ -153,23 +197,23 @@ void	close_pipes(t_pipes *my_pipes)
 			if (my_pipes->current_section > 1)
 			{
 				if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
-				{
-					//error
-				}
+					ft_printf(2, "%s\n", ERR_CLOSE);
+				my_pipes->pipes[my_pipes->read_end] = -1;
 		//		printf("Closing middle read end: %d\n", my_pipes->read_end);
 			}
 		}
 		else
 		{
 			if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
-			{
-				//error
-			}
+				ft_printf(2, "%s\n", ERR_CLOSE);
+			my_pipes->pipes[my_pipes->read_end] = -1;
 		//	printf("Closing last read end: %d\n", my_pipes->read_end);
 		//	printf("Curr section: %d\n", my_pipes->current_section);
 		}
 	}
-	reset_properties(my_pipes);
+//The reason we are doing this is so we can handle the exit if waitpid fails!!!
+	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
+		reset_properties(my_pipes);
 }
 
 void	run_builtin_command(t_node *node, t_pipes *my_pipes)
@@ -189,8 +233,9 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 	else if (!ft_strcmp(node->cmd[0], "cd"))
 		execute_cd(node->cmd);
 }
-//Check the return value here, I assume it's okay to return 0 when parent
-//Also can these commands fail as well
+
+//DOUBLE CHECK THESE COMMANDS FAILING
+//MOVE THE STD RESTORATION TO THE VERY END
 int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
@@ -199,10 +244,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 	{
 		pid = fork();
 		if (pid < 0)
-		{
-			ft_printf(2, "%s\n", ERR_FORK);
-			exit (1);
-		}
+			handle_fatal_exit(ERR_FORK, my_pipes, NULL);
 		if (pid == 0)
 		{
 			if (my_pipes->exit_status == 1)
@@ -228,9 +270,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 				//error
 			}
 			if (close (my_pipes->stdinfd) < 0)
-			{
-				//error
-			}
+				ft_printf(2, "%s\n", ERR_CLOSE);
 		}
 		if (my_pipes->stdoutfd != -1)
 		{
@@ -239,36 +279,26 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 				//error
 			}
 			if (close (my_pipes->stdoutfd) < 0)
-			{
-				//error
-			}
+				ft_printf(2, "%s\n", ERR_CLOSE);
 		}
 		return (0);
 	}
 }
-//Question is what should we track here, should we catch the wrong commands etc here
-//Or should we catch them already in the get_paths..?
-//Also right now if there's a problem with fd's, I still go here and I return from this stage
-//The reason is that this is in child so it's easier for me to get the exit status.
+
+//DOUBLE CHECK THIS ALSO EACCESS
 int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
 
 	pid = fork();
 	if (pid < 0)
-	{
-		free_array(*my_pipes->my_envp);
-		free_my_pipes(my_pipes);
-		ft_printf(2, "%s\n", ERR_FORK);
-		exit (1);
-	}
+		handle_fatal_exit(ERR_FORK, my_pipes, NULL);
 	if (pid == 0)
 	{
 		if (my_pipes->paths == NULL)
 			my_pipes->paths = get_paths(my_pipes->my_envp);
 		handle_redirections(node, my_pipes, status);
 		my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
-	//	printf("absolute: %s\n", my_pipes->command_path);
 		if (my_pipes->exit_status == 1)
 			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
@@ -277,7 +307,6 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 			ft_printf(2, "%s: %s\n", node->cmd[0], ERR_COMMAND);
 			exit (127);
 		}
-//double check this
 		else if (errno == EACCES)
 		{
 			ft_printf(2, "%s: no permissions\n", &node->cmd[0]);
@@ -289,8 +318,6 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 	return (pid);
 }
 
-//Also right now if we write exit XX, it exits with 0 when in reality it should exit with the number told
-//We also need to implement exit function
 int	is_builtin(char *command)
 {
 	const char	*builtins[7];
@@ -312,7 +339,7 @@ int	is_builtin(char *command)
 	return (0);
 }
 
-//Make this shorter
+//MAKE THIS SHORTER
 void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
@@ -336,10 +363,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 	{
 		my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));
 		if (my_pipes->pipes == NULL)
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			exit (1);
-		}
+			handle_fatal_exit(MALLOC, my_pipes, list);
 		i = 0;
 		while (i < my_pipes->pipe_amount)
 		{
@@ -353,40 +377,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 	}
 }
 
-void	free_my_pipes(t_pipes *my_pipes)
-{
-	int	i;
-
-	i = 0;
-	if (my_pipes)
-	{
-		if (my_pipes->paths)
-			free_array(my_pipes->paths);
-		if (my_pipes->command_path)
-		{
-			free(my_pipes->command_path);
-			my_pipes->command_path = NULL;
-		}
-		if (my_pipes->pipes)
-		{
-//I actually doubt we even need to close pipes here because I'm closing them step by step!!
-//However I might need to do some sort of closing here just in case if closing or fork fails..
-			// while (i < my_pipes->pipe_amount * 2)
-			// {
-			// 	if (close(my_pipes->pipes[i]) < 0)
-			// 	{
-			// 		//close failed
-			// 	}
-			// 	i++;
-			// }
-			free(my_pipes->pipes);
-			my_pipes->pipes = NULL;
-		}
-		free(my_pipes);
-	}
-}
-
-//Double check the exit statuses, they seem to work but test with edgecases!
+//DOUBLE CHECK EXIT STATUSES
 //Also there might be a situation with sleep where you explicitly have to mark the last process but I was unable to repro the behaviour
 int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 {
@@ -400,10 +391,7 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 		if (child_pids[i] > 0)
 		{
 			if (waitpid(child_pids[i], &status, 0) < 0)
-			{
-				ft_printf(2, "%s\n", ERR_WAITPID);
-				exit (1);
-			}
+				handle_fatal_exit(ERR_WAITPID, my_pipes, NULL);
 		}
 		i++;
 	}
@@ -421,6 +409,7 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	return (exit_status);
 }
 
+//THIS ONE NEEDS TO BE CLEANED UP
 int	loop_nodes(t_node *list, char ***envp, int status)
 {
 	t_pipes	*my_pipes;
@@ -429,8 +418,8 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 	my_pipes = malloc(sizeof(t_pipes));
 	if (my_pipes == NULL)
 	{
-		ft_printf(2, "%s\n", MALLOC);
-		exit (1);
+		free_array(*envp);
+		handle_fatal_exit(MALLOC, my_pipes, list);
 	}
 	initialize_struct(my_pipes, list, envp);
 	pid_t child_pids[my_pipes->pipe_amount + 1];

@@ -1,6 +1,6 @@
 #include "../minishell.h"
 
-//we also might need to check if open fails here..? do we need to exit at this point alrdy
+//CHECK OPEN FAILS
 void	open_infile(char *file, t_pipes *my_pipes)
 {
 	int fd;
@@ -19,7 +19,7 @@ void	open_infile(char *file, t_pipes *my_pipes)
 	}
 	my_pipes->infile_fd = open(file, O_RDONLY);
 }
-//same thing here
+//CHECK OPEN FAILS
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 {
 	if (access(file, F_OK) == 0 && access(file, W_OK) != 0)
