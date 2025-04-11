@@ -120,8 +120,8 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 
 int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 {
-	int		j;
 	int		k;
+	int		j;
 	char	*exp;
 	char	*replacer;
 
@@ -132,19 +132,20 @@ int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 	//malloc protection
 	if ((exp && *exp) || (arg[i] == '?' && arg[i - 1] == '$'))
 	{
-		if (arg[i] == '?' && arg[i - 1] == '$')
-			j = 1;
 		replacer = find_replacer(arg, i, expand, exp);
 		if (replacer)
 		{
 			if (!is_quote(arg))
 				expand->expanded = 1;
 			append_replacer(&(expand->new_cmd[new_arg]), replacer);
-			i = k + ft_strlen(exp);
-			free  (replacer);
+			if (exp && *exp)
+				i = k + ft_strlen(exp);
+			else
+				i = k + 1;
+			free (replacer);
 		}
-		else if (arg[i] && arg[i + 1])
-			i = k;
+		else if (arg[i] && arg[i + 1] && arg[i] != '"')
+			i = k + ft_strlen(exp);
 		else if (k == 1)
 			expand->no_element = 1;
 		free (exp);
@@ -176,31 +177,32 @@ void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	}
 	handle_quotes_in_expansion(expand, new_arg, arg);
 }
-
-int	expand_filename_helper(char *file, char **new_file, t_exp *expand, int i)
+//do we need to handle else if (file[i] && file[i + 1] && file[i] != '"") here as well as in cmd? but then it doesn't work in heredoc??
+int	expand_line_helper(char *file, char **new_file, t_exp *expand, int i)
 {
-	int		j;
 	int		k;
+	int		j;
 	char	*exp;
 	char	*replacer;
 
-	j = 0;
 	i++;
 	k = i;
+	j = 0;
 	count_expandable(file, &i, &j);
 	exp = ft_substr(file, k, j);
 	//malloc protection
 	if ((exp && *exp) || (file[i] == '?' && file[i - 1] == '$'))
 	{
-		if (file[i] == '?' && file[i - 1] == '$')
-			j = 1;
 		replacer = find_replacer(file, i, expand, exp);
 		if (replacer)
 		{
 			if (!is_quote(file))
 				expand->expanded = 1;
 			append_replacer(new_file, replacer);
-			i = k + ft_strlen(exp);
+			if (exp && *exp)
+				i = k + ft_strlen(exp);
+			else
+				i = k + 1;
 			free (replacer);
 		}
 		else if (file[i] && file[i + 1])
@@ -216,7 +218,7 @@ int	expand_filename_helper(char *file, char **new_file, t_exp *expand, int i)
 	return (i);
 }
 
-char	*expand_filename(char *file, t_exp *expand)
+char	*expand_line(char *file, t_exp *expand)
 {
 	int		i;
 	int		quote;
@@ -230,7 +232,7 @@ char	*expand_filename(char *file, t_exp *expand)
 	while (file[i])
 	{
 		if (file[i] == '$' && file[i + 1] && !quote)
-			i = expand_filename_helper(file, &new_file, expand, i);
+			i = expand_line_helper(file, &new_file, expand, i);
 		else
 		{
 			if (file[i] == 39)
@@ -250,3 +252,4 @@ char	*expand_filename(char *file, t_exp *expand)
 	}
 	return (new_file);
 }
+

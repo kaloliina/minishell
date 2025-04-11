@@ -88,6 +88,6 @@ char	*handle_expansion_filename(char *file, char **envp, int status)
 	if (!ft_strchr(file, '$'))
 		new_file = handle_quotes(file);
 	else
-		new_file = expand_filename(file, &expand);
+		new_file = expand_line(file, &expand);
 	return (new_file);
 }

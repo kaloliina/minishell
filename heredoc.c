@@ -2,85 +2,24 @@
 char	*heredoc_expandables(char *line, char **envp, int fd, int status)
 {
 	int		i;
-	int		j;
-	int		k;
-	char	*exp;
-	char	*replacer;
 	char	*new_line;
-	char	*new_start;
-	char	*new_end;
+	t_exp	expand;
 
 	i = 0;
-	k = 0;
+	init_exp(&expand, status, envp);
+	new_line = ft_strdup("");
+	//malloc protection
 	while (line[i])
 	{
 		if (line[i] == '$' && line[i + 1])
-		{
-			j = 0;
-			i++;
-			k = i;
-			while (!is_exp_delimiter(line[i]))
-			{
-				i++;
-				j++;
-			}
-			exp = ft_substr(line, k, j);
-			//malloc protection
-			if ((exp && *exp) || (line[i] == '?' && line[i - 1] == '$'))
-			{
-				if (line[i] == '?' && line[i - 1] == '$')
-				{
-					j = 1;
-					replacer = ft_itoa(status);
-				}
-				else
-					replacer = find_envp(exp, envp);
-				if (replacer)
-				{
-					new_line = add_replacer(line, replacer, k, j);
-					free (line);
-					free (replacer);
-					line = NULL;
-					line = new_line;
-					new_line = NULL;
-				}
-				else
-				{
-					while (!is_exp_delimiter(line[i]))
-						i++;
-					new_start = ft_substr(line, 0, k - 1);
-					//malloc protection
-					new_end = ft_substr(line, i, (ft_strlen(line) - i));
-					//malloc protection
-					new_line = ft_strjoin(new_start, new_end);
-					//malloc protection
-					free (line);
-					line = NULL;
-					line = new_line;
-					new_line = NULL;
-				}
-			}
-			else
-			{
-				while (!is_exp_delimiter(line[i]))
-					i++;
-				new_start = ft_substr(line, 0, k - 1);
-				//malloc protection
-				new_end = ft_substr(line, (i + 1), (ft_strlen(line) - (i + 1)));
-				//malloc protection
-				new_line = ft_strjoin(new_start, new_end);
-				//malloc protection
-				free (line);
-				line = NULL;
-				line = new_line;
-				new_line = NULL;
-			}
-			i = k;
-		}
+			i = expand_line_helper(line, &new_line, &expand, i);
 		else
+		{
+			append_char(&new_line, line, i);
 			i++;
+		}
 	}
-	return (line);
+	return (new_line);
 }
 
 static void	heredoc_rm(char **envp, char **paths)

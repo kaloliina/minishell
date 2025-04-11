@@ -114,7 +114,8 @@ char	*find_envp(char *exp, char **envp);
 char	*handle_quotes(char *s);
 void	init_exp(t_exp *exp, int status, char **envp);
 void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg);
-char	*expand_filename(char *file, t_exp *expand);
+char	*expand_line(char *file, t_exp *expand);
+int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
 void	count_expandable(char *arg, int *i, int *j);
 char	*find_replacer(char *arg, int i, t_exp *expand, char *exp);
 
