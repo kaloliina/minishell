@@ -3,8 +3,6 @@
 //we also might need to check if open fails here..? do we need to exit at this point alrdy
 void	open_infile(char *file, t_pipes *my_pipes)
 {
-	int fd;
-
 	if (access(file, F_OK) != 0)
 	{
 		ft_printf(2, "%s: %s\n", file, ERR_INVFILE);

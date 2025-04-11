@@ -15,9 +15,7 @@ void	free_array(char **array)
 
 void	free_nodes(t_node *node)
 {
-	int		i;
 	t_node	*tmp;
-	t_node	*first;
 
 	while (node->prev)
 		node = node->prev;

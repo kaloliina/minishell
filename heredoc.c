@@ -184,9 +184,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 
 void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status)
 {
-	int		fd;
 	int		newdir;
-	char	*line;
 
 	newdir = 0;
 	if (chdir("./tmp") == -1)

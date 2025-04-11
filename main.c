@@ -32,7 +32,6 @@ char	*handle_quotes(char *s)
 
 void	handle_exp_and_quotes(t_data *data, char **envp, int status)
 {
-	int		i;
 	t_node	*tmp;
 	char	**new_cmd;
 	char	*new_line;
@@ -109,7 +108,7 @@ int	minishell(char *input, char ***envp, int status)
 {
 	t_data	data;
 	// t_node	*tmp;
-	int		k;
+	// int		k;
 	char	*line;
 
 	init_tokens_struct(&data);
@@ -143,7 +142,6 @@ int	main(int ac, char **av, char **envp)
 {
 	char	*input;
 	char	**my_envp;
-	char	**tmp;
 	int		status = 0;
 
 	(void)av;

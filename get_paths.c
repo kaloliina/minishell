@@ -5,6 +5,8 @@ char	**get_paths(char ***envp)
 	int		i = 0;
 	char	**paths;
 	char	*string;
+
+	string = NULL;
 	while ((*envp)[i] != NULL)
 	{
 		if (ft_strncmp((*envp)[i], "PATH=", 5) == 0)

@@ -58,13 +58,10 @@ char	**delete_element(char **cmd, int arg)
 
 char	**handle_expansion_cmds(char **cmd, char **envp, int status)
 {
-	int		i;
 	int		arg;
 	int		new_arg;
-	char	*temp;
 	t_exp	expand;
 
-	i = 0;
 	arg = 0;
 	new_arg = 0;
 	init_exp(&expand, status, envp);
@@ -75,7 +72,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp, int status)
 		if (!ft_strchr(cmd[arg], '$'))
 			expand.new_cmd[new_arg++] = handle_quotes(cmd[arg++]);
 		else
-			handle_expansion_in_cmd(cmd, &expand, &arg, &new_arg);
+			expand_cmd(cmd, &expand, &arg, &new_arg);
 	}
 	expand.new_cmd[new_arg] = NULL;
 	return (expand.new_cmd);
@@ -84,61 +81,13 @@ char	**handle_expansion_cmds(char **cmd, char **envp, int status)
 //goes through filename string and expands it
 char	*handle_expansion_filename(char *file, char **envp, int status)
 {
-	int		i;
-	int		j;
-	int		k;
-	int		quote;
-	char	*exp;
-	char	*replacer;
 	char	*new_file;
 	t_exp	expand;
 
-	i = 0;
-	k = 0;
-	quote = 0;
 	init_exp(&expand, status, envp);
 	if (!ft_strchr(file, '$'))
 		new_file = handle_quotes(file);
 	else
-	{
-		new_file = ft_strdup("");
-		//malloc protection
-		while (file[i])
-		{
-			if (file[i] == '$' && file[i + 1] && !quote)
-			{
-				j = 0;
-				i++;
-				k = i;
-				count_expandable(file, &i, &j);
-				exp = ft_substr(file, k, j);
-				//malloc protection
-				if ((exp && *exp) || (file[i] == '?' && file[i - 1] == '$'))
-				{
-					if (file[i] == '?' && file[i - 1] == '$')
-						j = 1;
-					replacer = find_replacer(file, i, &expand, exp);
-					if (replacer)
-					{
-						append_replacer(&new_file, replacer);
-						i = k + ft_strlen(exp);
-						free (replacer);
-					}
-					else if (file[i] && file[i + 1])
-						i = k;
-					else
-						append_replacer(&new_file, file);
-					free (exp);
-				}
-			}
-			else
-			{
-				if (file[i] == 39)
-					quote = !quote;
-				append_char(&new_file, file, i);
-				i++;
-			}
-		}
-	}
+		new_file = expand_filename(file, &expand);
 	return (new_file);
 }

@@ -87,7 +87,38 @@ void	count_expandable(char *arg, int *i, int *j)
 	}
 }
 
-int	handle_expansion_helper(char *arg, t_exp *expand, int new_arg, int i)
+void	init_exp(t_exp *exp, int status, char **envp)
+{
+	exp->expanded = 0;
+	exp->no_element = 0;
+	exp->status = status;
+	exp->envp = envp;
+	exp->new_cmd = NULL;
+}
+
+void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
+{
+	char	*temp;
+
+	if (expand->no_element)
+		expand->no_element = 0;
+	else
+	{
+		if (!expand->expanded)
+		{
+			temp = handle_quotes(expand->new_cmd[*new_arg]);
+			if (temp)
+			{
+				expand->new_cmd[*new_arg] = temp;
+				temp = NULL;
+			}
+		}
+		(*new_arg)++;
+	}
+	(*arg)++;
+}
+
+int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 {
 	int		j;
 	int		k;
@@ -121,38 +152,7 @@ int	handle_expansion_helper(char *arg, t_exp *expand, int new_arg, int i)
 	return (i);
 }
 
-void	init_exp(t_exp *exp, int status, char **envp)
-{
-	exp->expanded = 0;
-	exp->no_element = 0;
-	exp->status = status;
-	exp->envp = envp;
-	exp->new_cmd = NULL;
-}
-
-void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
-{
-	char	*temp;
-
-	if (expand->no_element)
-		expand->no_element = 0;
-	else
-	{
-		if (!expand->expanded)
-		{
-			temp = handle_quotes(expand->new_cmd[*new_arg]);
-			if (temp)
-			{
-				expand->new_cmd[*new_arg] = temp;
-				temp = NULL;
-			}
-		}
-		(*new_arg)++;
-	}
-	(*arg)++;
-}
-
-void	handle_expansion_in_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
+void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 {
 	int		i;
 	int		quote;
@@ -165,7 +165,7 @@ void	handle_expansion_in_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	while (cmd[*arg][i])
 	{
 		if (cmd[*arg][i] == '$' && cmd[*arg][i + 1] && !quote)
-			i = handle_expansion_helper(cmd[*arg], expand, *new_arg, i + 1);
+			i = expand_cmd_helper(cmd[*arg], expand, *new_arg, i + 1);
 		else
 		{
 			if (cmd[*arg][i] == 39)
@@ -175,4 +175,78 @@ void	handle_expansion_in_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 		}
 	}
 	handle_quotes_in_expansion(expand, new_arg, arg);
+}
+
+int	expand_filename_helper(char *file, char **new_file, t_exp *expand, int i)
+{
+	int		j;
+	int		k;
+	char	*exp;
+	char	*replacer;
+
+	j = 0;
+	i++;
+	k = i;
+	count_expandable(file, &i, &j);
+	exp = ft_substr(file, k, j);
+	//malloc protection
+	if ((exp && *exp) || (file[i] == '?' && file[i - 1] == '$'))
+	{
+		if (file[i] == '?' && file[i - 1] == '$')
+			j = 1;
+		replacer = find_replacer(file, i, expand, exp);
+		if (replacer)
+		{
+			if (!is_quote(file))
+				expand->expanded = 1;
+			append_replacer(new_file, replacer);
+			i = k + ft_strlen(exp);
+			free (replacer);
+		}
+		else if (file[i] && file[i + 1])
+			i = k + ft_strlen(exp);
+		else
+		{
+			if (k == 1)
+				append_replacer(new_file, file);
+			i = ft_strlen(file);
+		}
+		free (exp);
+	}
+	return (i);
+}
+
+char	*expand_filename(char *file, t_exp *expand)
+{
+	int		i;
+	int		quote;
+	char	*new_file;
+	char	*temp;
+
+	i = 0;
+	quote = 0;
+	new_file = ft_strdup("");
+	//malloc protection
+	while (file[i])
+	{
+		if (file[i] == '$' && file[i + 1] && !quote)
+			i = expand_filename_helper(file, &new_file, expand, i);
+		else
+		{
+			if (file[i] == 39)
+				quote = !quote;
+			append_char(&new_file, file, i);
+			i++;
+		}
+	}
+	if (!expand->expanded)
+	{
+		temp = handle_quotes(new_file);
+		if (temp)
+		{
+			new_file = temp;
+			temp = NULL;
+		}
+	}
+	return (new_file);
 }

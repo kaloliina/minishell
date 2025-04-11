@@ -113,7 +113,8 @@ int		fill_replacer(char *new_line, char *line, int k, int j, int *l);
 char	*find_envp(char *exp, char **envp);
 char	*handle_quotes(char *s);
 void	init_exp(t_exp *exp, int status, char **envp);
-void	handle_expansion_in_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg);
+void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg);
+char	*expand_filename(char *file, t_exp *expand);
 void	count_expandable(char *arg, int *i, int *j);
 char	*find_replacer(char *arg, int i, t_exp *expand, char *exp);
 
