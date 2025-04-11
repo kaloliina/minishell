@@ -64,20 +64,6 @@ int	is_char_redirection(char c)
 	return (0);
 }
 
-int	is_redirection_char(char *s)
-{
-	int	i;
-
-	i = 0;
-	while (s[i])
-	{
-		if (s[i] == '<' || s[i] == '>')
-			return (1);
-		i++;
-	}
-	return (0);
-}
-
 int	is_only_quotes(char *s)
 {
 	if (((s[0] == '\'' && s[1] == '\'')

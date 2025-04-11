@@ -30,10 +30,35 @@ char	*handle_quotes(char *s)
 	return (new);
 }
 
+void	handle_cmds(t_node *tmp, char **envp, int status)
+{
+	char	**new_cmd;
+
+	new_cmd = handle_expansion_cmds(tmp->cmd, envp, status);
+	if (new_cmd)
+	{
+		free_array(tmp->cmd);
+		tmp->cmd = new_cmd;
+		new_cmd = NULL;
+	}
+}
+
+void	handle_filename(t_node *tmp, char **envp, int status)
+{
+	char	*new_file;
+
+	new_file = handle_expansion_filename(tmp->file, envp, status);
+	if (new_file)
+	{
+		free (tmp->file);
+		tmp->file = new_file;
+		new_file = NULL;
+	}
+}
+
 void	handle_exp_and_quotes(t_data *data, char **envp, int status)
 {
 	t_node	*tmp;
-	char	**new_cmd;
 	char	*new_line;
 	char	*new_file;
 
@@ -41,25 +66,9 @@ void	handle_exp_and_quotes(t_data *data, char **envp, int status)
 	while (tmp)
 	{
 		if (tmp->cmd)
-		{
-			new_cmd = handle_expansion_cmds(tmp->cmd, envp, status);
-			if (new_cmd)
-			{
-				free_array(tmp->cmd);
-				tmp->cmd = new_cmd;
-				new_cmd = NULL;
-			}
-		}
+			handle_cmds(tmp, envp, status);
 		if (tmp->file)
-		{
-			new_file = handle_expansion_filename(tmp->file, envp, status);
-			if (new_file)
-			{
-				free (tmp->file);
-				tmp->file = new_file;
-				new_file = NULL;
-			}
-		}
+			handle_filename(tmp, envp, status);
 		if (tmp->delimiter)
 		{
 			if (is_quote(tmp->delimiter))

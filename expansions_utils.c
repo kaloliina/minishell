@@ -12,13 +12,15 @@ void	append_char(char **new_string, char *s, int i)
 	free (temp);
 }
 
-void	append_replacer(char **new_string, char *replacer)
+void	append_replacer(char **new_string, char *replacer, int is_freeable)
 {
 	char	*temp;
 
 	temp = *new_string;
 	*new_string = ft_strjoin(*new_string, replacer);
 	free (temp);
+	if (is_freeable)
+		free (replacer);
 }
 
 int	fill_replacer(char *new_line, char *line, int k, int j, int *l)
@@ -118,18 +120,26 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 	(*arg)++;
 }
 
+char	*find_exp(char *arg, int *i, int *k)
+{
+	int		j;
+	char	*exp;
+
+	j = 0;
+	*k = *i;
+	count_expandable(arg, i, &j);
+	exp = ft_substr(arg, *k, j);
+	//malloc protection
+	return (exp);
+}
+
 int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 {
 	int		k;
-	int		j;
 	char	*exp;
 	char	*replacer;
 
-	j = 0;
-	k = i;
-	count_expandable(arg, &i, &j);
-	exp = ft_substr(arg, k, j);
-	//malloc protection
+	exp = find_exp(arg, &i, &k);
 	if ((exp && *exp) || (arg[i] == '?' && arg[i - 1] == '$'))
 	{
 		replacer = find_replacer(arg, i, expand, exp);
@@ -137,14 +147,13 @@ int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 		{
 			if (!is_quote(arg))
 				expand->expanded = 1;
-			append_replacer(&(expand->new_cmd[new_arg]), replacer);
+			append_replacer(&(expand->new_cmd[new_arg]), replacer, 1);
 			if (exp && *exp)
 				i = k + ft_strlen(exp);
 			else
 				i = k + 1;
-			free (replacer);
 		}
-		else if (arg[i] && arg[i + 1] && arg[i] != '"')
+		else if (arg[i] && arg[i + 1])
 			i = k + ft_strlen(exp);
 		else if (k == 1)
 			expand->no_element = 1;
@@ -157,7 +166,6 @@ void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 {
 	int		i;
 	int		quote;
-	// char	*temp;
 
 	i = 0;
 	quote = 0;
@@ -177,20 +185,24 @@ void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	}
 	handle_quotes_in_expansion(expand, new_arg, arg);
 }
-//do we need to handle else if (file[i] && file[i + 1] && file[i] != '"") here as well as in cmd? but then it doesn't work in heredoc??
+
+int	invalid_exp_line(char *file, char **new_file, int k)
+{
+	int	i;
+
+	i = ft_strlen(file);
+	if (k == 1)
+		append_replacer(new_file, file, 0);
+	return (i);
+}
+
 int	expand_line_helper(char *file, char **new_file, t_exp *expand, int i)
 {
 	int		k;
-	int		j;
 	char	*exp;
 	char	*replacer;
 
-	i++;
-	k = i;
-	j = 0;
-	count_expandable(file, &i, &j);
-	exp = ft_substr(file, k, j);
-	//malloc protection
+	exp = find_exp(file, &i, &k);
 	if ((exp && *exp) || (file[i] == '?' && file[i - 1] == '$'))
 	{
 		replacer = find_replacer(file, i, expand, exp);
@@ -198,58 +210,60 @@ int	expand_line_helper(char *file, char **new_file, t_exp *expand, int i)
 		{
 			if (!is_quote(file))
 				expand->expanded = 1;
-			append_replacer(new_file, replacer);
+			append_replacer(new_file, replacer, 1);
 			if (exp && *exp)
 				i = k + ft_strlen(exp);
 			else
 				i = k + 1;
-			free (replacer);
 		}
 		else if (file[i] && file[i + 1])
 			i = k + ft_strlen(exp);
 		else
-		{
-			if (k == 1)
-				append_replacer(new_file, file);
-			i = ft_strlen(file);
-		}
+			i = invalid_exp_line(file, new_file, k);
 		free (exp);
 	}
 	return (i);
+}
+
+char	*handle_quotes_in_line(char *new_line, t_exp *expand)
+{
+	char	*temp;
+
+	if (!expand->expanded)
+	{
+		temp = handle_quotes(new_line);
+		if (temp)
+		{
+			new_line = temp;
+			temp = NULL;
+		}
+	}
+	return (new_line);
 }
 
 char	*expand_line(char *file, t_exp *expand)
 {
 	int		i;
 	int		quote;
-	char	*new_file;
+	char	*new_line;
 	char	*temp;
 
 	i = 0;
 	quote = 0;
-	new_file = ft_strdup("");
+	new_line = ft_strdup("");
 	//malloc protection
 	while (file[i])
 	{
 		if (file[i] == '$' && file[i + 1] && !quote)
-			i = expand_line_helper(file, &new_file, expand, i);
+			i = expand_line_helper(file, &new_line, expand, i + 1);
 		else
 		{
 			if (file[i] == 39)
 				quote = !quote;
-			append_char(&new_file, file, i);
+			append_char(&new_line, file, i);
 			i++;
 		}
 	}
-	if (!expand->expanded)
-	{
-		temp = handle_quotes(new_file);
-		if (temp)
-		{
-			new_file = temp;
-			temp = NULL;
-		}
-	}
-	return (new_file);
+	return (handle_quotes_in_line(new_line, expand));
 }
 

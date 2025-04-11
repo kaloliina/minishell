@@ -12,7 +12,7 @@ char	*heredoc_expandables(char *line, char **envp, int fd, int status)
 	while (line[i])
 	{
 		if (line[i] == '$' && line[i + 1])
-			i = expand_line_helper(line, &new_line, &expand, i);
+			i = expand_line_helper(line, &new_line, &expand, i + 1);
 		else
 		{
 			append_char(&new_line, line, i);

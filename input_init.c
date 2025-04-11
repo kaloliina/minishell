@@ -28,28 +28,47 @@ void	update_quote(char c, int *quote)
 		*quote = 0;
 }
 
-static char	*add_spaces_helper(char *line, char *input, int i)
+int	is_missing_pre_space(char *input, int i, int quote)
 {
-	int	j;
+	if (i > 0 && is_char_redirection(input[i]) && input[i - 1] != ' '
+			&& !is_char_redirection(input[i - 1]) && !quote)
+		return (1);
+	return (0);
+}
+
+int	is_missing_post_after_pre_space(char *input, int i)
+{
+	if (input[i + 1] && input[i + 1] != ' '
+		&& !is_char_redirection(input[i + 1]))
+		return (1);
+	return (0);
+}
+
+int	is_missing_post_space(char *input, int i, int quote)
+{
+	if (is_char_redirection(input[i]) && input[i + 1]
+			&& input[i + 1] != ' ' && !quote
+			&& !is_char_redirection(input[i + 1]))
+		return (1);
+	return (0);
+}
+
+static char	*add_spaces_helper(char *line, char *input, int i, int j)
+{
 	int	quote;
 
-	j = 0;
 	quote = 0;
 	while (input[i])
 	{
 		update_quote(input[i], &quote);
-		if (i > 0 && is_char_redirection(input[i]) && input[i - 1] != ' '
-			&& !is_char_redirection(input[i - 1]) && !quote)
+		if (is_missing_pre_space(input, i, quote))
 		{
 			line[j++] = ' ';
 			line[j++] = input[i];
-			if (input[i + 1] && input[i + 1] != ' '
-				&& !is_char_redirection(input[i + 1]))
+			if (is_missing_post_after_pre_space(input, i))
 				line[j++] = ' ';
 		}
-		else if (is_char_redirection(input[i]) && input[i + 1]
-			&& input[i + 1] != ' ' && !quote
-			&& !is_char_redirection(input[i + 1]))
+		else if (is_missing_post_space(input, i, quote))
 		{
 			line[j++] = input[i];
 			line[j++] = ' ';
@@ -113,5 +132,5 @@ char	*add_spaces(char *input)
 		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
-	return (add_spaces_helper(line, input, 0));
+	return (add_spaces_helper(line, input, 0, 0));
 }
