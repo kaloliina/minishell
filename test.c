@@ -1,7 +1,8 @@
 #include "../minishell.h"
 
-//This one feels okay but can probably be cleaned up slightly (remove my_pipes check as it always should be true)
-//We are also closing fd's here even though they should be closed already at this point. But if fork fails for example, we need to do it here.
+/* CAN WE MAKE THIS SHORTER?
+- Remove if my pipes is not null, feels like we never encounter a situation like that because it's checked beforehand
+- Otherwise combine some stuff*/
 void	free_my_pipes(t_pipes *my_pipes)
 {
 	int	i;
@@ -258,6 +259,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 	}
 	else
 	{
+//this should be after handle redirections maybe..
 		if (my_pipes->exit_status == 1)
 			return (0);
 		handle_redirections(node, my_pipes, status);
@@ -368,10 +370,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 		while (i < my_pipes->pipe_amount)
 		{
 			if (pipe(&my_pipes->pipes[i * 2]) < 0)
-			{
-				ft_printf(2, "%s\n", ERR_PIPE);
-				exit (1);
-			}
+				handle_fatal_exit(ERR_PIPE, my_pipes, NULL);
 			i++;
 		}
 	}
