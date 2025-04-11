@@ -123,7 +123,7 @@ char	*add_spaces(char *input)
 	int		extras;
 	char	*line;
 
-	if (check_quotes(input))
+	if (check_quotes(input) < 0)
 		return (NULL);
 	extras = count_missing_spaces(input);
 	line = malloc(ft_strlen(input) + extras + 1);

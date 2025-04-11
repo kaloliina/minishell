@@ -122,7 +122,7 @@ int	minishell(char *input, char ***envp, int status)
 
 	init_tokens_struct(&data);
 	line = add_spaces(input);
-	if (!line) //what is this case?
+	if (!line) //unclosed quotes
 		return (-1);
 	init_sections(&data, line);
 	init_tokens(&data);
@@ -156,7 +156,7 @@ int	main(int ac, char **av, char **envp)
 	(void)av;
 	if (ac != 1)
 		return (0);
-	signal(SIGINT, signal_handler);
+	//signal(SIGINT, signal_handler);
 	signal(SIGQUIT, SIG_IGN);
 	my_envp = copy_envp(envp);
 	while (1)
