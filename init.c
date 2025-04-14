@@ -6,6 +6,8 @@ t_node	*init_new_node(t_data *data, t_node *new_node)
 	if (!new_node)
 	{
 		free_nodes(data->first);
+		free_sections_tokens(data);
+		//free input
 		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
@@ -22,9 +24,24 @@ void	init_sections(t_data *data, char *line)
 {
 	data->sections = ft_split(line, '|'); //malloc protection
 	if (!data->sections)
-		return ;
+	{
+		ft_printf(2, "‰s\n", MALLOC);
+		free (line);
+		//free input
+		exit (1);
+	}
 	data->sections_amount = count_elements(data->sections);
 	free (line);
+}
+
+char	**init_only_quotes_section(t_data *data, int i)
+{
+	data->tokens[i] = malloc(sizeof(char *) * 2);
+	//malloc protection
+	data->tokens[i][0] = ft_strdup(data->sections[i]);
+	//malloc protection
+	data->tokens[i][1] = NULL;
+	return (data->tokens[i]);
 }
 
 void	init_tokens(t_data *data)
@@ -36,6 +53,7 @@ void	init_tokens(t_data *data)
 	if (!data->tokens)
 	{
 		free_array(data->sections);
+		//free input
 		ft_printf(2, "%s\n", MALLOC);
 		exit (1);
 	}
@@ -48,19 +66,16 @@ void	init_tokens(t_data *data)
 			data->tokens[i] = ft_ms_split(data->sections[i], ' ', &error);
 			if (!data->tokens[i] && error)
 			{
-				free_nodes(data->first);
+				while (--i > 0)
+					free_array(data->tokens[i]);
+				free_array(data->sections);
+				//free input
 				ft_printf(2, "%s\n", MALLOC);
 				exit (1);
 			}
 		}
 		else
-		{
-			data->tokens[i] = malloc(sizeof(char *) * 2);
-			//malloc protection
-			data->tokens[i][0] = ft_strdup(data->sections[i]);
-			//malloc protection
-			data->tokens[i][1] = NULL;
-		}
+			data->tokens[i] = init_only_quotes_section(data, i);
 		i++;
 	}
 	data->tokens[i] = NULL;

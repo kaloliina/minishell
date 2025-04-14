@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-static int	set_redir_file_node(t_node *new_node, t_data *data, int i, int j)
+static void	set_redir_type(t_node *new_node, t_data *data, int i, int j)
 {
 	if (!ft_strcmp(data->tokens[i][j], "<"))
 		new_node->type = REDIR_INF;
@@ -10,6 +10,11 @@ static int	set_redir_file_node(t_node *new_node, t_data *data, int i, int j)
 		new_node->type = REDIR_OUTF;
 	else
 		new_node->type = REDIR_HEREDOC;
+}
+
+static int	set_redir_node(t_node *new_node, t_data *data, int i, int j)
+{
+	set_redir_type(new_node, data, i, j);
 	if (data->tokens[i][j + 1])
 	{
 		if (new_node->type == REDIR_HEREDOC)
@@ -27,7 +32,7 @@ static int	set_redir_file_node(t_node *new_node, t_data *data, int i, int j)
 		free_nodes(data->first);
 		return (-1);
 	}
-	return (j + 2);
+	return (0);
 }
 
 static int	make_redir_node(t_data *data, int i, int j, t_node **first)
@@ -47,10 +52,10 @@ static int	make_redir_node(t_data *data, int i, int j, t_node **first)
 		current->next = new_node;
 		new_node->prev = current;
 	}
-	return (set_redir_file_node(new_node, data, i, j));
+	return (set_redir_node(new_node, data, i, j));
 }
 
-static void	make_all_redir_nodes(t_data *data, int i)
+static int	make_all_redir_nodes(t_data *data, int i)
 {
 	int	j;
 
@@ -58,9 +63,13 @@ static void	make_all_redir_nodes(t_data *data, int i)
 	while (data->tokens[i][j])
 	{
 		if (is_redirection(data->tokens[i][j]))
-			make_redir_node(data, i, j, &data->first);
+		{
+			if (make_redir_node(data, i, j, &data->first) < 0)
+				return (-1);
+		}
 		j++;
 	}
+	return (0);
 }
 
 int	lexer(t_data *data)
@@ -76,14 +85,10 @@ int	lexer(t_data *data)
 		j = 0;
 		if (i > 0)
 			make_pipe_node(data, &data->first);
-		make_all_redir_nodes(data, i);
+		if (make_all_redir_nodes(data, i) < 0)
+			return (-1);
 		while (data->tokens[i][j])
-		{
-			temp = make_node(data, i, j, &data->first);
-			if (temp < 0)
-				return (-1);
-			j = temp;
-		}
+			j = make_node(data, i, j, &data->first);
 		i++;
 	}
 	free_sections_tokens(data);

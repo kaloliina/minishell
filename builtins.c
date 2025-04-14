@@ -55,6 +55,7 @@ void	execute_pwd(void)
 
 void	execute_cd(char **cmd)
 {
+	//need to handle if cmd is only "cd" so if !cmd[1]!!
 	if (cmd[2])
 	{
 		ft_printf(2, "minishell: cd: too many arguments\n");

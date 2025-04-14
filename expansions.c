@@ -56,7 +56,7 @@ char	**delete_element(char **cmd, int arg)
 	return (new_cmd);
 }
 
-char	**handle_expansion_cmds(char **cmd, char **envp, int status)
+char	**handle_cmd_expansion(char **cmd, char **envp, int status)
 {
 	int		arg;
 	int		new_arg;
@@ -79,7 +79,7 @@ char	**handle_expansion_cmds(char **cmd, char **envp, int status)
 }
 
 //goes through filename string and expands it
-char	*handle_expansion_filename(char *file, char **envp, int status)
+char	*handle_filename_expansion(char *file, char **envp, int status)
 {
 	char	*new_file;
 	t_exp	expand;

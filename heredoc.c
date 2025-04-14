@@ -1,5 +1,5 @@
 #include "minishell.h"
-char	*heredoc_expandables(char *line, char **envp, int fd, int status)
+char	*expand_heredoc(char *line, char **envp, int fd, int status)
 {
 	int		i;
 	char	*new_line;
@@ -78,7 +78,7 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status)
 			break ;
 		if (!delimiter_node->delimiter_quote)
 		{
-			temp = heredoc_expandables(line, *my_pipes->my_envp, fd, status);
+			temp = expand_heredoc(line, *my_pipes->my_envp, fd, status);
 			if (temp)
 				line = temp;
 		}

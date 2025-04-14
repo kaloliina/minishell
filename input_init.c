@@ -22,9 +22,9 @@ static int	count_missing_spaces(char *input)
 
 void	update_quote(char c, int *quote)
 {
-	if ((c == 34 || c == 39) && !(*quote))
+	if ((c == '"' || c == '\'') && !(*quote))
 		*quote = c;
-	else if ((c == 34 || c == 39) && *quote == c)
+	else if ((c == '"' || c == '\'') && *quote == c)
 		*quote = 0;
 }
 
@@ -101,7 +101,7 @@ int	check_quotes(char *input)
 	temp = 0;
 	while (input[i])
 	{
-		if (input[i] == 34 || input[i] == 39)
+		if (input[i] == '"' || input[i] == '\'')
 		{
 			temp = check_closing_quote(input, i + 1, input[i]);
 			if (!temp)

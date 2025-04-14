@@ -1,5 +1,25 @@
 #include "minishell.h"
 
+void	make_pipe_node(t_data *data, t_node **first)
+{
+	t_node	*new_node;
+	t_node	*current;
+
+	new_node = NULL;
+	new_node = init_new_node(data, new_node);
+	if (!*first)
+		*first = new_node;
+	else
+	{
+		current = *first;
+		while (current->next)
+			current = current->next;
+		current->next = new_node;
+		new_node->prev = current;
+	}
+	new_node->type = PIPE;
+}
+
 static int	count_args(t_data *data, int i, int j)
 {
 	int	args;

@@ -30,11 +30,11 @@ char	*handle_quotes(char *s)
 	return (new);
 }
 
-void	handle_cmds(t_node *tmp, char **envp, int status)
+void	handle_cmd(t_node *tmp, char **envp, int status)
 {
 	char	**new_cmd;
 
-	new_cmd = handle_expansion_cmds(tmp->cmd, envp, status);
+	new_cmd = handle_cmd_expansion(tmp->cmd, envp, status);
 	if (new_cmd)
 	{
 		free_array(tmp->cmd);
@@ -47,7 +47,7 @@ void	handle_filename(t_node *tmp, char **envp, int status)
 {
 	char	*new_file;
 
-	new_file = handle_expansion_filename(tmp->file, envp, status);
+	new_file = handle_filename_expansion(tmp->file, envp, status);
 	if (new_file)
 	{
 		free (tmp->file);
@@ -66,7 +66,7 @@ void	handle_exp_and_quotes(t_data *data, char **envp, int status)
 	while (tmp)
 	{
 		if (tmp->cmd)
-			handle_cmds(tmp, envp, status);
+			handle_cmd(tmp, envp, status);
 		if (tmp->file)
 			handle_filename(tmp, envp, status);
 		if (tmp->delimiter)
@@ -113,6 +113,45 @@ char	**copy_envp(char **envp)
 	return (my_envp);
 }
 
+char	*check_pipes(char *line)
+{
+	char	*new_line;
+	char	*temp;
+	int		i;
+	int		j;
+
+	i = 0;
+	while (line[i])
+	{
+		if (line[i] == '|' && (line[i + 1] == '|' || (line[i + 1] == '\0')))
+		{
+			j = i;
+			while (line[i] == '|')
+				i++;
+			if (line[i] != '\0')
+			{
+				new_line = ft_substr(line, 0, (j - 1));
+				free (line);
+				line = new_line;
+				new_line = NULL;
+			}
+			else
+			{
+				temp = readline("> ");
+				new_line = ft_strjoin(line, temp);
+				free (line);
+				free (temp);
+				line = new_line;
+				new_line = NULL;
+				temp = NULL;
+			}
+			return (line);
+		}
+		i++;
+	}
+	return (line);
+}
+
 int	minishell(char *input, char ***envp, int status)
 {
 	t_data	data;
@@ -124,9 +163,10 @@ int	minishell(char *input, char ***envp, int status)
 	line = add_spaces(input);
 	if (!line) //unclosed quotes
 		return (-1);
+	line = check_pipes(line);
 	init_sections(&data, line);
 	init_tokens(&data);
-	if (lexer(&data) < 0) //what is this case?
+	if (lexer(&data) < 0) //missing filename or delimiter
 		return (-1);
 	handle_exp_and_quotes(&data, *envp, status);
 	// tmp = data.first;
