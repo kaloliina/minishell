@@ -10,13 +10,18 @@ char	**get_paths(char ***envp)
 		if (ft_strncmp((*envp)[i], "PATH=", 5) == 0)
 		{
 			string = ft_substr((*envp)[i], 5, (ft_strlen((*envp)[i]) - 5));
-			//malloc protection
+			if (string == NULL)
+				return (NULL);
 			break;
 		}
 		i++;
 	}
 	paths = ft_split(string, ':');
-	//malloc protection
+	if (paths == NULL)
+	{
+		free (string);
+		return (NULL);
+	}
 	free (string);
 	return (paths);
 }
@@ -32,9 +37,14 @@ char	*get_absolute_path(char **paths, char *command)
 	while (paths[i] != NULL)
 	{
 		path_helper = ft_strjoin(paths[i], "/");
-		//malloc protection
+		if (path_helper == NULL)
+			return (NULL);
 		path = ft_strjoin(path_helper, command);
-		//malloc protection
+		if (path == NULL)
+		{
+			free (path_helper);
+			return (NULL);
+		}
 		if (access(path, F_OK | X_OK) == 0)
 		{
 			free (path_helper);

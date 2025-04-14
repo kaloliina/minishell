@@ -23,6 +23,8 @@
 # define ERR_FD "failed to return a file descriptor"
 # define ERR_CLOSE "failed to close a file descriptor"
 
+extern int g_shell_state;
+
 typedef enum s_type
 {
 	PIPE,

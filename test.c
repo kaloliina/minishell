@@ -12,11 +12,15 @@ void	free_my_pipes(t_pipes *my_pipes)
 	{
 		if (my_pipes->paths)
 			free_array(my_pipes->paths);
-		if (my_pipes->command_path)
+		if (my_pipes->command_path && ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
 		{
 			free(my_pipes->command_path);
 			my_pipes->command_path = NULL;
 		}
+		if (close (my_pipes->stdinfd) < 0)
+			ft_printf(2, "%s\n", ERR_CLOSE);
+		if (close (my_pipes->stdoutfd) < 0)
+			ft_printf(2, "%s\n", ERR_CLOSE);
 		if (my_pipes->pipes)
 		{
 			while (i < my_pipes->pipe_amount * 2)
@@ -51,18 +55,8 @@ static void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list)
 	exit (1);
 }
 
-//MOVE THE ORIGINAL DUPPING TO START
 static void	redirection_outfile(t_pipes *my_pipes)
 {
-	if (my_pipes->stdoutfd == -1)
-	{
-		my_pipes->stdoutfd = dup(STDOUT_FILENO);
-		if (my_pipes->stdoutfd == -1)
-		{
-			ft_printf(2, "%s\n", ERR_FD);
-			my_pipes->exit_status = 1;
-		}
-	}
 	if (dup2(my_pipes->outfile_fd, STDOUT_FILENO) < 0)
 	{
 		ft_printf(2, "%s\n", ERR_FD);
@@ -72,18 +66,8 @@ static void	redirection_outfile(t_pipes *my_pipes)
 		ft_printf(2, "%s\n", ERR_CLOSE);
 }
 
-//MOVE THE ORIGINAL DUPPING TO START
 static void	redirection_infile(t_pipes *my_pipes)
 {
-	if (my_pipes->stdinfd == -1)
-	{
-		my_pipes->stdinfd = dup(STDIN_FILENO);
-		if (my_pipes->stdinfd == -1)
-		{
-			ft_printf(2, "%s\n", ERR_FD);
-			my_pipes->exit_status = 1;
-		}
-	}
 	if (dup2(my_pipes->infile_fd, STDIN_FILENO) < 0)
 	{
 		ft_printf(2, "%s\n", ERR_FD);
@@ -111,7 +95,8 @@ int	get_pipe_amount(t_node *list)
 
 void	reset_properties(t_pipes *my_pipes)
 {
-	free (my_pipes->command_path);
+	if (ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
+		free (my_pipes->command_path);
 	my_pipes->command_path = NULL;
 	my_pipes->command_node = NULL;
 	my_pipes->infile_fd = -1;
@@ -129,12 +114,28 @@ void	reset_properties(t_pipes *my_pipes)
 	my_pipes->current_section++;
 }
 
-//ADD PROPER ERROR FOR DUP
-void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
+void	close_child_pipes(t_pipes *my_pipes)
 {
 	int	i;
 
 	i = 0;
+	while (i < my_pipes->pipe_amount * 2)
+	{
+		if (my_pipes->pipes[i] != -1)
+		{
+			if (close(my_pipes->pipes[i]) < 0)
+				ft_printf(2, "%s\n", ERR_CLOSE);
+		}
+		i++;
+	}
+    if (close(my_pipes->stdinfd) < 0)
+		ft_printf(2, "%s\n", ERR_CLOSE);
+    if (close(my_pipes->stdoutfd) < 0)
+		ft_printf(2, "%s\n", ERR_CLOSE);
+}
+//ADD PROPER ERROR FOR DUP
+void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
+{
 	if (my_pipes->outfile_fd >= 0)
 		redirection_outfile(my_pipes);
 	if (my_pipes->infile_fd >= 0)
@@ -145,24 +146,17 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 	{
 		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) < 0)
 		{
-			//error
+			ft_printf(2, "%s\n", ERR_FD);
+			my_pipes->exit_status = 1;
 		}
 	}
 	if ((my_pipes->current_section != my_pipes->pipe_amount + 1) && my_pipes->outfile_fd == -1)
 	{
 		if (dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO) < 0)
 		{
-			//error
+			ft_printf(2, "%s\n", ERR_FD);
+			my_pipes->exit_status = 1;
 		}
-	}
-	while (i < my_pipes->pipe_amount * 2)
-	{
-		if (my_pipes->pipes[i] != -1)
-		{
-			if (close(my_pipes->pipes[i]) < 0)
-				ft_printf(2, "%s\n", ERR_CLOSE);
-		}
-		i++;
 	}
 }
 
@@ -248,9 +242,10 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 			handle_fatal_exit(ERR_FORK, my_pipes, NULL);
 		if (pid == 0)
 		{
+			handle_redirections(node, my_pipes, status);
+			close_child_pipes(my_pipes);
 			if (my_pipes->exit_status == 1)
 				exit (1);
-			handle_redirections(node, my_pipes, status);
 			run_builtin_command(node, my_pipes);
 			exit(0);
 		}
@@ -259,30 +254,10 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 	}
 	else
 	{
-//this should be after handle redirections maybe..
-		if (my_pipes->exit_status == 1)
-			return (0);
 		handle_redirections(node, my_pipes, status);
+		if (my_pipes->exit_status == 1)
+			return (1);
 		run_builtin_command(node, my_pipes);
-//Im not even sure if this should be done here. Basically yes but this is also a "last thing to do"
-		if (my_pipes->stdinfd != -1)
-		{
-			if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
-			{
-				//error
-			}
-			if (close (my_pipes->stdinfd) < 0)
-				ft_printf(2, "%s\n", ERR_CLOSE);
-		}
-		if (my_pipes->stdoutfd != -1)
-		{
-			if (dup2(my_pipes->stdoutfd, STDOUT_FILENO) < 0)
-			{
-				//error
-			}
-			if (close (my_pipes->stdoutfd) < 0)
-				ft_printf(2, "%s\n", ERR_CLOSE);
-		}
 		return (0);
 	}
 }
@@ -292,26 +267,31 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
 
+	my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
+	if (my_pipes->command_path == NULL)
+		handle_fatal_exit(MALLOC, my_pipes, NULL);
 	pid = fork();
 	if (pid < 0)
 		handle_fatal_exit(ERR_FORK, my_pipes, NULL);
 	if (pid == 0)
 	{
-		if (my_pipes->paths == NULL)
-			my_pipes->paths = get_paths(my_pipes->my_envp);
 		handle_redirections(node, my_pipes, status);
-		my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
+		close_child_pipes(my_pipes);
 		if (my_pipes->exit_status == 1)
 			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
 		if (errno == ENOENT)
 		{
 			ft_printf(2, "%s: %s\n", node->cmd[0], ERR_COMMAND);
+			free (my_pipes->command_path);
+			my_pipes->command_path = NULL;
 			exit (127);
 		}
 		else if (errno == EACCES)
 		{
-			ft_printf(2, "%s: no permissions\n", &node->cmd[0]);
+			ft_printf(2, "%s: no permissions\n", node->cmd[0]);
+			free (my_pipes->command_path);
+			my_pipes->command_path = NULL;
 			exit (126);
 		}
 		else
@@ -370,10 +350,19 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 		while (i < my_pipes->pipe_amount)
 		{
 			if (pipe(&my_pipes->pipes[i * 2]) < 0)
-				handle_fatal_exit(ERR_PIPE, my_pipes, NULL);
+				handle_fatal_exit(ERR_PIPE, my_pipes, list);
 			i++;
 		}
 	}
+	my_pipes->paths = get_paths(my_pipes->my_envp);
+	if (my_pipes->paths == NULL)
+		handle_fatal_exit(MALLOC, my_pipes, list);
+	my_pipes->stdoutfd = dup(STDOUT_FILENO);
+	if (my_pipes->stdoutfd == -1)
+		handle_fatal_exit(ERR_FD, my_pipes, list);
+	my_pipes->stdinfd = dup(STDIN_FILENO);
+	if (my_pipes->stdinfd == -1)
+		handle_fatal_exit(ERR_FD, my_pipes, list);
 }
 
 //DOUBLE CHECK EXIT STATUSES
@@ -385,26 +374,29 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	int	i;
 
 	i = 0;
+	status = 0;
 	while (i < amount)
 	{
 		if (child_pids[i] > 0)
 		{
 			if (waitpid(child_pids[i], &status, 0) < 0)
 				handle_fatal_exit(ERR_WAITPID, my_pipes, NULL);
+			if (WIFEXITED(status))
+				exit_status = WEXITSTATUS(status);
+			else if (WIFSIGNALED(status))
+				exit_status = 128 + WTERMSIG(status);
+			else
+				exit_status = my_pipes->exit_status;
+				//printf("parent exited with status of %d\n", my_pipes->exit_status);
 		}
 		i++;
 	}
+	//these maybe would need another exit message
+	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
+		handle_fatal_exit(ERR_FD, my_pipes, NULL);
+	if (dup2(my_pipes->stdoutfd, STDOUT_FILENO) < 0)
+		handle_fatal_exit(ERR_FD, my_pipes, NULL);
 	free_my_pipes(my_pipes);
-	if (WIFEXITED(status) == true)
-	{
-		exit_status = WEXITSTATUS(status);
-		//printf("child exited with status of %d\n", WEXITSTATUS(status));
-	}
-	else
-	{
-		exit_status = my_pipes->exit_status;
-		//printf("parent exited with status of %d\n", my_pipes->exit_status);
-	}
 	return (exit_status);
 }
 

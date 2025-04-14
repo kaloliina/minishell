@@ -140,6 +140,7 @@ int	minishell(char *input, char ***envp, int status)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
+	g_shell_state = 1;
 	status = loop_nodes(data.first, envp, status);
 	free_nodes(data.first);
 	return (status);
@@ -160,6 +161,7 @@ int	main(int ac, char **av, char **envp)
 	my_envp = copy_envp(envp);
 	while (1)
 	{
+		g_shell_state = 0;
 		input = readline("minishell > ");
 		if (!input || !ft_strcmp(input, "exit"))
 		{
