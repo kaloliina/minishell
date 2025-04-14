@@ -84,12 +84,18 @@ typedef struct t_pipe
 t_node	*init_new_node(t_data *data, t_node *new_node);
 void	init_sections(t_data *data, char *line);
 void	init_tokens(t_data *data);
-void	init_tokens_struct(t_data *data);
+void	init_data(t_data *data);
 int		set_sections(t_data *data, char **tmp_sections);
 void	set_last_section(t_data *data, int i, char **tmp_sections);
 
 //lexing
-char	*add_spaces(char *input);
+char	*add_spaces(char *input, char **envp);
+int		is_missing_pre_space(char *input, int i, int quote);
+int		is_missing_post_after_pre_space(char *input, int i);
+int		is_missing_post_space(char *input, int i, int quote);
+char	*check_pipes(char *line, char **envp);
+char	**copy_envp(char **envp);
+void	update_quote(char c, int *quote);
 int		ft_ms_strings(char const *s, char c, int i);
 int		ft_ms_checkquote(char const *s, int i, char quote);
 char	**ft_ms_freearray(char **array, int j, int *error);
@@ -111,6 +117,8 @@ void	append_replacer(char **new_string, char *replacer, int is_freeable);
 int		fill_replacer(char *new_line, char *line, int k, int j, int *l);
 char	*find_envp(char *exp, char **envp);
 char	*handle_quotes(char *s);
+void	handle_filename(t_node *tmp, char **envp, int status);
+void	handle_cmd(t_node *tmp, char **envp, int status);
 void	init_exp(t_exp *exp, int status, char **envp);
 void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg);
 char	*expand_line(char *file, t_exp *expand);

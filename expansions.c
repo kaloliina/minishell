@@ -91,3 +91,59 @@ char	*handle_filename_expansion(char *file, char **envp, int status)
 		new_file = expand_line(file, &expand);
 	return (new_file);
 }
+
+char	*handle_quotes(char *s)
+{
+	int		i;
+	int		j;
+	int		s_quote;
+	int		d_quote;
+	char	*new;
+
+	i = 0;
+	j = 0;
+	s_quote = 0;
+	d_quote = 0;
+	new = malloc(ft_strlen(s) + 1);
+	//malloc protection
+	while (s[i])
+	{
+		if ((s[i] == 34 && d_quote) || (s[i] == 39 && s_quote))
+			new[j++] = s[i];
+		else if (s[i] == 34 && !d_quote)
+			s_quote = !s_quote;
+		else if (s[i] == 39 && !s_quote)
+			d_quote = !d_quote;
+		else
+			new[j++] = s[i];
+		i++;
+	}
+	new[j] = '\0';
+	return (new);
+}
+
+void	handle_cmd(t_node *tmp, char **envp, int status)
+{
+	char	**new_cmd;
+
+	new_cmd = handle_cmd_expansion(tmp->cmd, envp, status);
+	if (new_cmd)
+	{
+		free_array(tmp->cmd);
+		tmp->cmd = new_cmd;
+		new_cmd = NULL;
+	}
+}
+
+void	handle_filename(t_node *tmp, char **envp, int status)
+{
+	char	*new_file;
+
+	new_file = handle_filename_expansion(tmp->file, envp, status);
+	if (new_file)
+	{
+		free (tmp->file);
+		tmp->file = new_file;
+		new_file = NULL;
+	}
+}

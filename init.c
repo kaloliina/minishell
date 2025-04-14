@@ -81,7 +81,7 @@ void	init_tokens(t_data *data)
 	data->tokens[i] = NULL;
 }
 
-void	init_tokens_struct(t_data *data)
+void	init_data(t_data *data)
 {
 	data->first = NULL;
 	data->sections = NULL;

@@ -1,61 +1,5 @@
 #include "minishell.h"
 
-char	*handle_quotes(char *s)
-{
-	int		i;
-	int		j;
-	int		s_quote;
-	int		d_quote;
-	char	*new;
-
-	i = 0;
-	j = 0;
-	s_quote = 0;
-	d_quote = 0;
-	new = malloc(ft_strlen(s) + 1);
-	//malloc protection
-	while (s[i])
-	{
-		if ((s[i] == 34 && d_quote) || (s[i] == 39 && s_quote))
-			new[j++] = s[i];
-		else if (s[i] == 34 && !d_quote)
-			s_quote = !s_quote;
-		else if (s[i] == 39 && !s_quote)
-			d_quote = !d_quote;
-		else
-			new[j++] = s[i];
-		i++;
-	}
-	new[j] = '\0';
-	return (new);
-}
-
-void	handle_cmd(t_node *tmp, char **envp, int status)
-{
-	char	**new_cmd;
-
-	new_cmd = handle_cmd_expansion(tmp->cmd, envp, status);
-	if (new_cmd)
-	{
-		free_array(tmp->cmd);
-		tmp->cmd = new_cmd;
-		new_cmd = NULL;
-	}
-}
-
-void	handle_filename(t_node *tmp, char **envp, int status)
-{
-	char	*new_file;
-
-	new_file = handle_filename_expansion(tmp->file, envp, status);
-	if (new_file)
-	{
-		free (tmp->file);
-		tmp->file = new_file;
-		new_file = NULL;
-	}
-}
-
 void	handle_exp_and_quotes(t_data *data, char **envp, int status)
 {
 	t_node	*tmp;
@@ -85,103 +29,38 @@ void	handle_exp_and_quotes(t_data *data, char **envp, int status)
 	}
 }
 
-char	**copy_envp(char **envp)
-{
-	char	**my_envp;
-	int		i;
-
-	i = count_elements(envp);
-	my_envp = malloc(sizeof(char *) * (i + 1));
-	if (!my_envp)
-	{
-		ft_printf(2, "%s\n", MALLOC);
-		exit (1);
-	}
-	i = 0;
-	while (envp[i])
-	{
-		my_envp[i] = ft_strdup(envp[i]);
-		if (!my_envp[i])
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			free_array(my_envp);
-			exit (1);
-		}
-		i++;
-	}
-	my_envp[i] = NULL;
-	return (my_envp);
-}
-
-char	*check_pipes(char *line)
-{
-	char	*new_line;
-	char	*temp;
-	int		i;
-	int		j;
-
-	i = 0;
-	while (line[i])
-	{
-		if (line[i] == '|' && (line[i + 1] == '|' || (line[i + 1] == '\0')))
-		{
-			j = i;
-			while (line[i] == '|')
-				i++;
-			if (line[i] != '\0')
-			{
-				new_line = ft_substr(line, 0, (j - 1));
-				free (line);
-				line = new_line;
-				new_line = NULL;
-			}
-			else
-			{
-				temp = readline("> ");
-				new_line = ft_strjoin(line, temp);
-				free (line);
-				free (temp);
-				line = new_line;
-				new_line = NULL;
-				temp = NULL;
-			}
-			return (line);
-		}
-		i++;
-	}
-	return (line);
-}
-
 int	minishell(char *input, char ***envp, int status)
 {
 	t_data	data;
-	// t_node	*tmp;
-	// int		k;
+	t_node	*tmp;
+	int		k;
 	char	*line;
 
-	init_tokens_struct(&data);
-	line = add_spaces(input);
+	init_data(&data);
+	line = add_spaces(input, *envp);
 	if (!line) //unclosed quotes
 		return (-1);
-	line = check_pipes(line);
+	line = check_pipes(line, *envp);
+	if (!line)
+		return (-1);
 	init_sections(&data, line);
 	init_tokens(&data);
 	if (lexer(&data) < 0) //missing filename or delimiter
 		return (-1);
 	handle_exp_and_quotes(&data, *envp, status);
-	// tmp = data.first;
-	// while (tmp)
-	// {
-	// 	printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
-	// 	k = 0;
-	// 	if (tmp->cmd)
-	// 	{
-	// 		while (tmp->cmd[k])
-	// 			printf(" cmd %s", tmp->cmd[k++]);
-	// 	}
-	// 	printf("\n");
-	// 	tmp = tmp->next;
-	// }
+	tmp = data.first;
+	while (tmp)
+	{
+		printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
+		k = 0;
+		if (tmp->cmd)
+		{
+			while (tmp->cmd[k])
+				printf(" cmd %s", tmp->cmd[k++]);
+		}
+		printf("\n");
+		tmp = tmp->next;
+	}
 	status = loop_nodes(data.first, envp, status);
 	free_nodes(data.first);
 	return (status);
