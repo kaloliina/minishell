@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-void	handle_exp_and_quotes(t_data *data, char **envp, int status)
+static void	handle_exp_and_quotes(t_data *data, char **envp, int status)
 {
 	t_node	*tmp;
 	char	*new_line;

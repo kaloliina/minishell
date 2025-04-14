@@ -48,7 +48,7 @@ static char	*add_spaces_helper(char *line, char *input, int i, int j)
 	return (line);
 }
 
-int	check_closing_quote(char *s, int i, int quote)
+static int	check_closing_quote(char *s, int i, int quote)
 {
 	while (s[i])
 	{
@@ -59,7 +59,7 @@ int	check_closing_quote(char *s, int i, int quote)
 	return (0);
 }
 
-int	check_quotes(char *input)
+static int	check_quotes(char *input)
 {
 	int	i;
 	int	temp;

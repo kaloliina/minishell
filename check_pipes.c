@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-int is_invalid_pipes(char *line, int i)
+static int is_invalid_pipes(char *line, int i)
 {
     int pipes;
 
@@ -21,7 +21,7 @@ int is_invalid_pipes(char *line, int i)
     return (0);
 }
 
-int spaces_between_quotes(char *line, int i)
+static int spaces_between_quotes(char *line, int i)
 {
     if (line[i] == ' ')
     {
@@ -33,7 +33,7 @@ int spaces_between_quotes(char *line, int i)
     return (0);
 }
 
-char    *check_pipes_helper(char *line, char **envp, int i, int j)
+static char    *check_pipes_helper(char *line, char **envp, int i, int j)
 {
     char    *new_line;
 

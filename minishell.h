@@ -80,55 +80,51 @@ typedef struct t_pipe
 	int				exit_status;
 }					t_pipes;
 
-//init
-t_node	*init_new_node(t_data *data, t_node *new_node);
-void	init_sections(t_data *data, char *line);
-void	init_tokens(t_data *data);
+//init and input validation
+char	**copy_envp(char **envp);
 void	init_data(t_data *data);
-int		set_sections(t_data *data, char **tmp_sections);
-void	set_last_section(t_data *data, int i, char **tmp_sections);
-
-//lexing
 char	*add_spaces(char *input, char **envp);
+void	update_quote(char c, int *quote);
 int		is_missing_pre_space(char *input, int i, int quote);
 int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
 char	*check_pipes(char *line, char **envp);
-char	**copy_envp(char **envp);
-void	update_quote(char c, int *quote);
+void	init_sections(t_data *data, char *line);
+void	init_tokens(t_data *data);
+
+//lexing
+int		lexer(t_data *data);
+int		make_all_redir_nodes(t_data *data, int i);
+t_node	*init_new_node(t_data *data, t_node *new_node);
+int		set_cmd_node(t_data *data, int i, int j, t_node *new_node);
+char	**ft_ms_split(char const *s, char c, int *error);
 int		ft_ms_strings(char const *s, char c, int i);
 int		ft_ms_checkquote(char const *s, int i, char quote);
 char	**ft_ms_freearray(char **array, int j, int *error);
-char	**ft_ms_split(char const *s, char c, int *error);
-int		make_node(t_data *data, int i, int j, t_node **first);
-int		lexer(t_data *data);
 
 //parsing
-int		is_redirection(char *token);
-int		is_char_redirection(char c);
-void	make_pipe_node(t_data *data, t_node **first);
+void	handle_cmd(t_node *tmp, char **envp, int status);
+void	handle_filename(t_node *tmp, char **envp, int status);
+char	*expand_heredoc(char *line, char **envp, int fd, int status);
 char	**handle_cmd_expansion(char **cmd, char **envp, int status);
 char	*handle_filename_expansion(char *file, char **envp, int status);
-int		handle_expansion_helper(char *arg, t_exp *expand, int new_arg, int i);
+char	*handle_quotes(char *s);
+char	*find_envp(char *exp, char **envp);
+void	init_exp(t_exp *exp, int status, char **envp);
+char	*find_exp(char *arg, int *i, int *k);
+char	*find_replacer(char *arg, int i, t_exp *expand, char *exp);
 void	append_char(char **new_string, char *s, int i);
-int		is_exp_delimiter(char c);
-char	*add_replacer(char *line, char *replacer, int k, int j);
 void	append_replacer(char **new_string, char *replacer, int is_freeable);
 int		fill_replacer(char *new_line, char *line, int k, int j, int *l);
-char	*find_envp(char *exp, char **envp);
-char	*handle_quotes(char *s);
-void	handle_filename(t_node *tmp, char **envp, int status);
-void	handle_cmd(t_node *tmp, char **envp, int status);
-void	init_exp(t_exp *exp, int status, char **envp);
-void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg);
-char	*expand_line(char *file, t_exp *expand);
 int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
+int		is_redirection(char *token);
+int		is_exp_delimiter(char c);
+void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
-char	*find_replacer(char *arg, int i, t_exp *expand, char *exp);
 
 //cleanup
-void	free_nodes(t_node *node);
 void	free_array(char **array);
+void	free_nodes(t_node *node);
 void	free_sections_tokens(t_data *data);
 
 //utils
@@ -136,6 +132,7 @@ int		count_elements(char **tokens);
 int		is_quote(char *s);
 int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
+int		is_char_redirection(char c);
 void	signal_handler(int sig);
 void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status);
 
@@ -151,7 +148,6 @@ int		fill_new_envp(char ***new_envp, char **envp, char **cmd, int args);
 int		add_existing_envp(char **new_envp, char **envp);
 int		add_exported_envp(char **new_envp, char **cmd, int i);
 int		find_unset_element(char **cmd, char *envp_element);
-char	**sort_for_export(char **export, char **envp, int elements);
 char	**fill_unset_envp(char **new_envp, char **cmd, char **envp);
 
 //execution

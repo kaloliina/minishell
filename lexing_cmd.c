@@ -1,25 +1,5 @@
 #include "minishell.h"
 
-void	make_pipe_node(t_data *data, t_node **first)
-{
-	t_node	*new_node;
-	t_node	*current;
-
-	new_node = NULL;
-	new_node = init_new_node(data, new_node);
-	if (!*first)
-		*first = new_node;
-	else
-	{
-		current = *first;
-		while (current->next)
-			current = current->next;
-		current->next = new_node;
-		new_node->prev = current;
-	}
-	new_node->type = PIPE;
-}
-
 static int	count_args(t_data *data, int i, int j)
 {
 	int	args;
@@ -79,7 +59,7 @@ static int	set_cmd_args(char **token, int init_j, int args, t_node *new_node)
 	return (init_j);
 }
 
-static int	set_cmd_node(t_data *data, int i, int j, t_node *new_node)
+int	set_cmd_node(t_data *data, int i, int j, t_node *new_node)
 {
 	int	init_j;
 	int	args;
@@ -101,26 +81,4 @@ static int	set_cmd_node(t_data *data, int i, int j, t_node *new_node)
 	}
 	else
 		return (set_cmd_no_args(data, i, init_j, new_node));
-}
-
-int	make_node(t_data *data, int i, int j, t_node **first)
-{
-	t_node	*new_node;
-	t_node	*current;
-
-	if (is_redirection(data->tokens[i][j]))
-		return (j + 2);
-	new_node = NULL;
-	new_node = init_new_node(data, new_node);
-	if (!*first)
-		*first = new_node;
-	else
-	{
-		current = *first;
-		while (current->next)
-			current = current->next;
-		current->next = new_node;
-		new_node->prev = current;
-	}
-	return (set_cmd_node(data, i, j, new_node));
 }

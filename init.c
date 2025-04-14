@@ -34,7 +34,7 @@ void	init_sections(t_data *data, char *line)
 	free (line);
 }
 
-char	**init_only_quotes_section(t_data *data, int i)
+static char	**init_only_quotes_section(t_data *data, int i)
 {
 	data->tokens[i] = malloc(sizeof(char *) * 2);
 	//malloc protection

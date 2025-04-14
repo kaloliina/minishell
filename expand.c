@@ -25,73 +25,6 @@ char	*find_envp(char *exp, char **envp)
 	return (replacer);
 }
 
-//makes a new cmd array without the invalid element
-char	**delete_element(char **cmd, int arg)
-{
-	int		i;
-	int		j;
-	int		elements;
-	char	**new_cmd;
-
-	i = 0;
-	j = 0;
-	elements = count_elements(cmd);
-	new_cmd = malloc(sizeof(char *) * elements);
-	//malloc protection
-	while (cmd[i])
-	{
-		if (i == arg)
-		{
-			new_cmd[j++] = ft_strdup(cmd[i]);
-			if (!new_cmd[j - 1])
-			{
-				ft_printf(2, MALLOC);
-				free_array(new_cmd); //must also free everything else
-				exit (1);
-			}
-		}
-		i++;
-	}
-	new_cmd[j] = NULL;
-	return (new_cmd);
-}
-
-char	**handle_cmd_expansion(char **cmd, char **envp, int status)
-{
-	int		arg;
-	int		new_arg;
-	t_exp	expand;
-
-	arg = 0;
-	new_arg = 0;
-	init_exp(&expand, status, envp);
-	expand.new_cmd = malloc(sizeof(char *) * (count_elements(cmd) + 1));
-	//malloc protection
-	while (cmd[arg])
-	{
-		if (!ft_strchr(cmd[arg], '$'))
-			expand.new_cmd[new_arg++] = handle_quotes(cmd[arg++]);
-		else
-			expand_cmd(cmd, &expand, &arg, &new_arg);
-	}
-	expand.new_cmd[new_arg] = NULL;
-	return (expand.new_cmd);
-}
-
-//goes through filename string and expands it
-char	*handle_filename_expansion(char *file, char **envp, int status)
-{
-	char	*new_file;
-	t_exp	expand;
-
-	init_exp(&expand, status, envp);
-	if (!ft_strchr(file, '$'))
-		new_file = handle_quotes(file);
-	else
-		new_file = expand_line(file, &expand);
-	return (new_file);
-}
-
 char	*handle_quotes(char *s)
 {
 	int		i;
@@ -120,6 +53,29 @@ char	*handle_quotes(char *s)
 	}
 	new[j] = '\0';
 	return (new);
+}
+
+char	*expand_heredoc(char *line, char **envp, int fd, int status)
+{
+	int		i;
+	char	*new_line;
+	t_exp	expand;
+
+	i = 0;
+	init_exp(&expand, status, envp);
+	new_line = ft_strdup("");
+	//malloc protection
+	while (line[i])
+	{
+		if (line[i] == '$' && line[i + 1])
+			i = expand_line_helper(line, &new_line, &expand, i + 1);
+		else
+		{
+			append_char(&new_line, line, i);
+			i++;
+		}
+	}
+	return (new_line);
 }
 
 void	handle_cmd(t_node *tmp, char **envp, int status)

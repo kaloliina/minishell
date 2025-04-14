@@ -1,26 +1,4 @@
 #include "minishell.h"
-char	*expand_heredoc(char *line, char **envp, int fd, int status)
-{
-	int		i;
-	char	*new_line;
-	t_exp	expand;
-
-	i = 0;
-	init_exp(&expand, status, envp);
-	new_line = ft_strdup("");
-	//malloc protection
-	while (line[i])
-	{
-		if (line[i] == '$' && line[i + 1])
-			i = expand_line_helper(line, &new_line, &expand, i + 1);
-		else
-		{
-			append_char(&new_line, line, i);
-			i++;
-		}
-	}
-	return (new_line);
-}
 
 static void	heredoc_rm(char **envp, char **paths)
 {
@@ -64,13 +42,11 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	waitpid(rmdir_pid, &status, 0);
 }
 
-static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status)
+static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status, int fd)
 {
-	int		fd;
 	char	*line;
 	char	*temp;
 
-	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	while (1)
 	{
 		line = readline("> ");
@@ -123,7 +99,8 @@ static void	heredoc_mkdir(char **envp, char **paths)
 
 void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status)
 {
-	int		newdir;
+	int	newdir;
+	int	fd;
 
 	newdir = 0;
 	if (chdir("./tmp") == -1)
@@ -134,7 +111,9 @@ void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int sta
 			heredoc_mkdir(envp, paths);
 		}
 	}
-	heredoc_read(my_pipes->heredoc_node, my_pipes, status);
+	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
+	//if (fd < 0)?
+	heredoc_read(my_pipes->heredoc_node, my_pipes, status, fd);
 	heredoc_rm(envp, paths);
 	chdir("..");
 	if (newdir)

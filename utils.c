@@ -1,13 +1,5 @@
 #include "minishell.h"
 
-int	is_redirection(char *token)
-{
-	if (ft_strcmp(token, ">") && ft_strcmp(token, ">>")
-		&& ft_strcmp(token, "<") && ft_strcmp(token, "<<"))
-		return (0);
-	return (1);
-}
-
 int	count_elements(char **sections)
 {
 	int	i;
@@ -32,6 +24,15 @@ int	is_quote(char *s)
 	return (0);
 }
 
+int	is_only_quotes(char *s)
+{
+	if (((s[0] == '\'' && s[1] == '\'')
+		|| (s[0] == '"' && s[1] == '"'))
+		&& s[2] == '\0')
+		return (1);
+	return (0);
+}
+
 int	is_exp_delimiter(char c)
 {
 	return (!(ft_isalnum(c) || c == '_'));
@@ -40,15 +41,6 @@ int	is_exp_delimiter(char c)
 int	is_char_redirection(char c)
 {
 	if (c == '<' || c == '>')
-		return (1);
-	return (0);
-}
-
-int	is_only_quotes(char *s)
-{
-	if (((s[0] == '\'' && s[1] == '\'')
-		|| (s[0] == '"' && s[1] == '"'))
-		&& s[2] == '\0')
 		return (1);
 	return (0);
 }
