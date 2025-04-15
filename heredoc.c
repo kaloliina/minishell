@@ -42,7 +42,8 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	waitpid(rmdir_pid, &status, 0);
 }
 
-static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status, int fd)
+static void	heredoc_read(t_node *delimiter_node,
+	t_pipes *my_pipes, int status, int fd)
 {
 	char	*line;
 	char	*temp;
@@ -54,7 +55,7 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status, 
 			break ;
 		if (!delimiter_node->delimiter_quote)
 		{
-			temp = expand_heredoc(line, *my_pipes->my_envp, fd, status);
+			temp = expand_heredoc(line, my_pipes, fd, status);
 			if (temp)
 				line = temp;
 		}
@@ -97,7 +98,8 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	chdir("./tmp");
 }
 
-void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status)
+void	heredoc(t_node *node, t_pipes *my_pipes,
+	char **paths, int status)
 {
 	int	newdir;
 	int	fd;
@@ -108,14 +110,14 @@ void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int sta
 		if (errno == ENOENT)
 		{
 			newdir = 1;
-			heredoc_mkdir(envp, paths);
+			heredoc_mkdir(*my_pipes->my_envp, paths);
 		}
 	}
 	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	//if (fd < 0)?
 	heredoc_read(my_pipes->heredoc_node, my_pipes, status, fd);
-	heredoc_rm(envp, paths);
+	heredoc_rm(*my_pipes->my_envp, paths);
 	chdir("..");
 	if (newdir)
-		heredoc_rmdir(envp, paths);
+		heredoc_rmdir(*my_pipes->my_envp, paths);
 }

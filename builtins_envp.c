@@ -31,8 +31,8 @@ static char	**sort_for_export(char **export, char **envp, int elements)
 
 void	export_no_args(char **envp)
 {
-	int	elements;
-	int	i;
+	int		elements;
+	int		i;
 	char	**export;
 
 	elements = count_elements(envp);

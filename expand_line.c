@@ -1,12 +1,12 @@
 #include "minishell.h"
 
-static int	invalid_exp_line(char *file, char **new_file, int k)
+static int	invalid_exp_line(char *file, char **new_file, int k, t_data *data)
 {
 	int	i;
 
 	i = ft_strlen(file);
 	if (k == 1)
-		append_replacer(new_file, file, 0);
+		append_replacer(new_file, file, 0, data);
 	return (i);
 }
 
@@ -16,7 +16,7 @@ int	expand_line_helper(char *file, char **new_file, t_exp *expand, int i)
 	char	*exp;
 	char	*replacer;
 
-	exp = find_exp(file, &i, &k);
+	exp = find_exp(file, &i, &k, expand->data);
 	if ((exp && *exp) || (file[i] == '?' && file[i - 1] == '$'))
 	{
 		replacer = find_replacer(file, i, expand, exp);
@@ -24,7 +24,7 @@ int	expand_line_helper(char *file, char **new_file, t_exp *expand, int i)
 		{
 			if (!is_quote(file))
 				expand->expanded = 1;
-			append_replacer(new_file, replacer, 1);
+			append_replacer(new_file, replacer, 1, expand->data);
 			if (exp && *exp)
 				i = k + ft_strlen(exp);
 			else
@@ -33,9 +33,10 @@ int	expand_line_helper(char *file, char **new_file, t_exp *expand, int i)
 		else if (file[i] && file[i + 1])
 			i = k + ft_strlen(exp);
 		else
-			i = invalid_exp_line(file, new_file, k);
+			i = invalid_exp_line(file, new_file, k, expand->data);
 		free (exp);
 	}
+	printf("are we here\n");
 	return (i);
 }
 
@@ -45,7 +46,7 @@ static char	*handle_quotes_in_line(char *new_line, t_exp *expand)
 
 	if (!expand->expanded)
 	{
-		temp = handle_quotes(new_line);
+		temp = handle_quotes(new_line, expand->data);
 		if (temp)
 		{
 			new_line = temp;
@@ -65,7 +66,8 @@ static char	*expand_line(char *file, t_exp *expand)
 	i = 0;
 	quote = 0;
 	new_line = ft_strdup("");
-	//malloc protection
+	if (!new_line)
+		fatal_parsing_exit(expand->data, NULL, MALLOC);
 	while (file[i])
 	{
 		if (file[i] == '$' && file[i + 1] && !quote)
@@ -74,7 +76,7 @@ static char	*expand_line(char *file, t_exp *expand)
 		{
 			if (file[i] == 39)
 				quote = !quote;
-			append_char(&new_line, file, i);
+			append_char(&new_line, file, i, expand->data);
 			i++;
 		}
 	}
@@ -82,14 +84,14 @@ static char	*expand_line(char *file, t_exp *expand)
 }
 
 //goes through filename string and expands it
-char	*handle_filename_expansion(char *file, char **envp, int status)
+char	*handle_filename_helper(char *file, t_data *data, int status)
 {
 	char	*new_file;
 	t_exp	expand;
 
-	init_exp(&expand, status, envp);
+	init_exp(&expand, status, data);
 	if (!ft_strchr(file, '$'))
-		new_file = handle_quotes(file);
+		new_file = handle_quotes(file, data);
 	else
 		new_file = expand_line(file, &expand);
 	return (new_file);

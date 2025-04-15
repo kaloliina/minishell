@@ -8,26 +8,29 @@ int	is_redirection(char *token)
 	return (1);
 }
 
-static int	make_node(t_data *data, int i, int j, t_node **first)
+static int	make_node(t_data *data, int i, int j)
 {
 	t_node	*new_node;
 	t_node	*current;
+	t_index	index;
 
 	if (is_redirection(data->tokens[i][j]))
 		return (j + 2);
+	index.i = i;
+	index.j = j;
 	new_node = NULL;
 	new_node = init_new_node(data, new_node);
-	if (!*first)
-		*first = new_node;
+	if (!data->first)
+		data->first = new_node;
 	else
 	{
-		current = *first;
+		current = data->first;
 		while (current->next)
 			current = current->next;
 		current->next = new_node;
 		new_node->prev = current;
 	}
-	return (set_cmd_node(data, i, j, new_node));
+	return (set_cmd_node(data, &index, new_node));
 }
 
 static void	make_pipe_node(t_data *data, t_node **first)
@@ -64,9 +67,12 @@ int	lexer(t_data *data)
 		if (i > 0)
 			make_pipe_node(data, &data->first);
 		if (make_all_redir_nodes(data, i) < 0)
+		{
+			free_sections_tokens(data);
 			return (-1);
+		}
 		while (data->tokens[i][j])
-			j = make_node(data, i, j, &data->first);
+			j = make_node(data, i, j);
 		i++;
 	}
 	free_sections_tokens(data);

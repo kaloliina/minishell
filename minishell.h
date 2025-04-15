@@ -33,6 +33,12 @@ typedef enum s_type
 	REDIR_HEREDOC,
 }			t_type;
 
+typedef struct s_index
+{
+	int	i;
+	int	j;
+}		t_index;
+
 typedef struct s_node
 {
 	t_type			type;
@@ -46,15 +52,16 @@ typedef struct s_node
 
 typedef struct s_exp
 {
-	bool	expanded;
-	bool	no_element;
-	int		status;
-	char	**envp;
-	char	**new_cmd;
+	bool			expanded;
+	bool			no_element;
+	int				status;
+	char			**new_cmd;
+	struct s_data	*data;
 }		t_exp;
 
 typedef struct s_data
 {
+	char		**envp;
 	int			sections_amount;
 	char		**sections;
 	char		***tokens;
@@ -82,13 +89,13 @@ typedef struct t_pipe
 
 //init and input validation
 char	**copy_envp(char **envp);
-void	init_data(t_data *data);
-char	*add_spaces(char *input, char **envp);
+void	init_data(t_data *data, char ***envp);
+char	*add_spaces(char *input, t_data *data);
 void	update_quote(char c, int *quote);
 int		is_missing_pre_space(char *input, int i, int quote);
 int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
-char	*check_pipes(char *line, char **envp);
+char	*check_pipes(char *line, t_data *data);
 void	init_sections(t_data *data, char *line);
 void	init_tokens(t_data *data);
 
@@ -96,26 +103,28 @@ void	init_tokens(t_data *data);
 int		lexer(t_data *data);
 int		make_all_redir_nodes(t_data *data, int i);
 t_node	*init_new_node(t_data *data, t_node *new_node);
-int		set_cmd_node(t_data *data, int i, int j, t_node *new_node);
+int		set_cmd_node(t_data *data, t_index *index, t_node *new_node);
 char	**ft_ms_split(char const *s, char c, int *error);
 int		ft_ms_strings(char const *s, char c, int i);
 int		ft_ms_checkquote(char const *s, int i, char quote);
 char	**ft_ms_freearray(char **array, int j, int *error);
 
 //parsing
-void	handle_cmd(t_node *tmp, char **envp, int status);
-void	handle_filename(t_node *tmp, char **envp, int status);
-char	*expand_heredoc(char *line, char **envp, int fd, int status);
-char	**handle_cmd_expansion(char **cmd, char **envp, int status);
-char	*handle_filename_expansion(char *file, char **envp, int status);
-char	*handle_quotes(char *s);
-char	*find_envp(char *exp, char **envp);
-void	init_exp(t_exp *exp, int status, char **envp);
-char	*find_exp(char *arg, int *i, int *k);
+void	handle_cmd(t_node *tmp, t_data *data, int status);
+void	handle_filename(t_node *tmp, t_data *data, int status);
+char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status);
+char	**handle_cmd_helper(char **cmd, t_data *data, int status);
+char	*handle_filename_helper(char *file, t_data *data, int status);
+char	*handle_quotes(char *s, t_data *data);
+char	*find_envp(char *exp, t_exp *expand);
+void	init_exp(t_exp *exp, int status, t_data *data);
+char	*find_exp(char *arg, int *i, int *k, t_data *data);
 char	*find_replacer(char *arg, int i, t_exp *expand, char *exp);
-void	append_char(char **new_string, char *s, int i);
-void	append_replacer(char **new_string, char *replacer, int is_freeable);
-int		fill_replacer(char *new_line, char *line, int k, int j, int *l);
+void	append_char(char **new_string, char *s, int i, t_data *data);
+void	append_char_heredoc(char **new_string, char *s, int i,
+	t_pipes *my_pipes);
+void	append_replacer(char **new_string, char *replacer, int is_freeable,
+	t_data *data);
 int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
 int		is_redirection(char *token);
 int		is_exp_delimiter(char c);
@@ -126,6 +135,8 @@ void	count_expandable(char *arg, int *i, int *j);
 void	free_array(char **array);
 void	free_nodes(t_node *node);
 void	free_sections_tokens(t_data *data);
+void	fatal_parsing_exit(t_data *data, char *input, char *msg);
+void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list);
 
 //utils
 int		count_elements(char **tokens);
@@ -134,7 +145,7 @@ int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
 void	signal_handler(int sig);
-void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status);
+void	heredoc(t_node *node, t_pipes *my_pipes, char **paths, int status);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);

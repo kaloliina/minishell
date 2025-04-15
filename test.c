@@ -94,7 +94,7 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 	if (my_pipes->infile_fd >= 0)
 		redirection_infile(my_pipes);
 	if (my_pipes->heredoc_node)
-		heredoc(node, my_pipes, *my_pipes->my_envp, my_pipes->paths, status);
+		heredoc(node, my_pipes, my_pipes->paths, status);
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
 	{
 		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) < 0)
@@ -395,6 +395,7 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	int	i;
 
 	i = 0;
+	status = 0;
 	while (i < amount)
 	{
 		if (child_pids[i] > 0)

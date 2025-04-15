@@ -27,7 +27,7 @@ int	is_quote(char *s)
 int	is_only_quotes(char *s)
 {
 	if (((s[0] == '\'' && s[1] == '\'')
-		|| (s[0] == '"' && s[1] == '"'))
+			|| (s[0] == '"' && s[1] == '"'))
 		&& s[2] == '\0')
 		return (1);
 	return (0);

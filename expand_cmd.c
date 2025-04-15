@@ -6,7 +6,7 @@ static int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 	char	*exp;
 	char	*replacer;
 
-	exp = find_exp(arg, &i, &k);
+	exp = find_exp(arg, &i, &k, expand->data);
 	if ((exp && *exp) || (arg[i] == '?' && arg[i - 1] == '$'))
 	{
 		replacer = find_replacer(arg, i, expand, exp);
@@ -14,7 +14,7 @@ static int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 		{
 			if (!is_quote(arg))
 				expand->expanded = 1;
-			append_replacer(&(expand->new_cmd[new_arg]), replacer, 1);
+			append_replacer(&(expand->new_cmd[new_arg]), replacer, 1, expand->data);
 			if (exp && *exp)
 				i = k + ft_strlen(exp);
 			else
@@ -37,7 +37,8 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	i = 0;
 	quote = 0;
 	expand->new_cmd[*new_arg] = ft_strdup("");
-	//malloc protection
+	if (!expand->new_cmd[*new_arg])
+		fatal_parsing_exit(expand->data, NULL, MALLOC);
 	while (cmd[*arg][i])
 	{
 		if (cmd[*arg][i] == '$' && cmd[*arg][i + 1] && !quote)
@@ -46,14 +47,14 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 		{
 			if (cmd[*arg][i] == 39)
 				quote = !quote;
-			append_char(&expand->new_cmd[*new_arg], cmd[*arg], i);
+			append_char(&expand->new_cmd[*new_arg], cmd[*arg], i, expand->data);
 			i++;
 		}
 	}
 	handle_quotes_in_expansion(expand, new_arg, arg);
 }
 
-char	**handle_cmd_expansion(char **cmd, char **envp, int status)
+char	**handle_cmd_helper(char **cmd, t_data *data, int status)
 {
 	int		arg;
 	int		new_arg;
@@ -61,13 +62,14 @@ char	**handle_cmd_expansion(char **cmd, char **envp, int status)
 
 	arg = 0;
 	new_arg = 0;
-	init_exp(&expand, status, envp);
+	init_exp(&expand, status, data);
 	expand.new_cmd = malloc(sizeof(char *) * (count_elements(cmd) + 1));
-	//malloc protection
+	if (!expand.new_cmd)
+		fatal_parsing_exit(data, NULL, MALLOC);
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			expand.new_cmd[new_arg++] = handle_quotes(cmd[arg++]);
+			expand.new_cmd[new_arg++] = handle_quotes(cmd[arg++], data);
 		else
 			expand_cmd(cmd, &expand, &arg, &new_arg);
 	}

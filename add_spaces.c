@@ -85,7 +85,7 @@ static int	check_quotes(char *input)
 	return (0);
 }
 
-char	*add_spaces(char *input, char **envp)
+char	*add_spaces(char *input, t_data *data)
 {
 	int		extras;
 	char	*line;
@@ -95,10 +95,6 @@ char	*add_spaces(char *input, char **envp)
 	extras = count_missing_spaces(input);
 	line = malloc(ft_strlen(input) + extras + 1);
 	if (!line)
-	{
-		ft_printf(2, "%s\n", MALLOC);
-		free_array(envp);
-		exit (1);
-	}
+		fatal_parsing_exit(data, input, MALLOC);
 	return (add_spaces_helper(line, input, 0, 0));
 }
