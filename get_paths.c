@@ -33,7 +33,10 @@ char	*get_absolute_path(char **paths, char *command)
 	int		i = 0;
 
 	if (access(command, F_OK | X_OK) == 0)
-		return (command);
+	{
+	path = ft_strdup(command);
+	return (path);
+	}
 	while (paths[i] != NULL)
 	{
 		path_helper = ft_strjoin(paths[i], "/");
@@ -54,12 +57,6 @@ char	*get_absolute_path(char **paths, char *command)
 		free (path);
 		i++;
 	}
-	// if (!paths[i])
-	// {
-	// 	ft_printf(2, "%s: command not found\n", command);
-	// 	exit (1);
-	// }
-//	if (path_helper)
-//		free (path_helper);
-	return (command);
+	path = ft_strdup(command);
+	return (path);
 }

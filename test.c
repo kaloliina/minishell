@@ -12,19 +12,20 @@ void	free_my_pipes(t_pipes *my_pipes)
 	{
 		if (my_pipes->paths)
 			free_array(my_pipes->paths);
-		if (my_pipes->command_path && ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
+		if (my_pipes->command_path)
 		{
 			free(my_pipes->command_path);
 			my_pipes->command_path = NULL;
 		}
-		if (close (my_pipes->stdinfd) < 0)
+		if (my_pipes->stdinfd != -1 && (close(my_pipes->stdinfd) < 0))
 			ft_printf(2, "%s\n", ERR_CLOSE);
-		if (close (my_pipes->stdoutfd) < 0)
+		if (my_pipes->stdoutfd != -1 && (close(my_pipes->stdoutfd) < 0))
 			ft_printf(2, "%s\n", ERR_CLOSE);
 		if (my_pipes->pipes)
 		{
 			while (i < my_pipes->pipe_amount * 2)
 			{
+//pretty sure these could be combined together
 				if (my_pipes->pipes[i] != -1)
 				{
 					if (close(my_pipes->pipes[i]) < 0)
@@ -93,6 +94,8 @@ int	get_pipe_amount(t_node *list)
 	return (pipe_amount);
 }
 
+//since you are planning to use the my_pipes(exitstatus, you need to ensure that it works in every path because between every section
+//im changing it to 0.)
 void	reset_properties(t_pipes *my_pipes)
 {
 	if (ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
@@ -128,12 +131,14 @@ void	close_child_pipes(t_pipes *my_pipes)
 		}
 		i++;
 	}
-    if (close(my_pipes->stdinfd) < 0)
+	if (close(my_pipes->stdinfd) < 0)
 		ft_printf(2, "%s\n", ERR_CLOSE);
-    if (close(my_pipes->stdoutfd) < 0)
+	my_pipes->stdinfd = -1;
+	if (close(my_pipes->stdoutfd) < 0)
 		ft_printf(2, "%s\n", ERR_CLOSE);
+	my_pipes->stdoutfd = -1;
 }
-//ADD PROPER ERROR FOR DUP
+
 void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 {
 	if (my_pipes->outfile_fd >= 0)
@@ -263,6 +268,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 }
 
 //DOUBLE CHECK THIS ALSO EACCESS
+//YOU NEED TO FREE EVERYTHING!!!! INCLUDING ENVP...
 int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
@@ -280,22 +286,28 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 		if (my_pipes->exit_status == 1)
 			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
-		if (errno == ENOENT)
+// No such file or directory and command not found both give 127..?
+		if (errno == EACCES)
 		{
-			ft_printf(2, "%s: %s\n", node->cmd[0], ERR_COMMAND);
-			free (my_pipes->command_path);
-			my_pipes->command_path = NULL;
-			exit (127);
-		}
-		else if (errno == EACCES)
-		{
+//			perror("minishill");
+			handle_fatal_exit(ERR_COMMAND, my_pipes, NULL);
 			ft_printf(2, "%s: no permissions\n", node->cmd[0]);
-			free (my_pipes->command_path);
-			my_pipes->command_path = NULL;
-			exit (126);
+		//	exit (126);
 		}
+		else if (errno == ENOENT)
+		{
+//I need to adjust the exit stattus in the struct and return the exitt status from handle fatal exit
+//Also need to adjust the error codes
+			ft_printf(2, "minishell: %s: ", node->cmd[0]);
+			handle_fatal_exit(ERR_INVFILE, my_pipes, NULL);
+//			exit (127);
+		}
+		//fix this section
 		else
+		{
+			handle_fatal_exit(ERR_COMMAND, my_pipes, NULL);
 			exit(1);
+		}
 	}
 	return (pid);
 }
