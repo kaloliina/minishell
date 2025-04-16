@@ -157,7 +157,7 @@ void	execute_echo(t_node *node, char ***envp);
 void	execute_env(char ***envp);
 void	execute_pwd(void);
 void	execute_export(char **cmd, char ***envp);
-void	execute_cd(char **cmd);
+void	execute_cd(char **cmd, t_pipes *my_pipes);
 void	execute_unset(char **cmd, char ***envp);
 void	execute_exit(char **cmd, t_pipes *my_pipes);
 int		fill_new_envp(char ***new_envp, char **envp, char **cmd, int args);
