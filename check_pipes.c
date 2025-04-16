@@ -44,7 +44,7 @@ static char	*check_pipes_helper(char *line, t_data *data, int i, int j)
 	}
 	new_line = ft_substr(line, 0, (j - 1));
 	if (!new_line)
-		fatal_parsing_exit(data, line, MALLOC);
+		fatal_parsing_exit(data, NULL, line, MALLOC);
 	free (line);
 	line = new_line;
 	new_line = NULL;
@@ -59,7 +59,7 @@ static char	*end_of_line_pipe(char **line, t_data *data)
 	temp = readline("> ");
 	new_line = ft_strjoin(*line, temp);
 	if (!new_line)
-		fatal_parsing_exit(data, *line, MALLOC);
+		fatal_parsing_exit(data, NULL, *line, MALLOC);
 	free (*line);
 	free (temp);
 	*line = new_line;

@@ -23,13 +23,13 @@ char	*handle_quotes_helper(char *new, char *s, int i, int j)
 	return (new);
 }
 
-char	*handle_quotes(char *s, t_data *data)
+char	*handle_quotes(char *s, t_data *data, t_exp *expand)
 {
 	char	*new;
 
 	new = malloc(ft_strlen(s) + 1);
 	if (!new)
-		fatal_parsing_exit(data, NULL, MALLOC);
+		fatal_parsing_exit(data, expand, NULL, MALLOC);
 	return (handle_quotes_helper(new, s, 0, 0));
 }
 
@@ -42,8 +42,7 @@ char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status)
 	t_exp	expand;
 
 	i = 0;
-	printf("line is here in exp %s\n", line);
-	init_exp(&expand, status, NULL);
+	init_exp(&expand, status, NULL, my_pipes);
 	new_line = ft_strdup("");
 	if (!new_line)
 		handle_fatal_exit(MALLOC, my_pipes, my_pipes->command_node);

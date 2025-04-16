@@ -95,6 +95,6 @@ char	*add_spaces(char *input, t_data *data)
 	extras = count_missing_spaces(input);
 	line = malloc(ft_strlen(input) + extras + 1);
 	if (!line)
-		fatal_parsing_exit(data, input, MALLOC);
+		fatal_parsing_exit(data, NULL, input, MALLOC);
 	return (add_spaces_helper(line, input, 0, 0));
 }

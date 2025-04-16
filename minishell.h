@@ -56,7 +56,9 @@ typedef struct s_exp
 	bool			no_element;
 	int				status;
 	char			**new_cmd;
+	char			*exp;
 	struct s_data	*data;
+	struct s_pipes	*my_pipes;
 }		t_exp;
 
 typedef struct s_data
@@ -68,7 +70,7 @@ typedef struct s_data
 	t_node		*first;
 }				t_data;
 
-typedef struct t_pipe
+typedef struct s_pipes
 {
 	int				*pipes;
 	char			*command_path;
@@ -115,16 +117,16 @@ void	handle_filename(t_node *tmp, t_data *data, int status);
 char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status);
 char	**handle_cmd_helper(char **cmd, t_data *data, int status);
 char	*handle_filename_helper(char *file, t_data *data, int status);
-char	*handle_quotes(char *s, t_data *data);
-char	*find_envp(char *exp, t_exp *expand);
-void	init_exp(t_exp *exp, int status, t_data *data);
+char	*handle_quotes(char *s, t_data *data, t_exp *expand);
+char	*find_envp(t_exp *expand, int i, int new_arg);
+void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes);
 char	*find_exp(char *arg, int *i, int *k, t_data *data);
-char	*find_replacer(char *arg, int i, t_exp *expand, char *exp);
-void	append_char(char **new_string, char *s, int i, t_data *data);
+char	*find_replacer(char *arg, int i, t_exp *expand, int new_arg);
+void	append_char(char **new_string, char c, t_exp *expand);
 void	append_char_heredoc(char **new_string, char *s, int i,
 	t_pipes *my_pipes);
 void	append_replacer(char **new_string, char *replacer, int is_freeable,
-	t_data *data);
+	t_exp *expand);
 int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
 int		is_redirection(char *token);
 int		is_exp_delimiter(char c);
@@ -135,7 +137,7 @@ void	count_expandable(char *arg, int *i, int *j);
 void	free_array(char **array);
 void	free_nodes(t_node *node);
 void	free_sections_tokens(t_data *data);
-void	fatal_parsing_exit(t_data *data, char *input, char *msg);
+void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg);
 void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list);
 
 //utils

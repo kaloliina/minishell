@@ -37,16 +37,24 @@ void	free_sections_tokens(t_data *data)
 	int	i;
 
 	i = 0;
-	while (data->sections[i])
-		free (data->sections[i++]);
-	free (data->sections);
+	if (data->sections)
+	{
+		while (data->sections[i])
+			free (data->sections[i++]);
+		free (data->sections);
+		data->sections = NULL;
+	}
 	i = 0;
-	while (data->tokens[i])
-		free_array(data->tokens[i++]);
-	free (data->tokens);
+	if (data->tokens)
+	{
+		while (data->tokens[i])
+			free_array(data->tokens[i++]);
+		free (data->tokens);
+		data->tokens = NULL;
+	}
 }
 
-void	fatal_parsing_exit(t_data *data, char *input, char *msg)
+void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
 {
 	ft_printf(2, "%s\n", msg);
 	if (input)
@@ -57,6 +65,15 @@ void	fatal_parsing_exit(t_data *data, char *input, char *msg)
 		free_sections_tokens(data);
 		if (data->first)
 			free_nodes(data->first);
+	}
+	if (expand)
+	{
+		if (expand->my_pipes)
+			free_my_pipes(expand->my_pipes);
+		if (expand->new_cmd)
+			free_array(expand->new_cmd);
+		if (expand->exp)
+			free (expand->exp);
 	}
 	exit (1);
 }

@@ -30,13 +30,13 @@ static int	set_redir_node(t_node *new_node, t_data *data, t_index *index)
 		{
 			new_node->delimiter = ft_strdup(data->tokens[index->i][index->j + 1]);
 			if (!new_node->delimiter)
-				fatal_parsing_exit(data, NULL, MALLOC);
+				fatal_parsing_exit(data, NULL, NULL, MALLOC);
 		}
 		else
 		{
 			new_node->file = ft_strdup(data->tokens[index->i][index->j + 1]);
 			if (!new_node->file)
-				fatal_parsing_exit(data, NULL, MALLOC);
+				fatal_parsing_exit(data, NULL, NULL, MALLOC);
 		}
 	}
 	else

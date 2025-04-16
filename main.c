@@ -17,7 +17,7 @@ static void	handle_exp_and_quotes(t_data *data, int status)
 		{
 			if (is_quote(tmp->delimiter))
 				tmp->delimiter_quote = 1;
-			new_line = handle_quotes(tmp->delimiter, data);
+			new_line = handle_quotes(tmp->delimiter, data, NULL);
 			if (new_line)
 			{
 				free (tmp->delimiter);

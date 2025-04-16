@@ -3,28 +3,27 @@
 static int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 {
 	int		k;
-	char	*exp;
 	char	*replacer;
 
-	exp = find_exp(arg, &i, &k, expand->data);
-	if ((exp && *exp) || (arg[i] == '?' && arg[i - 1] == '$'))
+	expand->exp = find_exp(arg, &i, &k, expand->data);
+	if ((expand->exp && *expand->exp) || (arg[i] == '?' && arg[i - 1] == '$'))
 	{
-		replacer = find_replacer(arg, i, expand, exp);
+		replacer = find_replacer(arg, i, expand, new_arg);
 		if (replacer)
 		{
 			if (!is_quote(arg))
 				expand->expanded = 1;
-			append_replacer(&(expand->new_cmd[new_arg]), replacer, 1, expand->data);
-			if (exp && *exp)
-				i = k + ft_strlen(exp);
+			append_replacer(&(expand->new_cmd[new_arg]), replacer, 1, expand);
+			if (expand->exp && *expand->exp)
+				i = k + ft_strlen(expand->exp);
 			else
 				i = k + 1;
 		}
 		else if (arg[i] && arg[i + 1])
-			i = k + ft_strlen(exp);
+			i = k + ft_strlen(expand->exp);
 		else if (k == 1)
 			expand->no_element = 1;
-		free (exp);
+		free (expand->exp);
 	}
 	return (i);
 }
@@ -38,7 +37,7 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	quote = 0;
 	expand->new_cmd[*new_arg] = ft_strdup("");
 	if (!expand->new_cmd[*new_arg])
-		fatal_parsing_exit(expand->data, NULL, MALLOC);
+		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
 	while (cmd[*arg][i])
 	{
 		if (cmd[*arg][i] == '$' && cmd[*arg][i + 1] && !quote)
@@ -47,7 +46,7 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 		{
 			if (cmd[*arg][i] == 39)
 				quote = !quote;
-			append_char(&expand->new_cmd[*new_arg], cmd[*arg], i, expand->data);
+			append_char(&expand->new_cmd[*new_arg], cmd[*arg][i], expand);
 			i++;
 		}
 	}
@@ -62,14 +61,15 @@ char	**handle_cmd_helper(char **cmd, t_data *data, int status)
 
 	arg = 0;
 	new_arg = 0;
-	init_exp(&expand, status, data);
+	init_exp(&expand, status, data, NULL);
 	expand.new_cmd = malloc(sizeof(char *) * (count_elements(cmd) + 1));
 	if (!expand.new_cmd)
-		fatal_parsing_exit(data, NULL, MALLOC);
+		fatal_parsing_exit(data, &expand, NULL, MALLOC);
+	expand.new_cmd[0] = NULL;
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			expand.new_cmd[new_arg++] = handle_quotes(cmd[arg++], data);
+			expand.new_cmd[new_arg++] = handle_quotes(cmd[arg++], data, &expand);
 		else
 			expand_cmd(cmd, &expand, &arg, &new_arg);
 	}
