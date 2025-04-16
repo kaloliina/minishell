@@ -5,20 +5,23 @@ char	**get_paths(char ***envp)
 	int		i = 0;
 	char	**paths;
 	char	*string;
-
-	string = NULL;
 	while ((*envp)[i] != NULL)
 	{
 		if (ft_strncmp((*envp)[i], "PATH=", 5) == 0)
 		{
 			string = ft_substr((*envp)[i], 5, (ft_strlen((*envp)[i]) - 5));
-			//malloc protection
+			if (string == NULL)
+				return (NULL);
 			break;
 		}
 		i++;
 	}
 	paths = ft_split(string, ':');
-	//malloc protection
+	if (paths == NULL)
+	{
+		free (string);
+		return (NULL);
+	}
 	free (string);
 	return (paths);
 }
@@ -30,13 +33,21 @@ char	*get_absolute_path(char **paths, char *command)
 	int		i = 0;
 
 	if (access(command, F_OK | X_OK) == 0)
-		return (command);
+	{
+	path = ft_strdup(command);
+	return (path);
+	}
 	while (paths[i] != NULL)
 	{
 		path_helper = ft_strjoin(paths[i], "/");
-		//malloc protection
+		if (path_helper == NULL)
+			return (NULL);
 		path = ft_strjoin(path_helper, command);
-		//malloc protection
+		if (path == NULL)
+		{
+			free (path_helper);
+			return (NULL);
+		}
 		if (access(path, F_OK | X_OK) == 0)
 		{
 			free (path_helper);
@@ -46,12 +57,6 @@ char	*get_absolute_path(char **paths, char *command)
 		free (path);
 		i++;
 	}
-	// if (!paths[i])
-	// {
-	// 	ft_printf(2, "%s: command not found\n", command);
-	// 	exit (1);
-	// }
-//	if (path_helper)
-//		free (path_helper);
-	return (command);
+	path = ft_strdup(command);
+	return (path);
 }
