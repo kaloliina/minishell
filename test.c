@@ -409,9 +409,11 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 			else
 				exit_status = my_pipes->exit_status;
 		}
+		else
+			exit_status = my_pipes->exit_status;
 		i++;
 	}
-	printf("Exit status is %d\n", exit_status);
+	ft_printf(2, "Exit status is %d\n", exit_status);
 //Perhaps these need another exit message
 	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
 		handle_fatal_exit(ERR_FD, my_pipes, NULL, NULL);
@@ -424,7 +426,7 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 //THIS ONE NEEDS TO BE CLEANED UP
 //WORK ON HEREDOC, THATS BROKEN
 //Also maybe chid pids could be added to my_pipes struct
-//Shorten this up
+//Shorten this
 int	loop_nodes(t_node *list, char ***envp, int status)
 {
 	t_pipes	*my_pipes;
