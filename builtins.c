@@ -35,16 +35,13 @@ void	execute_env(char ***envp)
 	}
 }
 
-void	execute_pwd(void)
+void	execute_pwd(t_pipes *my_pipes)
 {
 	char	*buf;
 
 	buf = malloc(4096);
 	if (!buf)
-	{
-		ft_printf(2, "%s\n", MALLOC); //must free my_pipes and nodes
-		exit (1);
-	}
+		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 	getcwd(buf, 4096);
 	if (!buf)
 		perror("minishell");

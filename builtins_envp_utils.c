@@ -1,32 +1,6 @@
 #include "minishell.h"
 
-//fill new envp with existing elements
-int	fill_new_envp(char ***new_envp, char **envp, char **cmd, int args)
-{
-	int		i;
-	int		j;
-
-	i = 0;
-	while ((envp)[i])
-	{
-		(*new_envp)[i] = ft_strdup(envp[i]);
-		if (!(*new_envp)[i])
-			return (-1);
-		i++;
-	}
-	j = 1;
-	while (cmd[j])
-	{
-		(*new_envp)[i] = ft_strdup(cmd[j]);
-		//malloc protection
-		i++;
-		j++;
-	}
-	(*new_envp)[i] = NULL;
-	return (0);
-}
-
-int	add_existing_envp(char **new_envp, char **envp)
+int	add_existing_envp(char **new_envp, char **envp, t_pipes *my_pipes)
 {
 	int	i;
 
@@ -34,14 +8,18 @@ int	add_existing_envp(char **new_envp, char **envp)
 	while (envp[i])
 	{
 		new_envp[i] = ft_strdup(envp[i]);
-		//malloc protection
+		if (!new_envp[i])
+		{
+			free_array(new_envp);
+			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+		}
 		i++;
 	}
 	return (i);
 }
 
 //add exported element(s) to envp
-int	add_exported_envp(char **new_envp, char **cmd, int i)
+int	add_exported_envp(char **new_envp, char **cmd, int i, t_pipes *my_pipes)
 {
 	int	j;
 
@@ -49,7 +27,11 @@ int	add_exported_envp(char **new_envp, char **cmd, int i)
 	while (cmd[j])
 	{
 		new_envp[i] = ft_strdup(cmd[j]);
-		//malloc protection
+		if (!new_envp[i])
+		{
+			free_array(new_envp);
+			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+		}
 		i++;
 		j++;
 	}
@@ -72,7 +54,8 @@ int	find_unset_element(char **cmd, char *envp_element)
 	return (j);
 }
 
-char	**fill_unset_envp(char **new_envp, char **cmd, char **envp)
+char	**fill_unset_envp(char **new_envp, char **cmd,
+	char **envp, t_pipes *my_pipes)
 {
 	int	i;
 	int	j;
@@ -91,9 +74,8 @@ char	**fill_unset_envp(char **new_envp, char **cmd, char **envp)
 			new_envp[k] = ft_strdup(envp[i]);
 			if (!new_envp[k])
 			{
-				ft_printf(2, "%s\n", MALLOC);
-				free_array(new_envp); //must also free everything else
-				exit (1);
+				free_array(new_envp);
+				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 			}
 			i++;
 			k++;

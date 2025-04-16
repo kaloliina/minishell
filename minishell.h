@@ -155,16 +155,15 @@ void	heredoc(t_node *node, t_pipes *my_pipes, char **paths, int status);
 //builtins
 void	execute_echo(t_node *node, char ***envp);
 void	execute_env(char ***envp);
-void	execute_pwd(void);
-void	execute_export(char **cmd, char ***envp);
+void	execute_pwd(t_pipes *my_pipes);
+void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_cd(char **cmd, t_pipes *my_pipes);
-void	execute_unset(char **cmd, char ***envp);
+void	execute_unset(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_exit(char **cmd, t_pipes *my_pipes);
-int		fill_new_envp(char ***new_envp, char **envp, char **cmd, int args);
-int		add_existing_envp(char **new_envp, char **envp);
-int		add_exported_envp(char **new_envp, char **cmd, int i);
+int		add_existing_envp(char **new_envp, char **envp, t_pipes *my_pipes);
+int		add_exported_envp(char **new_envp, char **cmd, int i, t_pipes *my_pipes);
 int		find_unset_element(char **cmd, char *envp_element);
-char	**fill_unset_envp(char **new_envp, char **cmd, char **envp);
+char	**fill_unset_envp(char **new_envp, char **cmd, char **envp, t_pipes *my_pipes);
 
 //execution
 char	**get_paths(char ***envp);
