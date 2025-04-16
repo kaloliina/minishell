@@ -78,8 +78,12 @@ void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
 	exit (1);
 }
 
-void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list)
+void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list, char *conversion)
 {
+	if (conversion == NULL)
+		ft_printf(2, msg);
+	else
+		ft_printf(2, msg, conversion);
 	if (list == NULL)
 		free_nodes(my_pipes->command_node);
 	else
@@ -89,6 +93,5 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list)
 		free_array(*my_pipes->my_envp);
 		free_my_pipes(my_pipes);
 	}
-	ft_printf(2, "%s\n", msg);
-	exit (1);
+	exit (my_pipes->exit_status);
 }

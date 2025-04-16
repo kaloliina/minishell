@@ -61,7 +61,7 @@ void	execute_cd(char **cmd, t_pipes *my_pipes)
 	init_exp(&expand, 0, NULL, my_pipes);
 	expand.exp = ft_strdup("HOME");
 	if (!expand.exp)
-		handle_fatal_exit(MALLOC, my_pipes, NULL);
+		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 	if (count_elements(cmd) == 1)
 	{
 		expansion = find_envp(&expand, 0, 0);

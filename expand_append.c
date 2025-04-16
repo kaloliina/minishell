@@ -11,7 +11,10 @@ void	append_char_heredoc(char **new_string, char *s,
 	temp = *new_string;
 	*new_string = ft_strjoin(*new_string, additive);
 	if (!*new_string)
-		handle_fatal_exit(MALLOC, my_pipes, my_pipes->command_node);
+	{
+		my_pipes->exit_status = 1;
+		handle_fatal_exit(MALLOC, my_pipes, my_pipes->command_node, NULL);
+	}
 	free (temp);
 }
 

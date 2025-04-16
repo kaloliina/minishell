@@ -45,7 +45,10 @@ char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status)
 	init_exp(&expand, status, NULL, my_pipes);
 	new_line = ft_strdup("");
 	if (!new_line)
-		handle_fatal_exit(MALLOC, my_pipes, my_pipes->command_node);
+	{
+		my_pipes->exit_status = 1;
+		handle_fatal_exit(MALLOC, my_pipes, my_pipes->command_node, NULL);
+	}
 	while (line[i])
 	{
 		if (line[i] == '$' && line[i + 1])
