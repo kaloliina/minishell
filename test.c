@@ -187,7 +187,7 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 	else if (!ft_strcmp(node->cmd[0], "exit"))
 		execute_exit(node->cmd, my_pipes);
 	else if (!ft_strcmp(node->cmd[0], "cd"))
-		execute_cd(node->cmd);
+		execute_cd(node->cmd, my_pipes);
 }
 //Check the return value here, I assume it's okay to return 0 when parent
 //Also can these commands fail as well

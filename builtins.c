@@ -53,17 +53,32 @@ void	execute_pwd(void)
 	free (buf);
 }
 
-void	execute_cd(char **cmd)
+void	execute_cd(char **cmd, t_pipes *my_pipes)
 {
-	//need to handle if cmd is only "cd" so if !cmd[1]!!
-	if (cmd[2])
+	char	*expansion;
+	t_exp	expand;
+
+	init_exp(&expand, 0, NULL, my_pipes);
+	expand.exp = ft_strdup("HOME");
+	if (!expand.exp)
+		handle_fatal_exit(MALLOC, my_pipes, NULL);
+	if (count_elements(cmd) == 1)
 	{
-		ft_printf(2, "minishell: cd: too many arguments\n");
-		//free everything
-		exit (1);
+		expansion = find_envp(&expand, 0, 0);
+		if (!expansion)
+			ft_printf(2, "minishell: cd: HOME not set\n");
+		if (chdir(expansion) == -1)
+			perror("minishell");
+		free (expansion);
 	}
-	if (chdir(cmd[1]) == -1)
-		perror("minishell");
+	if (count_elements(cmd) > 2)
+		ft_printf(2, "minishell: cd: too many arguments\n");
+	else if (count_elements(cmd) == 2)
+	{
+		if (chdir(cmd[1]) == -1)
+			perror("minishell");
+	}
+	free (expand.exp);
 }
 
 void	execute_exit(char **cmd, t_pipes *my_pipes)
