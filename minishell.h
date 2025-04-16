@@ -12,7 +12,7 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <errno.h>
-# define MALLOC "minishell: memory allocation failure"
+# define MALLOC "minishell: memory allocation failure\n"
 # define ERR_PIPE "minishell: failed to create pipe"
 # define ERR_WAITPID "minishell: waitpid failed"
 # define ERR_COMMAND "Command '%s' not found\n"
