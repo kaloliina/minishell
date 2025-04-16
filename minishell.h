@@ -33,6 +33,12 @@ typedef enum s_type
 	REDIR_HEREDOC,
 }			t_type;
 
+typedef struct s_index
+{
+	int	i;
+	int	j;
+}		t_index;
+
 typedef struct s_node
 {
 	t_type			type;
@@ -46,22 +52,25 @@ typedef struct s_node
 
 typedef struct s_exp
 {
-	bool	expanded;
-	bool	no_element;
-	int		status;
-	char	**envp;
-	char	**new_cmd;
+	bool			expanded;
+	bool			no_element;
+	int				status;
+	char			**new_cmd;
+	char			*exp;
+	struct s_data	*data;
+	struct s_pipes	*my_pipes;
 }		t_exp;
 
 typedef struct s_data
 {
+	char		**envp;
 	int			sections_amount;
 	char		**sections;
 	char		***tokens;
 	t_node		*first;
 }				t_data;
 
-typedef struct t_pipe
+typedef struct s_pipes
 {
 	int				*pipes;
 	char			*command_path;
@@ -80,57 +89,65 @@ typedef struct t_pipe
 	int				exit_status;
 }					t_pipes;
 
-//init
-t_node	*init_new_node(t_data *data, t_node *new_node);
+//init and input validation
+char	**copy_envp(char **envp);
+void	init_data(t_data *data, char ***envp);
+char	*add_spaces(char *input, t_data *data);
+void	update_quote(char c, int *quote);
+int		is_missing_pre_space(char *input, int i, int quote);
+int		is_missing_post_after_pre_space(char *input, int i);
+int		is_missing_post_space(char *input, int i, int quote);
+char	*check_pipes(char *line, t_data *data);
 void	init_sections(t_data *data, char *line);
 void	init_tokens(t_data *data);
-void	init_tokens_struct(t_data *data);
-int		set_sections(t_data *data, char **tmp_sections);
-void	set_last_section(t_data *data, int i, char **tmp_sections);
 
 //lexing
-char	*add_spaces(char *input);
+int		lexer(t_data *data);
+int		make_all_redir_nodes(t_data *data, int i);
+t_node	*init_new_node(t_data *data, t_node *new_node);
+int		set_cmd_node(t_data *data, t_index *index, t_node *new_node);
+char	**ft_ms_split(char const *s, char c, int *error);
 int		ft_ms_strings(char const *s, char c, int i);
 int		ft_ms_checkquote(char const *s, int i, char quote);
 char	**ft_ms_freearray(char **array, int j, int *error);
-char	**ft_ms_split(char const *s, char c, int *error);
-int		make_node(t_data *data, int i, int j, t_node **first);
-int		lexer(t_data *data);
 
 //parsing
-int		is_redirection(char *token);
-int		is_char_redirection(char c);
-int		is_redirection_char(char *s);
-void	make_pipe_node(t_data *data, t_node **first);
-char	**handle_expansion_cmds(char **cmd, char **envp, int status);
-char	*handle_expansion_filename(char *file, char **envp, int status);
-int		handle_expansion_helper(char *arg, t_exp *expand, int new_arg, int i);
-void	append_char(char **new_string, char *s, int i);
-int		is_exp_delimiter(char c);
-char	*add_replacer(char *line, char *replacer, int k, int j);
-void	append_replacer(char **new_string, char *replacer);
-int		fill_replacer(char *new_line, char *line, int k, int j, int *l);
-char	*find_envp(char *exp, char **envp);
-char	*handle_quotes(char *s);
-void	init_exp(t_exp *exp, int status, char **envp);
-void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg);
-char	*expand_line(char *file, t_exp *expand);
+void	handle_cmd(t_node *tmp, t_data *data, int status);
+void	handle_filename(t_node *tmp, t_data *data, int status);
+char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status);
+char	**handle_cmd_helper(char **cmd, t_data *data, int status);
+char	*handle_filename_helper(char *file, t_data *data, int status);
+char	*handle_quotes(char *s, t_data *data, t_exp *expand);
+char	*find_envp(t_exp *expand, int i, int new_arg);
+void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes);
+char	*find_exp(char *arg, int *i, int *k, t_data *data);
+char	*find_replacer(char *arg, int i, t_exp *expand, int new_arg);
+void	append_char(char **new_string, char c, t_exp *expand);
+void	append_char_heredoc(char **new_string, char *s, int i,
+			t_pipes *my_pipes);
+void	append_replacer(char **new_string, char *replacer, int is_freeable,
+			t_exp *expand);
 int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
+int		is_redirection(char *token);
+int		is_exp_delimiter(char c);
+void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
-char	*find_replacer(char *arg, int i, t_exp *expand, char *exp);
 
 //cleanup
-void	free_nodes(t_node *node);
 void	free_array(char **array);
+void	free_nodes(t_node *node);
 void	free_sections_tokens(t_data *data);
+void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg);
+void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list);
 
 //utils
 int		count_elements(char **tokens);
 int		is_quote(char *s);
 int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
+int		is_char_redirection(char c);
 void	signal_handler(int sig);
-void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status);
+void	heredoc(t_node *node, t_pipes *my_pipes, char **paths, int status);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);
@@ -144,7 +161,6 @@ int		fill_new_envp(char ***new_envp, char **envp, char **cmd, int args);
 int		add_existing_envp(char **new_envp, char **envp);
 int		add_exported_envp(char **new_envp, char **cmd, int i);
 int		find_unset_element(char **cmd, char *envp_element);
-char	**sort_for_export(char **export, char **envp, int elements);
 char	**fill_unset_envp(char **new_envp, char **cmd, char **envp);
 
 //execution

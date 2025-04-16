@@ -5,12 +5,14 @@ LIBFTDIR = ./libft
 LIBFT = $(LIBFTDIR)/libft.a
 
 HEADERS = minishell.h $(LIBFTDIR)/libft.h
-SRC = main.c input_init.c cleanup.c ft_ms_split.c \
-	ft_ms_split_utils.c utils.c signals.c init.c \
-	lexing.c lexing_utils.c get_paths.c \
-	handle_files.c test.c builtins.c expansions.c \
-	heredoc.c builtins_utils.c expansions_utils.c \
-	builtins_envp.c
+SRC = add_spaces.c add_spaces_utils.c builtins_envp.c \
+	builtins_envp_utils.c builtins.c check_pipes.c \
+	cleanup.c copy_envp.c expand_cmd.c expand_line.c \
+	expand_utils.c expand_utils_2.c expand.c \
+	expand_append.c ft_ms_split.c ft_ms_split_utils.c \
+	get_paths.c handle_files.c heredoc.c init.c \
+	lexing_cmd.c lexing_redir.c lexing.c main.c \
+	signals.c test.c utils.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)

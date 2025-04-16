@@ -20,36 +20,22 @@ static int	count_missing_spaces(char *input)
 	return (extras);
 }
 
-void	update_quote(char c, int *quote)
+static char	*add_spaces_helper(char *line, char *input, int i, int j)
 {
-	if ((c == 34 || c == 39) && !(*quote))
-		*quote = c;
-	else if ((c == 34 || c == 39) && *quote == c)
-		*quote = 0;
-}
-
-static char	*add_spaces_helper(char *line, char *input, int i)
-{
-	int	j;
 	int	quote;
 
-	j = 0;
 	quote = 0;
 	while (input[i])
 	{
 		update_quote(input[i], &quote);
-		if (i > 0 && is_char_redirection(input[i]) && input[i - 1] != ' '
-			&& !is_char_redirection(input[i - 1]) && !quote)
+		if (is_missing_pre_space(input, i, quote))
 		{
 			line[j++] = ' ';
 			line[j++] = input[i];
-			if (input[i + 1] && input[i + 1] != ' '
-				&& !is_char_redirection(input[i + 1]))
+			if (is_missing_post_after_pre_space(input, i))
 				line[j++] = ' ';
 		}
-		else if (is_char_redirection(input[i]) && input[i + 1]
-			&& input[i + 1] != ' ' && !quote
-			&& !is_char_redirection(input[i + 1]))
+		else if (is_missing_post_space(input, i, quote))
 		{
 			line[j++] = input[i];
 			line[j++] = ' ';
@@ -62,7 +48,7 @@ static char	*add_spaces_helper(char *line, char *input, int i)
 	return (line);
 }
 
-int	check_closing_quote(char *s, int i, int quote)
+static int	check_closing_quote(char *s, int i, int quote)
 {
 	while (s[i])
 	{
@@ -73,7 +59,7 @@ int	check_closing_quote(char *s, int i, int quote)
 	return (0);
 }
 
-int	check_quotes(char *input)
+static int	check_quotes(char *input)
 {
 	int	i;
 	int	temp;
@@ -82,7 +68,7 @@ int	check_quotes(char *input)
 	temp = 0;
 	while (input[i])
 	{
-		if (input[i] == 34 || input[i] == 39)
+		if (input[i] == '"' || input[i] == '\'')
 		{
 			temp = check_closing_quote(input, i + 1, input[i]);
 			if (!temp)
@@ -99,19 +85,16 @@ int	check_quotes(char *input)
 	return (0);
 }
 
-char	*add_spaces(char *input)
+char	*add_spaces(char *input, t_data *data)
 {
 	int		extras;
 	char	*line;
 
-	if (check_quotes(input))
+	if (check_quotes(input) < 0)
 		return (NULL);
 	extras = count_missing_spaces(input);
 	line = malloc(ft_strlen(input) + extras + 1);
 	if (!line)
-	{
-		ft_printf(2, "%s\n", MALLOC);
-		exit (1);
-	}
-	return (add_spaces_helper(line, input, 0));
+		fatal_parsing_exit(data, NULL, input, MALLOC);
+	return (add_spaces_helper(line, input, 0, 0));
 }

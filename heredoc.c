@@ -1,31 +1,9 @@
 #include "minishell.h"
-char	*heredoc_expandables(char *line, char **envp, int fd, int status)
-{
-	int		i;
-	char	*new_line;
-	t_exp	expand;
-
-	i = 0;
-	init_exp(&expand, status, envp);
-	new_line = ft_strdup("");
-	//malloc protection
-	while (line[i])
-	{
-		if (line[i] == '$' && line[i + 1])
-			i = expand_line_helper(line, &new_line, &expand, i);
-		else
-		{
-			append_char(&new_line, line, i);
-			i++;
-		}
-	}
-	return (new_line);
-}
 
 static void	heredoc_rm(char **envp, char **paths)
 {
 	pid_t	rm_pid;
-	char	**rm_cmd;
+	char	*rm_cmd[3];
 	char	*rm_path;
 	int		status;
 
@@ -33,8 +11,6 @@ static void	heredoc_rm(char **envp, char **paths)
 	if (rm_pid == 0)
 	{
 		rm_path = get_absolute_path(paths, "rm");
-		rm_cmd = malloc(sizeof(char *) * 3);
-		//malloc protection
 		rm_cmd[0] = "rm";
 		rm_cmd[1] = "tmpfile";
 		rm_cmd[2] = NULL;
@@ -46,7 +22,7 @@ static void	heredoc_rm(char **envp, char **paths)
 static void	heredoc_rmdir(char **envp, char **paths)
 {
 	pid_t	rmdir_pid;
-	char	**rmdir_cmd;
+	char	*rmdir_cmd[3];
 	char	*rmdir_path;
 	int		status;
 
@@ -54,8 +30,6 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	if (rmdir_pid == 0)
 	{
 		rmdir_path = get_absolute_path(paths, "rmdir");
-		rmdir_cmd = malloc(sizeof(char *) * 3);
-		//malloc protection
 		rmdir_cmd[0] = "rmdir";
 		rmdir_cmd[1] = "tmp";
 		rmdir_cmd[2] = NULL;
@@ -64,13 +38,12 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	waitpid(rmdir_pid, &status, 0);
 }
 
-static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status)
+static void	heredoc_read(t_node *delimiter_node,
+	t_pipes *my_pipes, int status, int fd)
 {
-	int		fd;
 	char	*line;
 	char	*temp;
 
-	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	while (1)
 	{
 		line = readline("> ");
@@ -78,7 +51,7 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status)
 			break ;
 		if (!delimiter_node->delimiter_quote)
 		{
-			temp = heredoc_expandables(line, *my_pipes->my_envp, fd, status);
+			temp = expand_heredoc(line, my_pipes, fd, status);
 			if (temp)
 				line = temp;
 		}
@@ -89,7 +62,6 @@ static void	heredoc_read(t_node *delimiter_node, t_pipes *my_pipes, int status)
 		free (line);
 	close (fd);
 	fd = open("tmpfile", O_RDONLY);
-	my_pipes->stdinfd = dup(STDIN_FILENO);
 	dup2(fd, STDIN_FILENO);
 	close (fd);
 }
@@ -98,15 +70,13 @@ static void	heredoc_mkdir(char **envp, char **paths)
 {
 	pid_t	mkdir_pid;
 	int		status;
-	char	**mkdir_cmd;
+	char	*mkdir_cmd[3];
 	char	*mkdir_path;
 
 	mkdir_pid = fork();
 	if (mkdir_pid == 0)
 	{
 		mkdir_path = get_absolute_path(paths, "mkdir");
-		mkdir_cmd = malloc(sizeof(char *) * 3);
-		//malloc protection
 		mkdir_cmd[0] = "mkdir";
 		mkdir_cmd[1] = "tmp";
 		mkdir_cmd[2] = NULL;
@@ -121,9 +91,11 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	chdir("./tmp");
 }
 
-void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int status)
+void	heredoc(t_node *node, t_pipes *my_pipes,
+	char **paths, int status)
 {
-	int		newdir;
+	int	newdir;
+	int	fd;
 
 	newdir = 0;
 	if (chdir("./tmp") == -1)
@@ -131,12 +103,14 @@ void	heredoc(t_node *node, t_pipes *my_pipes, char **envp, char **paths, int sta
 		if (errno == ENOENT)
 		{
 			newdir = 1;
-			heredoc_mkdir(envp, paths);
+			heredoc_mkdir(*my_pipes->my_envp, paths);
 		}
 	}
-	heredoc_read(my_pipes->heredoc_node, my_pipes, status);
-	heredoc_rm(envp, paths);
+	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
+	//if (fd < 0)?
+	heredoc_read(my_pipes->heredoc_node, my_pipes, status, fd);
+	heredoc_rm(*my_pipes->my_envp, paths);
 	chdir("..");
 	if (newdir)
-		heredoc_rmdir(envp, paths);
+		heredoc_rmdir(*my_pipes->my_envp, paths);
 }

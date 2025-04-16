@@ -1,9 +1,38 @@
 #include "minishell.h"
 
+static char	**sort_for_export(char **export, char **envp, int elements)
+{
+	int	i;
+	int	j;
+	int	k;
+
+	i = 0;
+	while (i < elements)
+	{
+		j = 0;
+		k = 0;
+		while (j < elements)
+		{
+			if (ft_strcmp(envp[i], envp[j]) > 0)
+				k++;
+			j++;
+		}
+		export[k] = ft_strdup(envp[i]);
+		if (!export[k])
+		{
+			ft_printf(2, "%s\n", MALLOC);
+			free_array(export); //must also free everything else
+			exit (1);
+		}
+		i++;
+	}
+	return (export);
+}
+
 void	export_no_args(char **envp)
 {
-	int	elements;
-	int	i;
+	int		elements;
+	int		i;
 	char	**export;
 
 	elements = count_elements(envp);
