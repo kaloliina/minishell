@@ -33,7 +33,8 @@ static int	set_cmd_no_args(t_data *data, t_index *index, t_node *new_node)
 	return (index->j);
 }
 
-static int	set_cmd_args(t_data *data, t_index *index, int args, t_node *new_node)
+static int	set_cmd_args(t_data *data, t_index *index,
+	int args, t_node *new_node)
 {
 	int	k;
 

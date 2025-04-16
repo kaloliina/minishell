@@ -69,7 +69,8 @@ char	**handle_cmd_helper(char **cmd, t_data *data, int status)
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			expand.new_cmd[new_arg++] = handle_quotes(cmd[arg++], data, &expand);
+			expand.new_cmd[new_arg++]
+				= handle_quotes(cmd[arg++], data, &expand);
 		else
 			expand_cmd(cmd, &expand, &arg, &new_arg);
 	}

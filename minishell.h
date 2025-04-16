@@ -124,9 +124,9 @@ char	*find_exp(char *arg, int *i, int *k, t_data *data);
 char	*find_replacer(char *arg, int i, t_exp *expand, int new_arg);
 void	append_char(char **new_string, char c, t_exp *expand);
 void	append_char_heredoc(char **new_string, char *s, int i,
-	t_pipes *my_pipes);
+			t_pipes *my_pipes);
 void	append_replacer(char **new_string, char *replacer, int is_freeable,
-	t_exp *expand);
+			t_exp *expand);
 int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
 int		is_redirection(char *token);
 int		is_exp_delimiter(char c);

@@ -17,6 +17,7 @@ void	open_infile(char *file, t_pipes *my_pipes)
 	}
 	my_pipes->infile_fd = open(file, O_RDONLY);
 }
+
 //same thing here
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 {

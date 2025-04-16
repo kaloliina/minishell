@@ -36,7 +36,8 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 	{
 		if (!expand->expanded)
 		{
-			temp = handle_quotes(expand->new_cmd[*new_arg], expand->data, expand);
+			temp = handle_quotes(expand->new_cmd[*new_arg],
+					expand->data, expand);
 			if (temp)
 			{
 				expand->new_cmd[*new_arg] = temp;

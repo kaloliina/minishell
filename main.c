@@ -32,9 +32,9 @@ static void	handle_exp_and_quotes(t_data *data, int status)
 int	minishell(char *input, char ***envp, int status)
 {
 	t_data	data;
+	char	*line;
 	// t_node	*tmp;
 	// int		k;
-	char	*line;
 
 	init_data(&data, envp);
 	line = add_spaces(input, &data);
@@ -70,9 +70,10 @@ int	main(int ac, char **av, char **envp)
 {
 	char	*input;
 	char	**my_envp;
-	int		status = 0;
+	int		status;
 
 	(void)av;
+	status = 0;
 	if (ac != 1)
 		return (0);
 	signal(SIGINT, signal_handler);
