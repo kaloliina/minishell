@@ -15,14 +15,15 @@
 # define MALLOC "minishell: memory allocation failure"
 # define ERR_PIPE "minishell: failed to create pipe"
 # define ERR_WAITPID "minishell: waitpid failed"
-# define ERR_COMMAND "command not found"
+# define ERR_COMMAND "Command '%s' not found\n"
 # define ERR_FORK "failed to fork"
 # define ERR_NUM "numeric argument required"
-# define ERR_INVFILE "No such file or directory"
-# define ERR_INVPERMS "Permission denied"
+# define ERR_INVFILE "minishell: %s: No such file or directory\n"
+# define ERR_DIR "minishell: %s: Is a directory"
+# define ERR_INVPERMS "minishell: %s: Permission denied\n"
 # define ERR_FD "failed to return a file descriptor"
 # define ERR_CLOSE "failed to close a file descriptor"
-
+# define ERR_EXECVE "minishell: %s: Unknown failure"
 extern int g_shell_state;
 
 typedef enum s_type
