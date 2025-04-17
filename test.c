@@ -112,6 +112,7 @@ void	close_child_pipes(t_pipes *my_pipes)
 		{
 			if (close(my_pipes->pipes[i]) < 0)
 				ft_printf(2, "%s\n", ERR_CLOSE);
+			my_pipes->pipes[i] = -1;
 		}
 		i++;
 	}
