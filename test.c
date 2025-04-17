@@ -130,8 +130,6 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 		redirection_outfile(my_pipes);
 	if (my_pipes->infile_fd >= 0)
 		redirection_infile(my_pipes);
-	if (my_pipes->heredoc_node)
-		heredoc(node, my_pipes, my_pipes->paths, status);
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
 	{
 		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) < 0)
@@ -431,7 +429,10 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 		if (list->type == REDIR_INF)
 			open_infile(list->file, my_pipes);
 		if (list->type == REDIR_HEREDOC)
+		{
 			my_pipes->heredoc_node = list;
+			heredoc(my_pipes, my_pipes->paths, status);
+		}
 		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)

@@ -80,6 +80,9 @@ void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
 
 void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list, char *conversion)
 {
+	int	exit_status;
+
+	exit_status = my_pipes->exit_status;
 	if (conversion == NULL)
 		ft_printf(2, msg);
 	else
@@ -93,5 +96,5 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list, char *convers
 		free_array(*my_pipes->my_envp);
 		free_my_pipes(my_pipes);
 	}
-	exit (my_pipes->exit_status);
+	exit (exit_status);
 }
