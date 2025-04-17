@@ -33,8 +33,6 @@ char	*handle_quotes(char *s, t_data *data, t_exp *expand)
 	return (handle_quotes_helper(new, s, 0, 0));
 }
 
-/*THIS HEREDOC DOESNT WORK BC WE NEED DATA STRUCT TO HANDLE FATAL EXIT - MAYBE COMBINE FATAL EXIT FUNCTIONS
-TO INCLUDE BOTH DATA AND MY_PIPES FREEING WHICHEVER EXISTS?*/
 char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status)
 {
 	int		i;

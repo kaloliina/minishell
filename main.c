@@ -33,8 +33,6 @@ int	minishell(char *input, char ***envp, int status)
 {
 	t_data	data;
 	char	*line;
-	// t_node	*tmp;
-	// int		k;
 
 	init_data(&data, envp);
 	line = add_spaces(input, &data);
@@ -48,11 +46,11 @@ int	minishell(char *input, char ***envp, int status)
 	if (lexer(&data) < 0) //missing filename or delimiter
 		return (2);
 	handle_exp_and_quotes(&data, status);
-	// tmp = data.first;
+	// t_node	*tmp = data.first;
 	// while (tmp)
 	// {
 	// 	printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
-	// 	k = 0;
+	// 	int	k = 0;
 	// 	if (tmp->cmd)
 	// 	{
 	// 		while (tmp->cmd[k])
@@ -63,6 +61,7 @@ int	minishell(char *input, char ***envp, int status)
 	// }
 	g_shell_state = 1;
 	status = loop_nodes(data.first, &data.envp, status);
+	*envp = data.envp;
 	free_nodes(data.first);
 	return (status);
 }

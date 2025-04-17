@@ -205,13 +205,13 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 	if (!ft_strcmp(node->cmd[0], "echo"))
 		execute_echo(node, my_pipes->my_envp);
 	else if (!ft_strcmp(node->cmd[0], "pwd"))
-		execute_pwd();
+		execute_pwd(my_pipes);
 	else if (!ft_strcmp(node->cmd[0], "env"))
 		execute_env(my_pipes->my_envp);
 	else if (!ft_strcmp(node->cmd[0], "export"))
-		execute_export(node->cmd, my_pipes->my_envp);
+		execute_export(node->cmd, my_pipes->my_envp, my_pipes);
 	else if (!ft_strcmp(node->cmd[0], "unset"))
-		execute_unset(node->cmd, my_pipes->my_envp);
+		execute_unset(node->cmd, my_pipes->my_envp, my_pipes);
 	else if (!ft_strcmp(node->cmd[0], "exit"))
 		execute_exit(node->cmd, my_pipes);
 	else if (!ft_strcmp(node->cmd[0], "cd"))
