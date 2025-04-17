@@ -75,21 +75,21 @@ typedef struct s_data
 
 typedef struct s_pipes
 {
+	pid_t			*childpids;
 	int				*pipes;
-	char			*command_path;
-	char			**paths;
-	char			***my_envp;
-	int				current_section;
 	int				pipe_amount;
+	int				current_section;
 	int				stdinfd;
 	int				stdoutfd;
 	int				infile_fd;
 	int				outfile_fd;
-	struct s_node	*command_node;
-	struct s_node	*heredoc_node;
 	int				read_end;
 	int				write_end;
 	int				exit_status;
+	char			*command_path;
+	char			**paths;
+	char			***my_envp;
+	struct s_node	*command_node;
 }					t_pipes;
 
 //init and input validation
@@ -150,7 +150,7 @@ int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
 void	signal_handler(int sig);
-void	heredoc(t_pipes *my_pipes, char **paths, int status);
+void	heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);
