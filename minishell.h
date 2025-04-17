@@ -19,7 +19,7 @@
 # define ERR_FORK "failed to fork"
 # define ERR_NUM "numeric argument required"
 # define ERR_INVFILE "minishell: %s: No such file or directory\n"
-# define ERR_DIR "minishell: %s: Is a directory"
+# define ERR_DIR "minishell: %s: Is a directory\n"
 # define ERR_INVPERMS "minishell: %s: Permission denied\n"
 # define ERR_FD "failed to return a file descriptor"
 # define ERR_CLOSE "failed to close a file descriptor"
