@@ -103,8 +103,9 @@ void	execute_exit(char **cmd, t_pipes *my_pipes)
 		else
 			status = ft_atoi(cmd[1]);
 	}
-	printf("exit status: %d\n", status);
+	printf("exit\n");
 	free_array(*my_pipes->my_envp);
+	free_nodes(my_pipes->command_node);
 	free_my_pipes(my_pipes);
 	exit (status);
 }

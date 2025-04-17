@@ -59,7 +59,6 @@ int	minishell(char *input, char ***envp, int status)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
-	g_shell_state = 1;
 	status = loop_nodes(data.first, &data.envp, status);
 	*envp = data.envp;
 	free_nodes(data.first);
@@ -76,18 +75,20 @@ int	main(int ac, char **av, char **envp)
 	status = 0;
 	if (ac != 1)
 		return (0);
-	signal(SIGINT, signal_handler);
-	signal(SIGQUIT, SIG_IGN);
 	my_envp = copy_envp(envp);
 	while (1)
 	{
-		g_shell_state = 0;
+		signal(SIGINT, signal_handler);
+		signal(SIGQUIT, SIG_IGN);
 		input = readline("minishell > ");
-		if (!input || !ft_strcmp(input, "exit"))
+		if (g_signum == SIGINT)
+		{
+			status = 130;
+			g_signum = 0;
+		}
+		if (!input)
 		{
 			ft_printf(1, "exit\n");
-			if (input)
-				free (input);
 			free_array(my_envp);
 			clear_history();
 			return (0);

@@ -417,7 +417,13 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 		if (list->type == REDIR_INF)
 			open_infile(list->file, my_pipes);
 		if (list->type == REDIR_HEREDOC)
-			heredoc(list, my_pipes, my_pipes->paths, status);
+		{
+			if (heredoc(list, my_pipes, my_pipes->paths, status) < 0)
+			{
+				free_my_pipes(my_pipes);
+				return (130);
+			}
+		}
 		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)

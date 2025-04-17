@@ -25,7 +25,7 @@
 # define ERR_CLOSE "failed to close a file descriptor"
 # define ERR_EXECVE "minishell: %s: Unknown failure"
 
-extern int	g_shell_state;
+extern int	g_signum;
 typedef enum s_type
 {
 	PIPE,
@@ -151,7 +151,8 @@ int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
 void	signal_handler(int sig);
-void	heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
+void	heredoc_signal(int sig);
+int		heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);

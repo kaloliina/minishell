@@ -37,16 +37,33 @@ static void	heredoc_rmdir(char **envp, char **paths)
 	}
 	waitpid(rmdir_pid, &status, 0);
 }
-
-static void	heredoc_read(t_node *delimiter_node,
+//HOW TO COUNT THE LINE NUMBER IN CASE OF CTRL+D
+static int	heredoc_read(t_node *delimiter_node,
 	t_pipes *my_pipes, int status, int fd)
 {
 	char	*line;
 	char	*temp;
+	int		fd_backup;
 
+	fd_backup = dup(STDIN_FILENO);
+	signal(SIGINT, heredoc_signal);
 	while (1)
 	{
 		line = readline("> ");
+		if (g_signum == SIGINT)
+		{
+			g_signum = 0;
+			dup2(fd_backup, STDIN_FILENO);
+			close (fd_backup);
+			free (line);
+			return (-1);
+		}
+		if (!line)
+		{
+			ft_printf(2, "minishell: warning: here-document at line ? delimited by end-of-file (wanted `%s')\n",
+			delimiter_node->delimiter);
+			break ;
+		}
 		if (!ft_strcmp(line, delimiter_node->delimiter))
 			break ;
 		if (!delimiter_node->delimiter_quote)
@@ -63,6 +80,7 @@ static void	heredoc_read(t_node *delimiter_node,
 	close (fd);
 	my_pipes->infile_fd = open("tmpfile", O_RDONLY);
 	//error checks
+	return (0);
 }
 
 static void	heredoc_mkdir(char **envp, char **paths)
@@ -90,11 +108,12 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	chdir("./tmp");
 }
 
-void	heredoc(t_node *curr, t_pipes *my_pipes,
+int	heredoc(t_node *curr, t_pipes *my_pipes,
 	char **paths, int status)
 {
 	int	newdir;
 	int	fd;
+	int	flag;
 
 	newdir = 0;
 	if (chdir("./tmp") == -1)
@@ -107,9 +126,12 @@ void	heredoc(t_node *curr, t_pipes *my_pipes,
 	}
 	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	//if (fd < 0)?
-	heredoc_read(curr, my_pipes, status, fd);
+	flag = heredoc_read(curr, my_pipes, status, fd);
 	heredoc_rm(*my_pipes->my_envp, paths);
 	chdir("..");
 	if (newdir)
 		heredoc_rmdir(*my_pipes->my_envp, paths);
+	if (flag < 0)
+		return (-1);
+	return (0);
 }
