@@ -1,13 +1,33 @@
 #include "../minishell.h"
 
-/* CAN WE MAKE THIS SHORTER?
-- Remove if my pipes is not null, feels like we never encounter a situation like that because it's checked beforehand
-- Otherwise combine some stuff*/
-void	free_my_pipes(t_pipes *my_pipes)
+void	close_all_pipes(t_pipes *my_pipes)
 {
 	int	i;
 
 	i = 0;
+	if (my_pipes->pipes)
+	{
+		while (i < my_pipes->pipe_amount * 2)
+		{
+			if (my_pipes->pipes[i] != -1)
+			{
+				if (close(my_pipes->pipes[i]) < 0)
+					ft_printf(2, "%s\n", ERR_CLOSE);
+				my_pipes->pipes[i] = -1;
+			}
+			i++;
+		}
+	}
+	if (my_pipes->stdinfd != -1 && (close(my_pipes->stdinfd) < 0))
+		ft_printf(2, "%s\n", ERR_CLOSE);
+	my_pipes->stdinfd = -1;
+	if (my_pipes->stdoutfd != -1 && (close(my_pipes->stdoutfd) < 0))
+		ft_printf(2, "%s\n", ERR_CLOSE);
+	my_pipes->stdoutfd = -1;
+}
+
+void	free_my_pipes(t_pipes *my_pipes)
+{
 	if (my_pipes)
 	{
 		if (my_pipes->paths)
@@ -17,23 +37,16 @@ void	free_my_pipes(t_pipes *my_pipes)
 			free(my_pipes->command_path);
 			my_pipes->command_path = NULL;
 		}
-		if (my_pipes->stdinfd != -1 && (close(my_pipes->stdinfd) < 0))
-			ft_printf(2, "%s\n", ERR_CLOSE);
-		if (my_pipes->stdoutfd != -1 && (close(my_pipes->stdoutfd) < 0))
-			ft_printf(2, "%s\n", ERR_CLOSE);
+		close_all_pipes(my_pipes);
 		if (my_pipes->pipes)
 		{
-			while (i < my_pipes->pipe_amount * 2)
-			{
-				if (my_pipes->pipes[i] != -1)
-				{
-					if (close(my_pipes->pipes[i]) < 0)
-						ft_printf(2, "%s\n", ERR_CLOSE);
-				}
-				i++;
-			}
 			free(my_pipes->pipes);
 			my_pipes->pipes = NULL;
+		}
+		if (my_pipes->childpids)
+		{
+			free(my_pipes->childpids);
+			my_pipes->childpids = NULL;
 		}
 		free(my_pipes);
 	}
@@ -88,7 +101,6 @@ void	reset_properties(t_pipes *my_pipes)
 	my_pipes->command_node = NULL;
 	my_pipes->infile_fd = -1;
 	my_pipes->outfile_fd = -1;
-	my_pipes->heredoc_node = NULL;
 	my_pipes->exit_status = 0;
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 	{
@@ -99,28 +111,6 @@ void	reset_properties(t_pipes *my_pipes)
 	//	printf("Curr section: %d\n", my_pipes->current_section);
 	}
 	my_pipes->current_section++;
-}
-
-void	close_child_pipes(t_pipes *my_pipes)
-{
-	int	i;
-
-	i = 0;
-	while (i < my_pipes->pipe_amount * 2)
-	{
-		if (my_pipes->pipes[i] != -1)
-		{
-			if (close(my_pipes->pipes[i]) < 0)
-				ft_printf(2, "%s\n", ERR_CLOSE);
-		}
-		i++;
-	}
-	if (close(my_pipes->stdinfd) < 0)
-		ft_printf(2, "%s\n", ERR_CLOSE);
-	my_pipes->stdinfd = -1;
-	if (close(my_pipes->stdoutfd) < 0)
-		ft_printf(2, "%s\n", ERR_CLOSE);
-	my_pipes->stdoutfd = -1;
 }
 
 /*Heredoc handling should not be here, it should be done in loop nodes*/
@@ -231,7 +221,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 		if (pid == 0)
 		{
 			handle_redirections(node, my_pipes, status);
-			close_child_pipes(my_pipes);
+			close_all_pipes(my_pipes);
 			if (my_pipes->exit_status == 1)
 				exit (1);
 			run_builtin_command(node, my_pipes);
@@ -266,7 +256,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 	if (pid == 0)
 	{
 		handle_redirections(node, my_pipes, status);
-		close_child_pipes(my_pipes);
+		close_all_pipes(my_pipes);
 		if (my_pipes->exit_status == 1)
 			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
@@ -302,6 +292,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 int	is_builtin(char *command)
 {
 	const char	*builtins[7];
+	int			i;
 
 	builtins[0] = "echo";
 	builtins[1] = "cd";
@@ -310,7 +301,7 @@ int	is_builtin(char *command)
 	builtins[4] = "unset";
 	builtins[5] = "env";
 	builtins[6] = "exit";
-	int i = 0;
+	i = 0;
 	while (i <= 6)
 	{
 		if (!ft_strcmp(builtins[i], command))
@@ -320,7 +311,7 @@ int	is_builtin(char *command)
 	return (0);
 }
 
-//MAKE THIS SHORTER
+//MAKE THIS SHORTER today
 void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
@@ -328,7 +319,6 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 	my_pipes->pipes = NULL;
 	my_pipes->command_node = NULL;
 	my_pipes->command_path = NULL;
-	my_pipes->heredoc_node = NULL;
 	my_pipes->paths = NULL;
 	my_pipes->my_envp = envp;
 	my_pipes->read_end = 0;
@@ -353,6 +343,9 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 			i++;
 		}
 	}
+	my_pipes->childpids = malloc(sizeof(pid_t) * (my_pipes->pipe_amount + 1));
+	if (my_pipes->childpids == NULL)
+		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
 	my_pipes->paths = get_paths(my_pipes->my_envp);
 	if (my_pipes->paths == NULL)
 		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
@@ -368,7 +361,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 Also there might be a situation with sleep where you explicitly have to mark the last process but I was unable to repro the behaviour
 Make this shorter
 */
-int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
+int	get_exit_status(int amount, t_pipes *my_pipes)
 {
 	int	status;
 	int	exit_status;
@@ -378,9 +371,9 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	status = 0;
 	while (i < amount)
 	{
-		if (child_pids[i] > 0)
+		if (my_pipes->childpids[i] > 0)
 		{
-			if (waitpid(child_pids[i], &status, 0) < 0)
+			if (waitpid(my_pipes->childpids[i], &status, 0) < 0)
 				handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
 			if (WIFEXITED(status))
 				exit_status = WEXITSTATUS(status);
@@ -403,14 +396,10 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 	return (exit_status);
 }
 
-//THIS ONE NEEDS TO BE CLEANED UP
-//WORK ON HEREDOC, THATS BROKEN
-//Also maybe chid pids could be added to my_pipes struct
 //Shorten this
 int	loop_nodes(t_node *list, char ***envp, int status)
 {
 	t_pipes	*my_pipes;
-	int		i = 0;
 
 	my_pipes = malloc(sizeof(t_pipes));
 	if (my_pipes == NULL)
@@ -419,7 +408,6 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
 	}
 	initialize_struct(my_pipes, list, envp);
-	pid_t child_pids[my_pipes->pipe_amount + 1];
 	while (list != NULL)
 	{
 		if (list->type == COMMAND)
@@ -429,25 +417,16 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 		if (list->type == REDIR_INF)
 			open_infile(list->file, my_pipes);
 		if (list->type == REDIR_HEREDOC)
-		{
-			my_pipes->heredoc_node = list;
-			heredoc(my_pipes, my_pipes->paths, status);
-		}
+			heredoc(list, my_pipes, my_pipes->paths, status);
 		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
-			{
-				child_pids[i] = execute_builtin(my_pipes->command_node, my_pipes, status);
-				i++;
-			}
+				my_pipes->childpids[my_pipes->current_section -1] = execute_builtin(my_pipes->command_node, my_pipes, status);
 			else if (my_pipes->command_node != NULL)
-			{
-				child_pids[i] = execute_executable(my_pipes->command_node, my_pipes, status);
-				i++;
-			}
+				my_pipes->childpids[my_pipes->current_section -1] = execute_executable(my_pipes->command_node, my_pipes, status);
 			close_pipes(my_pipes);
 		}
 		list = list->next;
 	}
-	return (get_exit_status(child_pids, i, my_pipes));
+	return (get_exit_status(my_pipes->current_section, my_pipes));
 }
