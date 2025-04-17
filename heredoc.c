@@ -90,7 +90,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	chdir("./tmp");
 }
 
-void	heredoc(t_pipes *my_pipes,
+void	heredoc(t_node *curr, t_pipes *my_pipes,
 	char **paths, int status)
 {
 	int	newdir;
@@ -107,7 +107,7 @@ void	heredoc(t_pipes *my_pipes,
 	}
 	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	//if (fd < 0)?
-	heredoc_read(my_pipes->heredoc_node, my_pipes, status, fd);
+	heredoc_read(curr, my_pipes, status, fd);
 	heredoc_rm(*my_pipes->my_envp, paths);
 	chdir("..");
 	if (newdir)
