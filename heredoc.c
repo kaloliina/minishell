@@ -61,9 +61,8 @@ static void	heredoc_read(t_node *delimiter_node,
 	if (line)
 		free (line);
 	close (fd);
-	fd = open("tmpfile", O_RDONLY);
-	dup2(fd, STDIN_FILENO);
-	close (fd);
+	my_pipes->infile_fd = open("tmpfile", O_RDONLY);
+	//error checks
 }
 
 static void	heredoc_mkdir(char **envp, char **paths)
@@ -91,7 +90,7 @@ static void	heredoc_mkdir(char **envp, char **paths)
 	chdir("./tmp");
 }
 
-void	heredoc(t_node *node, t_pipes *my_pipes,
+void	heredoc(t_pipes *my_pipes,
 	char **paths, int status)
 {
 	int	newdir;

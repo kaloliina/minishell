@@ -150,7 +150,7 @@ int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
 void	signal_handler(int sig);
-void	heredoc(t_node *node, t_pipes *my_pipes, char **paths, int status);
+void	heredoc(t_pipes *my_pipes, char **paths, int status);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);
