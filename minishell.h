@@ -25,7 +25,7 @@
 # define ERR_CLOSE "failed to close a file descriptor"
 # define ERR_EXECVE "minishell: %s: Unknown failure"
 
-extern int g_shell_state;
+extern int	g_shell_state;
 typedef enum s_type
 {
 	PIPE,
@@ -141,7 +141,8 @@ void	free_array(char **array);
 void	free_nodes(t_node *node);
 void	free_sections_tokens(t_data *data);
 void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg);
-void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list, char *conversion);
+void	handle_fatal_exit(char *msg, t_pipes *my_pipes,
+			t_node *list, char *conversion);
 
 //utils
 int		count_elements(char **tokens);
@@ -160,10 +161,12 @@ void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_cd(char **cmd, t_pipes *my_pipes);
 void	execute_unset(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_exit(char **cmd, t_pipes *my_pipes);
-int		add_existing_envp(char **new_envp, char **envp, t_pipes *my_pipes);
-int		add_exported_envp(char **new_envp, char **cmd, int i, t_pipes *my_pipes);
-int		find_unset_element(char **cmd, char *envp_element);
-char	**fill_unset_envp(char **new_envp, char **cmd, char **envp, t_pipes *my_pipes);
+int		add_existing_envp(char ***new_envp, char **envp,
+			t_pipes *my_pipes);
+int		add_exported_envp(char ***new_envp, char **cmd, int i,
+			t_pipes *my_pipes);
+char	**fill_unset_envp(char ***new_envp, char **cmd,
+			char **envp, t_pipes *my_pipes);
 
 //execution
 char	**get_paths(char ***envp);

@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-int g_shell_state = 0;
+int	g_shell_state = 0;
 
 void	signal_handler(int sig)
 {

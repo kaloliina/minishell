@@ -78,7 +78,8 @@ void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
 	exit (1);
 }
 
-void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list, char *conversion)
+void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
+	char *conversion)
 {
 	int	exit_status;
 

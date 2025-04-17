@@ -1,16 +1,16 @@
 #include "minishell.h"
 
-int	add_existing_envp(char **new_envp, char **envp, t_pipes *my_pipes)
+int	add_existing_envp(char ***new_envp, char **envp, t_pipes *my_pipes)
 {
 	int	i;
 
 	i = 0;
 	while (envp[i])
 	{
-		new_envp[i] = ft_strdup(envp[i]);
-		if (!new_envp[i])
+		(*new_envp)[i] = ft_strdup(envp[i]);
+		if (!(*new_envp)[i])
 		{
-			free_array(new_envp);
+			free_array((*new_envp));
 			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 		}
 		i++;
@@ -19,17 +19,17 @@ int	add_existing_envp(char **new_envp, char **envp, t_pipes *my_pipes)
 }
 
 //add exported element(s) to envp
-int	add_exported_envp(char **new_envp, char **cmd, int i, t_pipes *my_pipes)
+int	add_exported_envp(char ***new_envp, char **cmd, int i, t_pipes *my_pipes)
 {
 	int	j;
 
 	j = 1;
 	while (cmd[j])
 	{
-		new_envp[i] = ft_strdup(cmd[j]);
-		if (!new_envp[i])
+		(*new_envp)[i] = ft_strdup(cmd[j]);
+		if (!(*new_envp)[i])
 		{
-			free_array(new_envp);
+			free_array((*new_envp));
 			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 		}
 		i++;
@@ -39,7 +39,7 @@ int	add_exported_envp(char **new_envp, char **cmd, int i, t_pipes *my_pipes)
 }
 
 //go through envp to find the element to unset
-int	find_unset_element(char **cmd, char *envp_element)
+static int	find_unset_element(char **cmd, char *envp_element)
 {
 	int	j;
 
@@ -48,13 +48,21 @@ int	find_unset_element(char **cmd, char *envp_element)
 	{
 		if (!ft_strncmp(envp_element, cmd[j], ft_strlen(cmd[j]))
 			&& envp_element[ft_strlen(cmd[j])] == '=')
-			break ;
+			return (j);
 		j++;
 	}
-	return (j);
+	return (-1);
 }
 
-char	**fill_unset_envp(char **new_envp, char **cmd,
+static int	is_unset_element(char **cmd, char **envp, int i, int j)
+{
+	if (cmd[j] && !ft_strncmp(envp[i], cmd[j], ft_strlen(cmd[j]))
+		&& envp[i][ft_strlen(cmd[j])] == '=')
+		return (1);
+	return (0);
+}
+
+char	**fill_unset_envp(char ***new_envp, char **cmd,
 	char **envp, t_pipes *my_pipes)
 {
 	int	i;
@@ -66,21 +74,20 @@ char	**fill_unset_envp(char **new_envp, char **cmd,
 	while ((envp)[i])
 	{
 		j = find_unset_element(cmd, envp[i]);
-		if (cmd[j] && !ft_strncmp(envp[i], cmd[j], ft_strlen(cmd[j]))
-			&& envp[i][ft_strlen(cmd[j])] == '=')
+		if (is_unset_element(cmd, envp, i, j))
 			i++;
 		else
 		{
-			new_envp[k] = ft_strdup(envp[i]);
-			if (!new_envp[k])
+			(*new_envp)[k] = ft_strdup(envp[i]);
+			if (!(*new_envp)[k])
 			{
-				free_array(new_envp);
+				free_array((*new_envp));
 				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 			}
 			i++;
 			k++;
 		}
 	}
-	new_envp[k] = NULL;
-	return (new_envp);
+	(*new_envp)[k] = NULL;
+	return (*new_envp);
 }
