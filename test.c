@@ -311,7 +311,7 @@ int	is_builtin(char *command)
 	return (0);
 }
 
-//MAKE THIS SHORTER
+//MAKE THIS SHORTER today
 void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
@@ -396,15 +396,11 @@ int	get_exit_status(int amount, t_pipes *my_pipes)
 	return (exit_status);
 }
 
-//THIS ONE NEEDS TO BE CLEANED UP
-//WORK ON HEREDOC, THATS BROKEN
 //Shorten this
 int	loop_nodes(t_node *list, char ***envp, int status)
 {
 	t_pipes	*my_pipes;
-	int		i;
 
-	i = 0;
 	my_pipes = malloc(sizeof(t_pipes));
 	if (my_pipes == NULL)
 	{
@@ -425,12 +421,12 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
-				my_pipes->childpids[i++] = execute_builtin(my_pipes->command_node, my_pipes, status);
+				my_pipes->childpids[my_pipes->current_section -1] = execute_builtin(my_pipes->command_node, my_pipes, status);
 			else if (my_pipes->command_node != NULL)
-				my_pipes->childpids[i++] = execute_executable(my_pipes->command_node, my_pipes, status);
+				my_pipes->childpids[my_pipes->current_section -1] = execute_executable(my_pipes->command_node, my_pipes, status);
 			close_pipes(my_pipes);
 		}
 		list = list->next;
 	}
-	return (get_exit_status(i, my_pipes));
+	return (get_exit_status(my_pipes->current_section, my_pipes));
 }
