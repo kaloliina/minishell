@@ -39,24 +39,6 @@ void	free_my_pipes(t_pipes *my_pipes)
 	}
 }
 
-static void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list, char *conversion)
-{
-	if (conversion == NULL)
-		ft_printf(2, msg);
-	else
-		ft_printf(2, msg, conversion);
-	if (list == NULL)
-		free_nodes(my_pipes->command_node);
-	else
-		free_nodes(list);
-	if (my_pipes != NULL)
-	{
-		free_array(*my_pipes->my_envp);
-		free_my_pipes(my_pipes);
-	}
-	exit (my_pipes->exit_status);
-}
-
 static void	redirection_outfile(t_pipes *my_pipes)
 {
 	if (dup2(my_pipes->outfile_fd, STDOUT_FILENO) < 0)
@@ -148,8 +130,6 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 		redirection_outfile(my_pipes);
 	if (my_pipes->infile_fd >= 0)
 		redirection_infile(my_pipes);
-	if (my_pipes->heredoc_node)
-		heredoc(node, my_pipes, *my_pipes->my_envp, my_pipes->paths, status);
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
 	{
 		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) < 0)
@@ -235,7 +215,7 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 	else if (!ft_strcmp(node->cmd[0], "exit"))
 		execute_exit(node->cmd, my_pipes);
 	else if (!ft_strcmp(node->cmd[0], "cd"))
-		execute_cd(node->cmd);
+		execute_cd(node->cmd, my_pipes);
 }
 
 /* Worth double checking if these commands fail*/
@@ -413,7 +393,7 @@ int	get_exit_status(pid_t child_pids[], int amount, t_pipes *my_pipes)
 			exit_status = my_pipes->exit_status;
 		i++;
 	}
-	ft_printf(2, "Exit status is %d\n", exit_status);
+//	ft_printf(2, "Exit status is %d\n", exit_status);
 //Perhaps these need another exit message
 	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
 		handle_fatal_exit(ERR_FD, my_pipes, NULL, NULL);
@@ -449,7 +429,10 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 		if (list->type == REDIR_INF)
 			open_infile(list->file, my_pipes);
 		if (list->type == REDIR_HEREDOC)
+		{
 			my_pipes->heredoc_node = list;
+			heredoc(my_pipes, my_pipes->paths, status);
+		}
 		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
