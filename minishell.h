@@ -152,7 +152,15 @@ int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
 void	signal_handler(int sig);
 void	heredoc_signal(int sig);
+void	child_signal(int sig);
+void	receive_signal(int flag);
+void	parent_signal(int sig);
 int		heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
+
+//heredoc
+void	heredoc_mkdir(char **envp, char **paths);
+void	heredoc_rm(char **envp, char **paths);
+void	heredoc_rmdir(char **envp, char **paths);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);

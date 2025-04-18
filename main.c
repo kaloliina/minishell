@@ -83,7 +83,7 @@ int	main(int ac, char **av, char **envp)
 		input = readline("minishell > ");
 		if (g_signum == SIGINT)
 		{
-			status = 130;
+			status = 128 + g_signum;
 			g_signum = 0;
 		}
 		if (!input)
