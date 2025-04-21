@@ -63,17 +63,27 @@ void	execute_cd(char **cmd, t_pipes *my_pipes)
 	{
 		expansion = find_envp(&expand, 0, 0);
 		if (!expansion)
+		{
 			ft_printf(2, "minishell: cd: HOME not set\n");
-		if (chdir(expansion) == -1)
+			my_pipes->exit_status = 1;
+		}
+		else if (chdir(expansion) == -1)
 			perror("minishell");
 		free (expansion);
 	}
 	if (count_elements(cmd) > 2)
-		ft_printf(2, "minishell: cd: too many arguments\n");
+	{
+		ft_printf(2, "minishell: %s: %s\n", cmd[0], ERR_ARG);
+		my_pipes->exit_status = 1;
+	}
 	else if (count_elements(cmd) == 2)
 	{
 		if (chdir(cmd[1]) == -1)
-			perror("minishell");
+		{
+			ft_printf(2, "minishell: %s: %s: ", cmd[0], cmd[1]);
+			perror("");
+			my_pipes->exit_status = 1;
+		}
 	}
 	free (expand.exp);
 }

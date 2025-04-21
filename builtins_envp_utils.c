@@ -23,11 +23,13 @@ int	is_valid_to_export(char *arg)
 	int	i;
 
 	i = 0;
-	while (arg[i] != '=' && arg[i])
+	if (!(ft_isalpha(arg[i]) || arg[i] == '_'))
+		return (0);
+	while (!is_exp_delimiter(arg[i]))
 		i++;
-	if (arg[i] != '\0')
-		return (1);
-	return (0);
+	if (arg[i] != '=' && arg[i] != '\0')
+		return (0);
+	return (1);
 }
 
 //add exported element(s) to envp
@@ -54,27 +56,19 @@ int	add_exported_envp(char ***new_envp, char **cmd, int i, t_pipes *my_pipes)
 }
 
 //go through envp to find the element to unset
-static int	find_unset_element(char **cmd, char *envp_element)
+int	find_unset_element(char *arg, char **envp)
 {
-	int	j;
+	int	i;
 
-	j = 1;
-	while (cmd[j])
+	i = 0;
+	while (envp[i] && arg)
 	{
-		if (!ft_strncmp(envp_element, cmd[j], ft_strlen(cmd[j]))
-			&& envp_element[ft_strlen(cmd[j])] == '=')
-			return (j);
-		j++;
+		if (!ft_strncmp(envp[i], arg, ft_strlen(arg))
+			&& envp[i][ft_strlen(arg)] == '=')
+			return (i);
+		i++;
 	}
 	return (-1);
-}
-
-static int	is_unset_element(char **cmd, char **envp, int i, int j)
-{
-	if (cmd[j] && !ft_strncmp(envp[i], cmd[j], ft_strlen(cmd[j]))
-		&& envp[i][ft_strlen(cmd[j])] == '=')
-		return (1);
-	return (0);
 }
 
 char	**fill_unset_envp(char ***new_envp, char **cmd,
@@ -83,14 +77,27 @@ char	**fill_unset_envp(char ***new_envp, char **cmd,
 	int	i;
 	int	j;
 	int	k;
+	int	element;
 
 	i = 0;
+	j = 1;
 	k = 0;
+	while (cmd[j])
+	{
+		element = find_unset_element(cmd[j], envp);
+		if (element == -1)
+			j++;
+		else
+			break ;
+	}
 	while ((envp)[i])
 	{
-		j = find_unset_element(cmd, envp[i]);
-		if (is_unset_element(cmd, envp, i, j))
+		if (i == element)
+		{
 			i++;
+			j++;
+			element = find_unset_element(cmd[j], envp);
+		}
 		else
 		{
 			(*new_envp)[k] = ft_strdup(envp[i]);
