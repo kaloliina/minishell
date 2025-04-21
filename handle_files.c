@@ -9,6 +9,8 @@ void	open_infile(char *file, t_pipes *my_pipes)
 			ft_printf(2, ERR_INVFILE, file);
 		else if (errno == EACCES)
 			ft_printf(2, ERR_INVPERMS, file);
+		else if (errno == EISDIR)
+			ft_printf(2, ERR_DIR, file);
 		my_pipes->exit_status = 1;
 	}
 }
@@ -23,6 +25,8 @@ void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 	{
 		if (errno == EACCES)
 			ft_printf(2, ERR_INVPERMS, file);
+		else if (errno == EISDIR)
+			ft_printf(2, ERR_DIR, file);
 		my_pipes->exit_status = 1;
 	}
 }
