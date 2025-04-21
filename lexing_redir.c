@@ -14,11 +14,10 @@ static void	set_redir_type(t_node *new_node, t_data *data, int i, int j)
 
 static void	missing_file_delimiter(t_data *data, t_index *index)
 {
-	ft_printf(2, "minishell: syntax error near unexpected token ");
 	if (data->tokens[index->i + 1])
-		ft_printf(2, "`|'\n");
+		ft_printf(2, SYNTAX, "`|'");
 	else
-		ft_printf(2, "`newline'\n");
+		ft_printf(2, SYNTAX, "`newline'");
 }
 
 static int	set_redir_node(t_node *new_node, t_data *data, t_index *index)

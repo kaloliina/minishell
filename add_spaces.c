@@ -85,12 +85,30 @@ static int	check_quotes(char *input)
 	return (0);
 }
 
+int	is_only_pipes(char *input)
+{
+	int	i;
+
+	i = 0;
+	while (input[i] == ' ')
+		i++;
+	if (input[i] != '|')
+		return (0);
+	if (input[i] == '|' && input[i + 1] == '|')
+		ft_printf(2, SYNTAX, "`||'");
+	else
+		ft_printf(2, SYNTAX, "`|'");
+	return (1);
+}
+
 char	*add_spaces(char *input, t_data *data)
 {
 	int		extras;
 	char	*line;
 
 	if (check_quotes(input) < 0)
+		return (NULL);
+	if (is_only_pipes(input))
 		return (NULL);
 	extras = count_missing_spaces(input);
 	line = malloc(ft_strlen(input) + extras + 1);
