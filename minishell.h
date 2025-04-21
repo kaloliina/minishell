@@ -180,6 +180,7 @@ int		add_exported_envp(char ***new_envp, char **cmd, int i,
 char	**fill_unset_envp(char ***new_envp, char **cmd,
 			char **envp, t_pipes *my_pipes);
 int		is_valid_to_export(char *arg);
+int		find_unset_element(char *arg, char **envp);
 
 //execution
 char	**get_paths(char ***envp);
