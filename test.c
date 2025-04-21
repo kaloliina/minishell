@@ -93,7 +93,7 @@ int	get_pipe_amount(t_node *list)
 /*Just double check the if statement here, there was a reason why you put it like that*/
 void	reset_properties(t_pipes *my_pipes)
 {
-	if (ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
+	if (my_pipes->command_path != NULL && ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
 	{
 		free (my_pipes->command_path);
 		my_pipes->command_path = NULL;
