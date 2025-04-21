@@ -61,6 +61,36 @@ static void	export_no_args(char **envp, t_pipes *my_pipes)
 	free_array(export);
 }
 
+int	export_validation(char **cmd)
+{
+	int	i;
+	int	j;
+
+	i = 1;
+	while (cmd[i])
+	{
+		j = 0;
+		if (!(ft_isalpha(cmd[i][j]) || cmd[i][j] == '_'))
+		{
+			ft_printf(2, EXPORT, cmd[i]);
+			return (-1);
+		}
+		while (cmd[i][j])
+		{
+			while (!is_exp_delimiter(cmd[i][j]))
+				j++;
+			if (cmd[i][j] != '=' && cmd[i][j] != '\0')
+			{
+				ft_printf(2, EXPORT, cmd[i]);
+				return (-1);
+			}
+			j = ft_strlen(cmd[i]);
+		}
+		i++;
+	}
+	return (0);
+}
+
 void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes)
 {
 	int		i;
@@ -69,9 +99,14 @@ void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes)
 
 	if (!cmd[1])
 		return (export_no_args(*envp, my_pipes));
+	if (export_validation(cmd) < 0)
+	{
+		my_pipes->exit_status = 1;
+		return ;
+	}
 	i = count_elements(*envp);
 	args = 1;
-	while (cmd[args + 1])
+	while (cmd[args + 1] && is_valid_to_export(cmd[args + 1]))
 		args++;
 	new_envp = malloc(sizeof(char *) * (i + 1 + args));
 	if (!new_envp)

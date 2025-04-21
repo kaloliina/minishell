@@ -196,6 +196,8 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 			handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
 		if (pid == 0)
 		{
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
 			handle_redirections(node, my_pipes, status);
 			close_all_pipes(my_pipes);
 			if (my_pipes->exit_status == 1)
@@ -204,7 +206,13 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 			exit(0);
 		}
 		else
+		{
+			signal(SIGQUIT, parent_signal);
+			signal(SIGINT, parent_signal);
+		//	my_pipes->exit_status = g_signum + 128;	//can we do this or does it work wrong if signal is not received?
+			g_signum = 0;	//must we always do this so old signal is not stored for later
 			return (pid);
+		}
 	}
 	else
 	{
@@ -231,6 +239,8 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 		handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
 	if (pid == 0)
 	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
 		handle_redirections(node, my_pipes, status);
 		close_all_pipes(my_pipes);
 		if (my_pipes->exit_status == 1)
@@ -261,6 +271,13 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 			my_pipes->exit_status = 1;
 			handle_fatal_exit(ERR_EXECVE, my_pipes, NULL, node->cmd[0]);
 		}
+	}
+	else
+	{
+		signal(SIGQUIT, parent_signal);
+		signal(SIGINT, parent_signal);
+	//	my_pipes->exit_status = g_signum + 128;	//what if sigquit nor sigint not received? what happens here
+		g_signum = 0;
 	}
 	return (pid);
 }
@@ -380,13 +397,23 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 		if (list->type == REDIR_INF)
 			open_infile(list->file, my_pipes);
 		if (list->type == REDIR_HEREDOC)
-			heredoc(list, my_pipes, my_pipes->paths, status);
+		{
+			if (heredoc(list, my_pipes, my_pipes->paths, status) < 0)
+			{
+				free_my_pipes(my_pipes);
+				return (130);
+			}
+		}
 		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
 				my_pipes->childpids[my_pipes->current_section -1] = execute_builtin(my_pipes->command_node, my_pipes, status);
 			else if (my_pipes->command_node != NULL)
+			{
 				my_pipes->childpids[my_pipes->current_section -1] = execute_executable(my_pipes->command_node, my_pipes, status);
+				if (my_pipes->childpids[my_pipes->current_section -1] == -1)
+					return (get_exit_status(my_pipes->current_section, my_pipes));
+			}
 			close_pipes(my_pipes);
 		}
 		list = list->next;

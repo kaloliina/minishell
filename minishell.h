@@ -13,11 +13,14 @@
 # include <sys/wait.h>
 # include <errno.h>
 # define MALLOC "minishell: memory allocation failure\n"
+# define SYNTAX "minishell: syntax error near unexpected token %s\n"
+# define EXPORT "minishell: export: `%s': not a valid identifier\n"
 # define ERR_PIPE "minishell: failed to create pipe"
 # define ERR_WAITPID "minishell: waitpid failed"
 # define ERR_COMMAND "Command '%s' not found\n"
 # define ERR_FORK "failed to fork"
 # define ERR_NUM "numeric argument required"
+# define ERR_ARG "too many arguments"
 # define ERR_INVFILE "minishell: %s: No such file or directory\n"
 # define ERR_DIR "minishell: %s: Is a directory\n"
 # define ERR_INVPERMS "minishell: %s: Permission denied\n"
@@ -25,7 +28,7 @@
 # define ERR_CLOSE "failed to close a file descriptor"
 # define ERR_EXECVE "minishell: %s: Unknown failure"
 
-extern int	g_shell_state;
+extern int	g_signum;
 typedef enum s_type
 {
 	PIPE,
@@ -151,7 +154,16 @@ int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
 void	signal_handler(int sig);
-void	heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
+void	heredoc_signal(int sig);
+void	child_signal(int sig);
+void	receive_signal(int flag);
+void	parent_signal(int sig);
+int		heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
+
+//heredoc
+void	heredoc_mkdir(char **envp, char **paths);
+void	heredoc_rm(char **envp, char **paths);
+void	heredoc_rmdir(char **envp, char **paths);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);
@@ -167,6 +179,7 @@ int		add_exported_envp(char ***new_envp, char **cmd, int i,
 			t_pipes *my_pipes);
 char	**fill_unset_envp(char ***new_envp, char **cmd,
 			char **envp, t_pipes *my_pipes);
+int		is_valid_to_export(char *arg);
 
 //execution
 char	**get_paths(char ***envp);

@@ -1,52 +1,32 @@
 #include "minishell.h"
 
-static void	heredoc_rm(char **envp, char **paths)
-{
-	pid_t	rm_pid;
-	char	*rm_cmd[3];
-	char	*rm_path;
-	int		status;
-
-	rm_pid = fork();
-	if (rm_pid == 0)
-	{
-		rm_path = get_absolute_path(paths, "rm");
-		rm_cmd[0] = "rm";
-		rm_cmd[1] = "tmpfile";
-		rm_cmd[2] = NULL;
-		execve(rm_path, rm_cmd, envp);
-	}
-	waitpid(rm_pid, &status, 0);
-}
-
-static void	heredoc_rmdir(char **envp, char **paths)
-{
-	pid_t	rmdir_pid;
-	char	*rmdir_cmd[3];
-	char	*rmdir_path;
-	int		status;
-
-	rmdir_pid = fork();
-	if (rmdir_pid == 0)
-	{
-		rmdir_path = get_absolute_path(paths, "rmdir");
-		rmdir_cmd[0] = "rmdir";
-		rmdir_cmd[1] = "tmp";
-		rmdir_cmd[2] = NULL;
-		execve(rmdir_path, rmdir_cmd, envp);
-	}
-	waitpid(rmdir_pid, &status, 0);
-}
-
-static void	heredoc_read(t_node *delimiter_node,
+static int	heredoc_read(t_node *delimiter_node,
 	t_pipes *my_pipes, int status, int fd)
 {
 	char	*line;
 	char	*temp;
+	int		fd_backup;
 
+	// fd_backup = dup(STDIN_FILENO); do we need this or do we have stdin in my_pipes always?
+	signal(SIGINT, heredoc_signal);
 	while (1)
 	{
 		line = readline("> ");
+		if (g_signum == SIGINT)
+		{
+			g_signum = 0;
+			dup2(my_pipes->stdinfd, STDIN_FILENO);
+			// close (my_pipes->stdinfd); does this work like this or no?
+			free (line);
+			close (fd);
+			return (-1);
+		}
+		if (!line)
+		{
+			ft_printf(2, "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n",
+			delimiter_node->delimiter);
+			break ;
+		}
 		if (!ft_strcmp(line, delimiter_node->delimiter))
 			break ;
 		if (!delimiter_node->delimiter_quote)
@@ -63,38 +43,15 @@ static void	heredoc_read(t_node *delimiter_node,
 	close (fd);
 	my_pipes->infile_fd = open("tmpfile", O_RDONLY);
 	//error checks
+	return (0);
 }
 
-static void	heredoc_mkdir(char **envp, char **paths)
-{
-	pid_t	mkdir_pid;
-	int		status;
-	char	*mkdir_cmd[3];
-	char	*mkdir_path;
-
-	mkdir_pid = fork();
-	if (mkdir_pid == 0)
-	{
-		mkdir_path = get_absolute_path(paths, "mkdir");
-		mkdir_cmd[0] = "mkdir";
-		mkdir_cmd[1] = "tmp";
-		mkdir_cmd[2] = NULL;
-		execve(mkdir_path, mkdir_cmd, envp);
-	}
-	waitpid(mkdir_pid, &status, 0);
-	if (status == 1)
-	{
-		//free everything
-		exit (1);
-	}
-	chdir("./tmp");
-}
-
-void	heredoc(t_node *curr, t_pipes *my_pipes,
+int	heredoc(t_node *curr, t_pipes *my_pipes,
 	char **paths, int status)
 {
 	int	newdir;
 	int	fd;
+	int	flag;
 
 	newdir = 0;
 	if (chdir("./tmp") == -1)
@@ -106,10 +63,15 @@ void	heredoc(t_node *curr, t_pipes *my_pipes,
 		}
 	}
 	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
-	//if (fd < 0)?
-	heredoc_read(curr, my_pipes, status, fd);
+	if (fd < 0)
+	{
+		perror("minishell: tmpfile (heredoc temporary file)");
+		return (-1);
+	}
+	flag = heredoc_read(curr, my_pipes, status, fd);
 	heredoc_rm(*my_pipes->my_envp, paths);
 	chdir("..");
 	if (newdir)
 		heredoc_rmdir(*my_pipes->my_envp, paths);
+	return (flag);
 }

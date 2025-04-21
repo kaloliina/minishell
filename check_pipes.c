@@ -39,7 +39,7 @@ static char	*check_pipes_helper(char *line, t_data *data, int i, int j)
 
 	if (spaces_between_quotes(line, i))
 	{
-		ft_printf(2, "minishell: syntax error near unexpected token `|'\n");
+		ft_printf(2, SYNTAX, "`|'");
 		return (NULL);
 	}
 	new_line = ft_substr(line, 0, (j - 1));
