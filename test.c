@@ -102,14 +102,18 @@ void	reset_properties(t_pipes *my_pipes)
 	my_pipes->infile_fd = -1;
 	my_pipes->outfile_fd = -1;
 	my_pipes->exit_status = 0;
-	my_pipes->read_end = my_pipes->write_end - 1;
-	if (my_pipes->current_section < my_pipes->pipe_amount)
-		my_pipes->write_end = my_pipes->write_end + 2;
+	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
+	{
+		my_pipes->read_end = my_pipes->write_end - 1;
+		if (my_pipes->current_section < my_pipes->pipe_amount)
+			my_pipes->write_end = my_pipes->write_end + 2;
 	//	printf("Moving to next pipe: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
 	//	printf("Curr section: %d\n", my_pipes->current_section);
+	}
 	my_pipes->current_section++;
 }
 
+/*Heredoc handling should not be here, it should be done in loop nodes*/
 void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 {
 	if (my_pipes->outfile_fd >= 0)
@@ -139,8 +143,7 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 - We close read always after we reach the second section, not in the first section because we still need it
 - Then in the end we reset properties as well as go over to the next pair or pipe ends.
 
-- There's a reason why we are not resetting properties in the last command.
- If waitpid fails, we still need access to the nodes.
+CLEAN THIS UP
 */
 void	close_pipes(t_pipes *my_pipes)
 {
@@ -304,7 +307,7 @@ int	is_builtin(char *command)
 	return (0);
 }
 
-//not sure how to make this shorter
+//MAKE THIS SHORTER today
 void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
