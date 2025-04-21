@@ -13,11 +13,14 @@
 # include <sys/wait.h>
 # include <errno.h>
 # define MALLOC "minishell: memory allocation failure\n"
+# define SYNTAX "minishell: syntax error near unexpected token %s\n"
+# define EXPORT "minishell: export: `%s': not a valid identifier\n"
 # define ERR_PIPE "minishell: failed to create pipe"
 # define ERR_WAITPID "minishell: waitpid failed"
 # define ERR_COMMAND "Command '%s' not found\n"
 # define ERR_FORK "failed to fork"
 # define ERR_NUM "numeric argument required"
+# define ERR_ARG "too many arguments"
 # define ERR_INVFILE "minishell: %s: No such file or directory\n"
 # define ERR_DIR "minishell: %s: Is a directory"
 # define ERR_INVPERMS "minishell: %s: Permission denied\n"
@@ -176,6 +179,7 @@ int		add_exported_envp(char ***new_envp, char **cmd, int i,
 			t_pipes *my_pipes);
 char	**fill_unset_envp(char ***new_envp, char **cmd,
 			char **envp, t_pipes *my_pipes);
+int		is_valid_to_export(char *arg);
 
 //execution
 char	**get_paths(char ***envp);

@@ -233,7 +233,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 		{
 			signal(SIGQUIT, parent_signal);
 			signal(SIGINT, parent_signal);
-			my_pipes->exit_status = g_signum + 128;	//can we do this or does it work wrong if signal is not received?
+		//	my_pipes->exit_status = g_signum + 128;	//can we do this or does it work wrong if signal is not received?
 			g_signum = 0;	//must we always do this so old signal is not stored for later
 			return (pid);
 		}
@@ -300,7 +300,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 	{
 		signal(SIGQUIT, parent_signal);
 		signal(SIGINT, parent_signal);
-		my_pipes->exit_status = g_signum + 128;	//what if sigquit nor sigint not received? what happens here
+	//	my_pipes->exit_status = g_signum + 128;	//what if sigquit nor sigint not received? what happens here
 		g_signum = 0;
 	}
 	return (pid);

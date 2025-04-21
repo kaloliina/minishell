@@ -18,6 +18,18 @@ int	add_existing_envp(char ***new_envp, char **envp, t_pipes *my_pipes)
 	return (i);
 }
 
+int	is_valid_to_export(char *arg)
+{
+	int	i;
+
+	i = 0;
+	while (arg[i] != '=' && arg[i])
+		i++;
+	if (arg[i] != '\0')
+		return (1);
+	return (0);
+}
+
 //add exported element(s) to envp
 int	add_exported_envp(char ***new_envp, char **cmd, int i, t_pipes *my_pipes)
 {
@@ -26,13 +38,16 @@ int	add_exported_envp(char ***new_envp, char **cmd, int i, t_pipes *my_pipes)
 	j = 1;
 	while (cmd[j])
 	{
-		(*new_envp)[i] = ft_strdup(cmd[j]);
-		if (!(*new_envp)[i])
+		if (is_valid_to_export(cmd[j]))
 		{
-			free_array((*new_envp));
-			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+			(*new_envp)[i] = ft_strdup(cmd[j]);
+			if (!(*new_envp)[i])
+			{
+				free_array((*new_envp));
+				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+			}
+			i++;
 		}
-		i++;
 		j++;
 	}
 	return (i);
