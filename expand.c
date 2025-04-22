@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-char	*handle_quotes_helper(char *new, char *s, int i, int j)
+static char	*handle_quotes_helper(char *new, char *s, int i, int j)
 {
 	int		s_quote;
 	int		d_quote;

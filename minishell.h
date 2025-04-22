@@ -104,6 +104,7 @@ int		is_missing_pre_space(char *input, int i, int quote);
 int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
 char	*check_pipes(char *line, t_data *data, int i);
+int		is_only_pipes(char *input);
 void	init_sections(t_data *data, char *line);
 void	init_tokens(t_data *data);
 
@@ -112,6 +113,7 @@ int		lexer(t_data *data);
 int		make_all_redir_nodes(t_data *data, int i);
 t_node	*init_new_node(t_data *data, t_node *new_node);
 int		set_cmd_node(t_data *data, t_index *index, t_node *new_node);
+int		count_args(t_data *data, int i, int j);
 char	**ft_ms_split(char const *s, char c, int *error);
 int		ft_ms_strings(char const *s, char c, int i);
 int		ft_ms_checkquote(char const *s, int i, char quote);
@@ -135,7 +137,6 @@ void	append_replacer(char **new_string, char *replacer, int is_freeable,
 			t_exp *expand);
 int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
 int		is_redirection(char *token);
-int		is_exp_delimiter(char c);
 void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
 
@@ -181,6 +182,7 @@ char	**fill_unset_envp(char ***new_envp, char **cmd,
 			char **envp, t_pipes *my_pipes);
 int		is_valid_to_export(char *arg);
 int		find_unset_element(char *arg, char **envp);
+int		export_validation(char **cmd);
 
 //execution
 char	**get_paths(char ***envp);

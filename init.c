@@ -14,7 +14,6 @@ t_node	*init_new_node(t_data *data, t_node *new_node)
 	return (new_node);
 }
 
-//CHANGED TO MS_SPLIT TO HANDLE QUOTE STUFF, IS IT CORRECT??
 void	init_sections(t_data *data, char *line)
 {
 	int	error;
