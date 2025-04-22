@@ -11,8 +11,8 @@ SRC = add_spaces.c add_spaces_utils.c builtins_envp.c \
 	expand_line.c expand_utils.c expand_utils_2.c expand.c \
 	expand_append.c ft_ms_split.c ft_ms_split_utils.c \
 	get_paths.c handle_files.c heredoc.c heredoc_tmpfile.c \
-	init.c lexing_cmd.c lexing_redir.c lexing.c lexing_utils.c \
-	main.c signals.c test.c utils.c
+	init.c lexing_cmd.c lexing_redir.c lexing.c main.c \
+	signals.c test.c utils.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)
