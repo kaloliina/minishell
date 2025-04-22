@@ -12,12 +12,13 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 # include <errno.h>
+# include <sys/stat.h>
 # define MALLOC "minishell: memory allocation failure\n"
 # define SYNTAX "minishell: syntax error near unexpected token %s\n"
 # define EXPORT "minishell: export: `%s': not a valid identifier\n"
 # define ERR_PIPE "minishell: failed to create pipe"
 # define ERR_WAITPID "minishell: waitpid failed"
-# define ERR_COMMAND "Command '%s' not found\n"
+# define ERR_COMMAND "%s: command not found\n"
 # define ERR_FORK "failed to fork"
 # define ERR_NUM "numeric argument required"
 # define ERR_ARG "too many arguments"
@@ -183,7 +184,7 @@ int		is_valid_to_export(char *arg);
 int		find_unset_element(char *arg, char **envp);
 
 //execution
-char	**get_paths(char ***envp);
+char	**get_paths(t_pipes *my_pipes);
 char	*get_absolute_path(char **paths, char *command);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);

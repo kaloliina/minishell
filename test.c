@@ -227,6 +227,19 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 	}
 }
 
+// Returns: 1=directory, 0=file, -1=error (errno set)
+//Look iinto this struct more
+//Also if this fails, what then?
+int	type_check(const char *path)
+{
+	struct stat	sb;
+	int			type;
+
+	if (stat(path, &sb) == -1)
+			return (-1);
+	return S_ISDIR(sb.st_mode);
+}
+
 /* EISDIR AND ENOEXEC behace unexpectedly.
 Also it might be worthwhile to add these errno checks in a separate function.
 */
@@ -234,9 +247,21 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
 
+	if (my_pipes->paths == NULL)
+		my_pipes->paths = get_paths(my_pipes);
 	my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
 	if (my_pipes->command_path == NULL)
-		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+	{
+		ft_printf(2, ERR_COMMAND, node->cmd[0]);
+		my_pipes->exit_status = 127;
+		return (0);
+	}
+	if (type_check(my_pipes->command_path) == 1)
+	{
+		ft_printf(2, ERR_DIR, node->cmd[0]);
+		my_pipes->exit_status = 126;
+		return (0);
+	}
 	pid = fork();
 	if (pid < 0)
 		handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
@@ -252,18 +277,12 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 		if (errno == ENOENT)
 		{
 			my_pipes->exit_status = 127;
-			handle_fatal_exit(ERR_COMMAND, my_pipes, NULL, node->cmd[0]);
-		}
-/*This one is not working right now. Is there any use of function called stat?*/
-		if (errno == EISDIR)
-		{
-			my_pipes->exit_status = 126;
-			handle_fatal_exit(ERR_DIR, my_pipes, NULL, node->cmd[0]);
+			handle_fatal_exit(ERR_INVFILE, my_pipes, NULL, node->cmd[0]);
 		}
 		else if (errno == EACCES)
 		{
-			my_pipes->exit_status = 127;
-			handle_fatal_exit(ERR_INVFILE, my_pipes, NULL, node->cmd[0]);
+			my_pipes->exit_status = 126;
+			handle_fatal_exit(ERR_INVPERMS, my_pipes, NULL, node->cmd[0]);
 		}
 		else if (errno == ENOEXEC)
 		{
@@ -328,9 +347,6 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 	}
 	my_pipes->childpids = malloc(sizeof(pid_t) * (my_pipes->pipe_amount + 1));
 	if (my_pipes->childpids == NULL)
-		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
-	my_pipes->paths = get_paths(my_pipes->my_envp);
-	if (my_pipes->paths == NULL)
 		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
 	my_pipes->stdoutfd = dup(STDOUT_FILENO);
 	if (my_pipes->stdoutfd == -1)
