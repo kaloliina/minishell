@@ -28,6 +28,14 @@ static int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 	return (i);
 }
 
+static int	is_only_dollar(char *arg, int i)
+{
+	if (arg[i + 1] == '$' && ((arg[i] == '"' && arg[i + 2] == '"')
+	|| (arg[i] == '\'' && arg[i + 2] == '\'')))
+		return (1);
+	return (0);
+}
+
 static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 {
 	int		i;
@@ -40,7 +48,12 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
 	while (cmd[*arg][i])
 	{
-		if (cmd[*arg][i] == '$' && cmd[*arg][i + 1] && !quote)
+		if (is_only_dollar(cmd[*arg], i))
+		{
+			append_char(&expand->new_cmd[*new_arg], '$', expand);
+			i += 3;
+		}
+		else if (cmd[*arg][i] == '$' && cmd[*arg][i + 1] && !quote && cmd[*arg][i + 1] != ' ')
 			i = expand_cmd_helper(cmd[*arg], expand, *new_arg, i + 1);
 		else
 		{
