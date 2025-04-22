@@ -47,17 +47,6 @@ typedef struct s_index
 	int	j;
 }		t_index;
 
-typedef struct s_node
-{
-	t_type			type;
-	char			**cmd;
-	char			*file;
-	char			*delimiter;
-	bool			delimiter_quote;
-	struct s_node	*prev;
-	struct s_node	*next;
-}					t_node;
-
 typedef struct s_exp
 {
 	bool			expanded;
@@ -68,6 +57,17 @@ typedef struct s_exp
 	struct s_data	*data;
 	struct s_pipes	*my_pipes;
 }		t_exp;
+
+typedef struct s_node
+{
+	t_type			type;
+	char			**cmd;
+	char			*file;
+	char			*delimiter;
+	bool			delimiter_quote;
+	struct s_node	*prev;
+	struct s_node	*next;
+}					t_node;
 
 typedef struct s_data
 {
@@ -123,10 +123,10 @@ char	**ft_ms_freearray(char **array, int j, int *error);
 
 //parsing
 void	handle_cmd(t_node *tmp, t_data *data, int status);
-void	handle_filename(t_node *tmp, t_data *data, int status);
-char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status);
 char	**handle_cmd_helper(char **cmd, t_data *data, int status);
+void	handle_filename(t_node *tmp, t_data *data, int status);
 char	*handle_filename_helper(char *file, t_data *data, int status);
+char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status);
 char	*handle_quotes(char *s, t_data *data, t_exp *expand);
 char	*find_envp(t_exp *expand, int i, int new_arg);
 void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes);
@@ -157,12 +157,12 @@ int		is_quote(char *s);
 int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
-void	signal_handler(int sig);
-void	heredoc_signal(int sig);
-void	child_signal(int sig);
-void	receive_signal(int flag);
-void	parent_signal(int sig);
 int		heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
+
+//signals
+void	init_signal_handler(int sig);
+void	heredoc_signal(int sig);
+void	parent_signal(int sig);
 
 //heredoc
 void	heredoc_mkdir(char **envp, char **paths);

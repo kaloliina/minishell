@@ -2,7 +2,7 @@
 
 int	g_signum = 0;
 
-void	signal_handler(int sig)
+void	init_signal_handler(int sig)
 {
 	if (sig == SIGINT)
 	{
