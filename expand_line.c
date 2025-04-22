@@ -72,7 +72,7 @@ static char	*expand_line(char *file, t_exp *expand)
 			i = expand_line_helper(file, &new_line, expand, i + 1);
 		else
 		{
-			if (file[i] == 39)
+			if (file[i] == '\'')
 				quote = !quote;
 			append_char(&new_line, file[i], expand);
 			i++;

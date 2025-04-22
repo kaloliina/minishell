@@ -17,7 +17,7 @@ int	is_quote(char *s)
 	i = 0;
 	while (s[i])
 	{
-		if (s[i] == 34 || s[i] == 39)
+		if (s[i] == '"' || s[i] == '\'')
 			return (1);
 		i++;
 	}

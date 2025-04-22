@@ -29,7 +29,7 @@ static void	handle_exp_and_quotes(t_data *data, int status)
 	}
 }
 
-int	minishell(char *input, char ***envp, int status)
+static int	minishell(char *input, char ***envp, int status)
 {
 	t_data	data;
 	char	*line;
@@ -65,6 +65,35 @@ int	minishell(char *input, char ***envp, int status)
 	return (status);
 }
 
+static void	start_minishell(char ***my_envp)
+{
+	int		status;
+	char	*input;
+
+	status = 0;
+	while (1)
+	{
+		signal(SIGINT, init_signal_handler);
+		signal(SIGQUIT, SIG_IGN);
+		input = readline("minishell > ");
+		if (g_signum == SIGINT)
+		{
+			status = 128 + g_signum;
+			g_signum = 0;
+		}
+		if (!input)
+		{
+			ft_printf(1, "exit\n");
+			return ;
+		}
+		else if (input[0] != '\0')
+			status = minishell(input, my_envp, status);
+		if (input)
+			add_history(input);
+		free (input);
+	}
+}
+
 int	main(int ac, char **av, char **envp)
 {
 	char	*input;
@@ -76,29 +105,7 @@ int	main(int ac, char **av, char **envp)
 	if (ac != 1)
 		return (0);
 	my_envp = copy_envp(envp);
-	while (1)
-	{
-		signal(SIGINT, signal_handler);
-		signal(SIGQUIT, SIG_IGN);
-		input = readline("minishell > ");
-		if (g_signum == SIGINT)
-		{
-			status = 128 + g_signum;
-			g_signum = 0;
-		}
-		if (!input)
-		{
-			ft_printf(1, "exit\n");
-			free_array(my_envp);
-			clear_history();
-			return (0);
-		}
-		else if (input[0] != '\0')
-			status = minishell(input, &my_envp, status);
-		if (input)
-			add_history(input);
-		free (input);
-	}
+	start_minishell(&my_envp);
 	free_array(my_envp);
 	clear_history();
 	return (0);

@@ -87,14 +87,14 @@ void	execute_exit(char **cmd, t_pipes *my_pipes)
 	status = 0;
 	is_num = 1;
 	i = 0;
-	if (cmd[2])
+	if (count_elements(cmd) > 2)
 	{
 		ft_printf(2, "minishell: %s: %s\n", cmd[0], ERR_ARG);
 		status = 1;
 	}
 	else if (cmd[1] != NULL)
 		execute_exit_helper(cmd, &is_num, &status);
-	if (is_num && !cmd[2])
+	if (is_num && count_elements(cmd) <= 2)
 		ft_printf(1, "exit\n");
 	free_array(*my_pipes->my_envp);
 	free_nodes(my_pipes->command_node);

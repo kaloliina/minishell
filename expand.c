@@ -9,11 +9,11 @@ static char	*handle_quotes_helper(char *new, char *s, int i, int j)
 	d_quote = 0;
 	while (s[i])
 	{
-		if ((s[i] == 34 && d_quote) || (s[i] == 39 && s_quote))
+		if ((s[i] == '"' && d_quote) || (s[i] == '\'' && s_quote))
 			new[j++] = s[i];
-		else if (s[i] == 34 && !d_quote)
+		else if (s[i] == '"' && !d_quote)
 			s_quote = !s_quote;
-		else if (s[i] == 39 && !s_quote)
+		else if (s[i] == '\'' && !s_quote)
 			d_quote = !d_quote;
 		else
 			new[j++] = s[i];
