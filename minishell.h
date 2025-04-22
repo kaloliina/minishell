@@ -15,6 +15,7 @@
 # define MALLOC "minishell: memory allocation failure\n"
 # define SYNTAX "minishell: syntax error near unexpected token %s\n"
 # define EXPORT "minishell: export: `%s': not a valid identifier\n"
+# define HD_CTRLD "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n"
 # define ERR_PIPE "minishell: failed to create pipe"
 # define ERR_WAITPID "minishell: waitpid failed"
 # define ERR_COMMAND "Command '%s' not found\n"
@@ -139,6 +140,7 @@ int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
 int		is_redirection(char *token);
 void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
+void	update_single_quote(char c, int *quote);
 
 //cleanup
 void	free_array(char **array);
@@ -181,8 +183,14 @@ int		add_exported_envp(char ***new_envp, char **cmd, int i,
 char	**fill_unset_envp(char ***new_envp, char **cmd,
 			char **envp, t_pipes *my_pipes);
 int		is_valid_to_export(char *arg);
+int		count_args_to_export(char **cmd);
 int		find_unset_element(char *arg, char **envp);
+int		find_first_unset_element(char **cmd, char **envp, int j);
+int		find_next_unset_element(int *i, int *j, char **cmd, char **envp);
+void	handle_fatal_envp_exit(char **new_envp, t_pipes *my_pipes);
 int		export_validation(char **cmd);
+void	cd_no_args(t_exp *expand, t_pipes *my_pipes);
+void	execute_exit_helper(char **cmd, int *is_num, int *status);
 
 //execution
 char	**get_paths(char ***envp);

@@ -37,7 +37,6 @@ static void	find_envp_failure(t_exp *expand, int new_arg)
 	fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
 }
 
-//finds the correct line of envp to match the expandable in input
 char	*find_envp(t_exp *expand, int i, int new_arg)
 {
 	int		len;

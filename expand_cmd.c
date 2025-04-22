@@ -31,7 +31,15 @@ static int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 static int	is_only_dollar(char *arg, int i)
 {
 	if (arg[i + 1] == '$' && ((arg[i] == '"' && arg[i + 2] == '"')
-	|| (arg[i] == '\'' && arg[i + 2] == '\'')))
+			|| (arg[i] == '\'' && arg[i + 2] == '\'')))
+		return (1);
+	return (0);
+}
+
+static int	is_expandable(char *arg, int i, int quote)
+{
+	if (arg[i] == '$' && arg[i + 1]
+		&& !quote && arg[i + 1] != ' ')
 		return (1);
 	return (0);
 }
@@ -53,12 +61,11 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 			append_char(&expand->new_cmd[*new_arg], '$', expand);
 			i += 3;
 		}
-		else if (cmd[*arg][i] == '$' && cmd[*arg][i + 1] && !quote && cmd[*arg][i + 1] != ' ')
+		else if (is_expandable(cmd[*arg], i, quote))
 			i = expand_cmd_helper(cmd[*arg], expand, *new_arg, i + 1);
 		else
 		{
-			if (cmd[*arg][i] == 39)
-				quote = !quote;
+			update_single_quote(cmd[*arg][i], &quote);
 			append_char(&expand->new_cmd[*new_arg], cmd[*arg][i], expand);
 			i++;
 		}

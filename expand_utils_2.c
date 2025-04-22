@@ -48,3 +48,9 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 	}
 	(*arg)++;
 }
+
+void	update_single_quote(char c, int *quote)
+{
+	if (c == '\'')
+		*quote = !(*quote);
+}

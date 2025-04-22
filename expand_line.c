@@ -81,7 +81,6 @@ static char	*expand_line(char *file, t_exp *expand)
 	return (handle_quotes_in_line(new_line, expand));
 }
 
-//goes through filename string and expands it
 char	*handle_filename_helper(char *file, t_data *data, int status)
 {
 	char	*new_file;

@@ -25,6 +25,7 @@ int	ft_ms_checkquote(char const *s, int i, char quote)
 	}
 	return (0);
 }
+
 int	ft_ms_strings(char const *s, char c, int i)
 {
 	int		strings;

@@ -1,5 +1,31 @@
 #include "minishell.h"
 
+static int	heredoc_sigint(t_pipes *my_pipes, char *line, int fd)
+{
+	g_signum = 0;
+	dup2(my_pipes->stdinfd, STDIN_FILENO);
+	close (my_pipes->stdinfd);
+	free (line);
+	close (fd);
+	return (-1);
+}
+
+static void	heredoc_expand(char **line, t_pipes *my_pipes, int fd, int status)
+{
+	char	*temp;
+
+	temp = expand_heredoc(*line, my_pipes, fd, status);
+	if (temp)
+		*line = temp;
+}
+
+static void	heredoc_free_close(char *line, int fd)
+{
+	if (line)
+		free (line);
+	close (fd);
+}
+
 static int	heredoc_read(t_node *delimiter_node,
 	t_pipes *my_pipes, int status, int fd)
 {
@@ -7,42 +33,26 @@ static int	heredoc_read(t_node *delimiter_node,
 	char	*temp;
 	int		fd_backup;
 
-	// fd_backup = dup(STDIN_FILENO); do we need this or do we have stdin in my_pipes always?
 	signal(SIGINT, heredoc_signal);
 	while (1)
 	{
 		line = readline("> ");
 		if (g_signum == SIGINT)
-		{
-			g_signum = 0;
-			dup2(my_pipes->stdinfd, STDIN_FILENO);
-			// close (my_pipes->stdinfd); does this work like this or no?
-			free (line);
-			close (fd);
-			return (-1);
-		}
+			return (heredoc_sigint(my_pipes, line, fd));
 		if (!line)
 		{
-			ft_printf(2, "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n",
-			delimiter_node->delimiter);
+			ft_printf(2, HD_CTRLD, delimiter_node->delimiter);
 			break ;
 		}
 		if (!ft_strcmp(line, delimiter_node->delimiter))
 			break ;
 		if (!delimiter_node->delimiter_quote)
-		{
-			temp = expand_heredoc(line, my_pipes, fd, status);
-			if (temp)
-				line = temp;
-		}
+			heredoc_expand(&line, my_pipes, fd, status);
 		ft_printf(fd, "%s\n", line);
 		free (line);
 	}
-	if (line)
-		free (line);
-	close (fd);
-	my_pipes->infile_fd = open("tmpfile", O_RDONLY);
-	//error checks
+	heredoc_free_close(line, fd);
+	open_infile("tmpfile", my_pipes);
 	return (0);
 }
 
