@@ -11,6 +11,7 @@
 # include <readline/history.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include <sys/stat.h>
 # include <errno.h>
 # define MALLOC "minishell: memory allocation failure\n"
 # define SYNTAX "minishell: syntax error near unexpected token %s\n"
@@ -18,7 +19,7 @@
 # define HD_CTRLD "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n"
 # define ERR_PIPE "minishell: failed to create pipe"
 # define ERR_WAITPID "minishell: waitpid failed"
-# define ERR_COMMAND "Command '%s' not found\n"
+# define ERR_COMMAND "%s: command not found\n"
 # define ERR_FORK "failed to fork"
 # define ERR_NUM "numeric argument required"
 # define ERR_ARG "too many arguments"
@@ -188,7 +189,7 @@ int		find_unset_element(char *arg, char **envp);
 int		find_first_unset_element(char **cmd, char **envp, int j);
 int		find_next_unset_element(int *i, int *j, char **cmd, char **envp);
 void	handle_fatal_envp_exit(char **new_envp, t_pipes *my_pipes);
-int		export_validation(char **cmd);
+int		export_validation(char **cmd, int i);
 void	cd_no_args(t_exp *expand, t_pipes *my_pipes);
 void	execute_exit_helper(char **cmd, int *is_num, int *status);
 

@@ -70,11 +70,8 @@ void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes)
 
 	if (!cmd[1])
 		return (export_no_args(*envp, my_pipes));
-	if (export_validation(cmd) < 0)
-	{
-		ft_printf(2, EXPORT, cmd[i]);
+	if (export_validation(cmd, 1) < 0)
 		my_pipes->exit_status = 1;
-	}
 	i = count_elements(*envp);
 	args = count_args_to_export(cmd);
 	if (!args)

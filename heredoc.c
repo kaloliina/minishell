@@ -5,6 +5,7 @@ static int	heredoc_sigint(t_pipes *my_pipes, char *line, int fd)
 	g_signum = 0;
 	dup2(my_pipes->stdinfd, STDIN_FILENO);
 	close (my_pipes->stdinfd);
+	my_pipes->stdinfd = -1;
 	free (line);
 	close (fd);
 	return (-1);

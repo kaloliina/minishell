@@ -7,10 +7,7 @@ int	add_existing_envp(char ***new_envp, char **envp, t_pipes *my_pipes)
 	i = 0;
 	while (envp[i])
 	{
-		if (i == 1)
-			(*new_envp)[i] = NULL;
-		else
-			(*new_envp)[i] = ft_strdup(envp[i]);
+		(*new_envp)[i] = ft_strdup(envp[i]);
 		if (!(*new_envp)[i])
 			handle_fatal_envp_exit(*new_envp, my_pipes);
 		i++;
