@@ -22,7 +22,7 @@
 # define ERR_NUM "numeric argument required"
 # define ERR_ARG "too many arguments"
 # define ERR_INVFILE "minishell: %s: No such file or directory\n"
-# define ERR_DIR "minishell: %s: Is a directory"
+# define ERR_DIR "minishell: %s: Is a directory\n"
 # define ERR_INVPERMS "minishell: %s: Permission denied\n"
 # define ERR_FD "failed to return a file descriptor"
 # define ERR_CLOSE "failed to close a file descriptor"
@@ -103,7 +103,7 @@ void	update_quote(char c, int *quote);
 int		is_missing_pre_space(char *input, int i, int quote);
 int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
-char	*check_pipes(char *line, t_data *data);
+char	*check_pipes(char *line, t_data *data, int i);
 void	init_sections(t_data *data, char *line);
 void	init_tokens(t_data *data);
 

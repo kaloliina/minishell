@@ -14,10 +14,14 @@ t_node	*init_new_node(t_data *data, t_node *new_node)
 	return (new_node);
 }
 
+//CHANGED TO MS_SPLIT TO HANDLE QUOTE STUFF, IS IT CORRECT??
 void	init_sections(t_data *data, char *line)
 {
-	data->sections = ft_split(line, '|');
-	if (!data->sections)
+	int	error;
+
+	error = 0;
+	data->sections = ft_ms_split(line, '|', &error);
+	if (!data->sections && error)
 		fatal_parsing_exit(data, NULL, line, MALLOC);
 	data->sections_amount = count_elements(data->sections);
 	free (line);

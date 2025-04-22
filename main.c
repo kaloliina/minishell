@@ -38,7 +38,7 @@ int	minishell(char *input, char ***envp, int status)
 	line = add_spaces(input, &data);
 	if (!line) //unclosed quotes
 		return (2);
-	line = check_pipes(line, &data);
+	line = check_pipes(line, &data, 0);
 	if (!line) //only whitespace between two pipes
 		return (2);
 	init_sections(&data, line);

@@ -25,29 +25,26 @@ int	ft_ms_checkquote(char const *s, int i, char quote)
 	}
 	return (0);
 }
-
 int	ft_ms_strings(char const *s, char c, int i)
 {
 	int		strings;
-	char	quote;
+	int		quote;
 
 	strings = 0;
+	quote = 0;
 	while (s[i])
 	{
-		if ((s[i] == 39 || s[i] == 34) && s[i - 1] == c
-			&& ft_ms_checkquote(s, i + 1, s[i]))
-		{
-			quote = s[i++];
-			strings++;
-			while (s[i] && s[i] != quote)
-				i++;
-			i++;
-		}
-		else if (s[i] != c)
+		if (s[i] != c)
 		{
 			strings++;
-			while (s[i] && s[i] != c)
+			while (s[i] && (s[i] != c || quote))
+			{
+				if ((s[i] == '"' || s[i] == '\'') && !quote)
+					quote = s[i];
+				else if (quote && s[i] == quote)
+					quote = 0;
 				i++;
+			}
 		}
 		else
 			i++;

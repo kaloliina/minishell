@@ -93,7 +93,7 @@ int	get_pipe_amount(t_node *list)
 /*Just double check the if statement here, there was a reason why you put it like that*/
 void	reset_properties(t_pipes *my_pipes)
 {
-	if (ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
+	if (my_pipes->command_path != NULL && ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
 	{
 		free (my_pipes->command_path);
 		my_pipes->command_path = NULL;
@@ -149,43 +149,22 @@ void	close_pipes(t_pipes *my_pipes)
 {
 	if (my_pipes->pipe_amount > 0)
 	{
-		if (my_pipes->current_section == 1)
+//		printf("Current section: %d\n", my_pipes->current_section);
+		if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
 			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
 				ft_printf(2, "%s\n", ERR_CLOSE);
 			my_pipes->pipes[my_pipes->write_end] = -1;
-		//	printf("Closing write end: %d\n", my_pipes->write_end);
-		//	printf("Curr section: %d\n", my_pipes->current_section);
+//			printf("Closing write end: %d\n", my_pipes->write_end);
 		}
-		else if (my_pipes->current_section <= my_pipes->pipe_amount)
-		{
-			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
-				ft_printf(2, "%s\n", ERR_CLOSE);
-			my_pipes->pipes[my_pipes->write_end] = -1;
-		//	printf("Closing write end: %d\n", my_pipes->write_end);
-		//	printf("Curr section: %d\n", my_pipes->current_section);
-		}
-		if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
-		{
-			if (my_pipes->current_section > 1)
-			{
-				if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
-					ft_printf(2, "%s\n", ERR_CLOSE);
-				my_pipes->pipes[my_pipes->read_end] = -1;
-		//		printf("Closing middle read end: %d\n", my_pipes->read_end);
-			}
-		}
-		else
+		if (my_pipes->current_section != 1)
 		{
 			if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
 				ft_printf(2, "%s\n", ERR_CLOSE);
 			my_pipes->pipes[my_pipes->read_end] = -1;
-		//	printf("Closing last read end: %d\n", my_pipes->read_end);
-		//	printf("Curr section: %d\n", my_pipes->current_section);
+//			printf("Closing read end: %d\n", my_pipes->read_end);
 		}
 	}
-/*The reason we are doing this is so we can handle the exit if waitpid fails!!!
-If this stays, you can clean up the reset properties a bit*/
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 		reset_properties(my_pipes);
 }
@@ -333,20 +312,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
 
-	my_pipes->pipes = NULL;
-	my_pipes->command_node = NULL;
-	my_pipes->command_path = NULL;
-	my_pipes->paths = NULL;
-	my_pipes->my_envp = envp;
-	my_pipes->read_end = 0;
-	my_pipes->write_end = 1;
-	my_pipes->stdoutfd = -1;
-	my_pipes->stdinfd = -1;
-	my_pipes->infile_fd = -1;
-	my_pipes->outfile_fd = -1;
-	my_pipes->current_section = 1;
-	my_pipes->pipe_amount = get_pipe_amount(list);
-	my_pipes->exit_status = 0;
+	*my_pipes = (t_pipes){NULL, NULL, get_pipe_amount(list), 1, -1, -1, -1, -1, 0, 1, 0, NULL, NULL, envp, NULL};
 	if (my_pipes->pipe_amount > 0)
 	{
 		my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));

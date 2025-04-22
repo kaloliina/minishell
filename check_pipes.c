@@ -1,11 +1,11 @@
 #include "minishell.h"
 
-static int	is_invalid_pipes(char *line, int i)
+static int	is_invalid_pipes(char *line, int i, int quote)
 {
 	int	pipes;
 
 	pipes = 0;
-	if (line[i] == '|')
+	if (line[i] == '|' && !quote)
 	{
 		i++;
 		pipes++;
@@ -65,21 +65,21 @@ static char	*end_of_line_pipe(char **line, t_data *data)
 	*line = new_line;
 	new_line = NULL;
 	temp = NULL;
-	*line = check_pipes(*line, data);
+	*line = check_pipes(*line, data, 0);
 	return (*line);
 }
 
-char	*check_pipes(char *line, t_data *data)
+char	*check_pipes(char *line, t_data *data, int i)
 {
 	char	*new_line;
 	char	*temp;
-	int		i;
 	int		j;
+	int		quote;
 
-	i = 0;
+	quote = 0;
 	while (line[i])
 	{
-		if (is_invalid_pipes(line, i))
+		if (is_invalid_pipes(line, i, quote))
 		{
 			j = i;
 			while (line[i] == '|')
@@ -89,6 +89,10 @@ char	*check_pipes(char *line, t_data *data)
 			else
 				return (end_of_line_pipe(&line, data));
 		}
+		else if (line[i] == '"' || line[i] == '\'')
+			quote = line[i];
+		else if (quote && line[i] == quote)
+			quote = 0;
 		i++;
 	}
 	return (line);
