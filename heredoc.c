@@ -76,7 +76,7 @@ int	heredoc(t_node *curr, t_pipes *my_pipes,
 	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	if (fd < 0)
 	{
-		perror("minishell: tmpfile (heredoc temporary file)");
+		perror("minishell: tmpfile (here-document)");
 		return (-1);
 	}
 	flag = heredoc_read(curr, my_pipes, status, fd);

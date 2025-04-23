@@ -33,14 +33,16 @@ static int	minishell(char *input, char ***envp, int status)
 {
 	t_data	data;
 	char	*line;
+	int		exit_status;
 
 	init_data(&data, envp);
 	line = add_spaces(input, &data);
 	if (!line) //unclosed quotes
 		return (2);
-	line = check_pipes(line, &data, 0);
+	exit_status = 2;
+	line = check_pipes(line, &data, 0, &exit_status);
 	if (!line) //only whitespace between two pipes
-		return (2);
+		return (exit_status);
 	init_sections(&data, line);
 	init_tokens(&data);
 	if (lexer(&data) < 0) //missing filename or delimiter

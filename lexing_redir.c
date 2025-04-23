@@ -12,12 +12,20 @@ static void	set_redir_type(t_node *new_node, t_data *data, int i, int j)
 		new_node->type = REDIR_HEREDOC;
 }
 
-static void	missing_file_delimiter(t_data *data, t_index *index)
+static void	missing_file_delimiter(t_data *data, t_index *index,
+	t_node *new_node)
 {
+	char	*redir;
+
 	if (data->tokens[index->i + 1])
-		ft_printf(2, SYNTAX, "`|'");
+		ft_printf(2, SYNTAX, "|");
+	else if (new_node->prev && (new_node->prev->type == REDIR_APPEND
+			|| new_node->prev->type == REDIR_HEREDOC
+			|| new_node->prev->type == REDIR_INF
+			|| new_node->prev->type == REDIR_OUTF))
+		ft_printf(2, SYNTAX, data->tokens[index->i][index->j]);
 	else
-		ft_printf(2, SYNTAX, "`newline'");
+		ft_printf(2, SYNTAX, "newline");
 }
 
 static int	set_redir_node(t_node *new_node, t_data *data, t_index *index)
@@ -41,7 +49,7 @@ static int	set_redir_node(t_node *new_node, t_data *data, t_index *index)
 	}
 	else
 	{
-		missing_file_delimiter(data, index);
+		missing_file_delimiter(data, index, new_node);
 		free_nodes(data->first);
 		return (-1);
 	}

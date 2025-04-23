@@ -14,7 +14,7 @@
 # include <sys/stat.h>
 # include <errno.h>
 # define MALLOC "minishell: memory allocation failure\n"
-# define SYNTAX "minishell: syntax error near unexpected token %s\n"
+# define SYNTAX "minishell: syntax error near unexpected token `%s'\n"
 # define EXPORT "minishell: export: `%s': not a valid identifier\n"
 # define HD_CTRLD "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n"
 # define ERR_PIPE "minishell: failed to create pipe"
@@ -29,6 +29,7 @@
 # define ERR_FD "failed to return a file descriptor"
 # define ERR_CLOSE "failed to close a file descriptor"
 # define ERR_EXECVE "minishell: %s: Unknown failure"
+# define ERR_EOF "minishell: syntax error: unexpected end of file\n"
 
 extern int	g_signum;
 typedef enum s_type
@@ -105,7 +106,10 @@ void	update_quote(char c, int *quote);
 int		is_missing_pre_space(char *input, int i, int quote);
 int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
-char	*check_pipes(char *line, t_data *data, int i);
+int		is_triple_redirection(char *input, int i);
+char	*check_pipes(char *line, t_data *data, int i, int *status);
+void	check_for_ctrld(char *temp, t_data *data, char *line);
+void	end_pipe_sigint(int backup_fd, char *temp, char *line, int *status);
 int		is_only_pipes(char *input);
 void	init_sections(t_data *data, char *line);
 void	init_tokens(t_data *data);

@@ -9,13 +9,22 @@ static int	count_missing_spaces(char *input)
 	extras = 0;
 	while (input[i])
 	{
-		if (i > 0 && is_char_redirection(input[i]) && input[i - 1] != ' '
-			&& !is_char_redirection(input[i - 1]))
+		if (is_triple_redirection(input, i))
+		{
 			extras++;
-		if (is_char_redirection(input[i]) && input[i + 1] && input[i + 1] != ' '
-			&& !is_char_redirection(input[i + 1]))
-			extras++;
-		i++;
+			i += 2;
+		}
+		else
+		{
+			if (i > 0 && is_char_redirection(input[i]) && input[i - 1] != ' '
+				&& !is_char_redirection(input[i - 1]))
+				extras++;
+			if (is_char_redirection(input[i]) && input[i + 1]
+				&& input[i + 1] != ' '
+				&& !is_char_redirection(input[i + 1]))
+				extras++;
+			i++;
+		}
 	}
 	return (extras);
 }
