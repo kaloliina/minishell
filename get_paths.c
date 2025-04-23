@@ -33,7 +33,7 @@ char	*get_absolute_path(char **paths, char *command)
 	int		i;
 
 	i = 0;
-	if (ft_strchr(command, '/'))
+	if (ft_strchr(command, '/') || paths == NULL)
 	{
 		path = ft_strdup(command);
 		//malloc check

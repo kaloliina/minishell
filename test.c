@@ -284,9 +284,12 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 			my_pipes->exit_status = 126;
 			handle_fatal_exit(ERR_INVPERMS, my_pipes, NULL, node->cmd[0]);
 		}
+//if file does not have #!/bin/bash, in bash it still attempts to add the path so this might need to be tweaked a bit
+//also exit status 0 is unclear
 		else if (errno == ENOEXEC)
 		{
-/* This one is still a bit mystery, it feels like in bash this doesn't behave in standard way*/
+			my_pipes->exit_status = 0;
+			handle_fatal_exit(ERR_FORMAT, my_pipes, NULL, node->cmd[0]);
 		}
 		else
 		{

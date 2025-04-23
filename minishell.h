@@ -28,6 +28,7 @@
 # define ERR_FD "failed to return a file descriptor"
 # define ERR_CLOSE "failed to close a file descriptor"
 # define ERR_EXECVE "minishell: %s: Unknown failure"
+# define ERR_FORMAT "minishell: %s: cannot execute binary file: Exec format error\n"
 
 extern int	g_signum;
 typedef enum s_type
