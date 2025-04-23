@@ -31,7 +31,11 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 	char	*temp;
 
 	if (expand->no_element)
+	{
+		free (expand->new_cmd[*new_arg]);
+		expand->new_cmd[*new_arg] = NULL;
 		expand->no_element = 0;
+	}
 	else
 	{
 		if (!expand->expanded)
@@ -40,6 +44,7 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 					expand->data, expand);
 			if (temp)
 			{
+				free (expand->new_cmd[*new_arg]);
 				expand->new_cmd[*new_arg] = temp;
 				temp = NULL;
 			}
@@ -53,4 +58,11 @@ void	update_single_quote(char c, int *quote)
 {
 	if (c == '\'')
 		*quote = !(*quote);
+}
+
+char	**no_valid_args(t_exp *expand, int *no_cmd)
+{
+	free_array(expand->new_cmd);
+	*no_cmd = 1;
+	return (NULL);
 }

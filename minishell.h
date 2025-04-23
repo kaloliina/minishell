@@ -127,8 +127,8 @@ int		ft_ms_checkquote(char const *s, int i, char quote);
 char	**ft_ms_freearray(char **array, int j, int *error);
 
 //parsing
-void	handle_cmd(t_node *tmp, t_data *data, int status);
-char	**handle_cmd_helper(char **cmd, t_data *data, int status);
+int		handle_cmd(t_node *tmp, t_data *data, int status);
+char	**handle_cmd_helper(char **cmd, t_data *data, int status, int *error);
 void	handle_filename(t_node *tmp, t_data *data, int status);
 char	*handle_filename_helper(char *file, t_data *data, int status);
 char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status);
@@ -147,6 +147,7 @@ int		is_redirection(char *token);
 void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
 void	update_single_quote(char c, int *quote);
+char	**no_valid_args(t_exp *expand, int *no_cmd);
 
 //cleanup
 void	free_array(char **array);
