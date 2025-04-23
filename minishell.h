@@ -30,6 +30,7 @@
 # define ERR_CLOSE "failed to close a file descriptor"
 # define ERR_EXECVE "minishell: %s: Unknown failure"
 # define ERR_EOF "minishell: syntax error: unexpected end of file\n"
+# define ERR_FORMAT "minishell: %s: cannot execute binary file: Exec format error\n"
 
 extern int	g_signum;
 typedef enum s_type
@@ -198,7 +199,7 @@ void	cd_no_args(t_exp *expand, t_pipes *my_pipes);
 void	execute_exit_helper(char **cmd, int *is_num, int *status);
 
 //execution
-char	**get_paths(char ***envp);
+char	**get_paths(t_pipes *my_pipes);
 char	*get_absolute_path(char **paths, char *command);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);

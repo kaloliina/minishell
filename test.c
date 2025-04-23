@@ -1,22 +1,20 @@
 #include "../minishell.h"
 
+//This function needs renaming
 void	close_all_pipes(t_pipes *my_pipes)
 {
 	int	i;
 
 	i = 0;
-	if (my_pipes->pipes)
+	while (my_pipes->pipes && i < my_pipes->pipe_amount * 2)
 	{
-		while (i < my_pipes->pipe_amount * 2)
+		if (my_pipes->pipes[i] != -1)
 		{
-			if (my_pipes->pipes[i] != -1)
-			{
-				if (close(my_pipes->pipes[i]) < 0)
-					ft_printf(2, "%s\n", ERR_CLOSE);
-				my_pipes->pipes[i] = -1;
-			}
-			i++;
+			if (close(my_pipes->pipes[i]) < 0)
+				ft_printf(2, "%s\n", ERR_CLOSE);
+			my_pipes->pipes[i] = -1;
 		}
+		i++;
 	}
 	if (my_pipes->stdinfd != -1 && (close(my_pipes->stdinfd) < 0))
 		ft_printf(2, "%s\n", ERR_CLOSE);
@@ -24,6 +22,12 @@ void	close_all_pipes(t_pipes *my_pipes)
 	if (my_pipes->stdoutfd != -1 && (close(my_pipes->stdoutfd) < 0))
 		ft_printf(2, "%s\n", ERR_CLOSE);
 	my_pipes->stdoutfd = -1;
+	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
+		ft_printf(2, "%s\n", ERR_CLOSE);
+	my_pipes->outfile_fd = -1;
+	if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
+		ft_printf(2, "%s\n", ERR_CLOSE);
+	my_pipes->infile_fd = -1;
 }
 
 void	free_my_pipes(t_pipes *my_pipes)
@@ -52,28 +56,6 @@ void	free_my_pipes(t_pipes *my_pipes)
 	}
 }
 
-static void	redirection_outfile(t_pipes *my_pipes)
-{
-	if (dup2(my_pipes->outfile_fd, STDOUT_FILENO) < 0)
-	{
-		ft_printf(2, "%s\n", ERR_FD);
-		my_pipes->exit_status = 1;
-	}
-	if (close(my_pipes->outfile_fd) < 0)
-		ft_printf(2, "%s\n", ERR_CLOSE);
-}
-
-static void	redirection_infile(t_pipes *my_pipes)
-{
-	if (dup2(my_pipes->infile_fd, STDIN_FILENO) < 0)
-	{
-		ft_printf(2, "%s\n", ERR_FD);
-		my_pipes->exit_status = 1;
-	}
-	if (close(my_pipes->infile_fd) < 0)
-		ft_printf(2, "%s\n", ERR_CLOSE);
-}
-
 int	get_pipe_amount(t_node *list)
 {
 	t_node	*curr;
@@ -90,81 +72,92 @@ int	get_pipe_amount(t_node *list)
 	return (pipe_amount);
 }
 
-/*Just double check the if statement here, there was a reason why you put it like that*/
+/*Just double check the if statement here
+ there was a reason why you put it like that
+printf("Moving to next pipe: read_end = %d, write_end = %d\n",
+ my_pipes->read_end, my_pipes->write_end);
+printf("Curr section: %d\n", my_pipes->current_section);*/
 void	reset_properties(t_pipes *my_pipes)
 {
-	if (my_pipes->command_path != NULL && ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
+	if (my_pipes->command_path != NULL
+		&& ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0]))
 	{
 		free (my_pipes->command_path);
 		my_pipes->command_path = NULL;
 	}
 	my_pipes->command_node = NULL;
-	my_pipes->infile_fd = -1;
-	my_pipes->outfile_fd = -1;
 	my_pipes->exit_status = 0;
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 	{
 		my_pipes->read_end = my_pipes->write_end - 1;
 		if (my_pipes->current_section < my_pipes->pipe_amount)
 			my_pipes->write_end = my_pipes->write_end + 2;
-	//	printf("Moving to next pipe: read_end = %d, write_end = %d\n", my_pipes->read_end, my_pipes->write_end);
-	//	printf("Curr section: %d\n", my_pipes->current_section);
 	}
 	my_pipes->current_section++;
 }
 
-/*Heredoc handling should not be here, it should be done in loop nodes*/
+//Double check the exit status check here
 void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
 {
-	if (my_pipes->outfile_fd >= 0)
-		redirection_outfile(my_pipes);
-	if (my_pipes->infile_fd >= 0)
-		redirection_infile(my_pipes);
+	if (my_pipes->exit_status == 1)
+		return ;
+	my_pipes->exit_status = 0;
+	if (my_pipes->outfile_fd >= 0
+		&& (dup2(my_pipes->outfile_fd, STDOUT_FILENO) < 0))
+		my_pipes->exit_status = 1;
+	if (my_pipes->infile_fd >= 0
+		&& (dup2(my_pipes->infile_fd, STDIN_FILENO) < 0))
+		my_pipes->exit_status = 1;
 	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
 	{
 		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) < 0)
-		{
-			ft_printf(2, "%s\n", ERR_FD);
 			my_pipes->exit_status = 1;
-		}
 	}
-	if ((my_pipes->current_section != my_pipes->pipe_amount + 1) && my_pipes->outfile_fd == -1)
+	if ((my_pipes->current_section != my_pipes->pipe_amount + 1)
+		&& my_pipes->outfile_fd == -1)
 	{
 		if (dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO) < 0)
-		{
-			ft_printf(2, "%s\n", ERR_FD);
 			my_pipes->exit_status = 1;
-		}
 	}
+	if (my_pipes->exit_status == 1)
+		ft_printf(2, "%s\n", ERR_FD);
 }
 
 /*Function to close pipes in the parent.
-- We close always the write end except for the last section because that end was already closed
-- We close read always after we reach the second section, not in the first section because we still need it
-- Then in the end we reset properties as well as go over to the next pair or pipe ends.
-
-CLEAN THIS UP
+- We close always the write end except for the last section because that
+ end was already closed
+- We close read always after we reach the second section, not in the first
+ section because we still need it
+- Then in the end we reset properties as well as go over to the next pair
+ or pipe ends.
+//		printf("Current section: %d\n", my_pipes->current_section);
+//			printf("Closing write end: %d\n", my_pipes->write_end);
+//			printf("Closing read end: %d\n", my_pipes->read_end);
+This function needs renaming!
 */
 void	close_pipes(t_pipes *my_pipes)
 {
 	if (my_pipes->pipe_amount > 0)
 	{
-//		printf("Current section: %d\n", my_pipes->current_section);
 		if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
 			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
 				ft_printf(2, "%s\n", ERR_CLOSE);
 			my_pipes->pipes[my_pipes->write_end] = -1;
-//			printf("Closing write end: %d\n", my_pipes->write_end);
 		}
 		if (my_pipes->current_section != 1)
 		{
 			if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
 				ft_printf(2, "%s\n", ERR_CLOSE);
 			my_pipes->pipes[my_pipes->read_end] = -1;
-//			printf("Closing read end: %d\n", my_pipes->read_end);
 		}
 	}
+	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
+		ft_printf(2, "%s\n", ERR_CLOSE);
+	my_pipes->outfile_fd = -1;
+	if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
+		ft_printf(2, "%s\n", ERR_CLOSE);
+	my_pipes->infile_fd = -1;
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 		reset_properties(my_pipes);
 }
@@ -187,7 +180,7 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 		execute_cd(node->cmd, my_pipes);
 }
 
-/* Worth double checking if these commands fail*/
+//This needs to be shorter
 int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
@@ -213,7 +206,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 			signal(SIGQUIT, parent_signal);
 			signal(SIGINT, parent_signal);
 		//	my_pipes->exit_status = g_signum + 128;	//can we do this or does it work wrong if signal is not received?
-			g_signum = 0;	//must we always do this so old signal is not stored for later
+			g_signum = 0;//must we always do this so old signal is not stored for later
 			return (pid);
 		}
 	}
@@ -227,6 +220,19 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 	}
 }
 
+// Returns: 1=directory, 0=file, -1=error (errno set)
+//Look iinto this struct more
+//Also if this fails, what then?
+int	type_check(const char *path)
+{
+	struct stat	sb;
+	int			type;
+
+	if (stat(path, &sb) == -1)
+		return (-1);
+	return (S_ISDIR(sb.st_mode));
+}
+
 /* EISDIR AND ENOEXEC behace unexpectedly.
 Also it might be worthwhile to add these errno checks in a separate function.
 */
@@ -234,9 +240,21 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 {
 	int	pid;
 
+	if (my_pipes->paths == NULL)
+		my_pipes->paths = get_paths(my_pipes);
 	my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
 	if (my_pipes->command_path == NULL)
-		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+	{
+		ft_printf(2, ERR_COMMAND, node->cmd[0]);
+		my_pipes->exit_status = 127;
+		return (0);
+	}
+	if (type_check(my_pipes->command_path) == 1)
+	{
+		ft_printf(2, ERR_DIR, node->cmd[0]);
+		my_pipes->exit_status = 126;
+		return (0);
+	}
 	pid = fork();
 	if (pid < 0)
 		handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
@@ -252,22 +270,19 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 		if (errno == ENOENT)
 		{
 			my_pipes->exit_status = 127;
-			handle_fatal_exit(ERR_COMMAND, my_pipes, NULL, node->cmd[0]);
-		}
-/*This one is not working right now. Is there any use of function called stat?*/
-		if (errno == EISDIR)
-		{
-			my_pipes->exit_status = 126;
-			handle_fatal_exit(ERR_DIR, my_pipes, NULL, node->cmd[0]);
+			handle_fatal_exit(ERR_INVFILE, my_pipes, NULL, node->cmd[0]);
 		}
 		else if (errno == EACCES)
 		{
-			my_pipes->exit_status = 127;
-			handle_fatal_exit(ERR_INVFILE, my_pipes, NULL, node->cmd[0]);
+			my_pipes->exit_status = 126;
+			handle_fatal_exit(ERR_INVPERMS, my_pipes, NULL, node->cmd[0]);
 		}
+//if file does not have #!/bin/bash, in bash it still attempts to add the path so this might need to be tweaked a bit
+//also exit status 0 is unclear
 		else if (errno == ENOEXEC)
 		{
-/* This one is still a bit mystery, it feels like in bash this doesn't behave in standard way*/
+			my_pipes->exit_status = 0;
+			handle_fatal_exit(ERR_FORMAT, my_pipes, NULL, node->cmd[0]);
 		}
 		else
 		{
@@ -328,9 +343,6 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 	}
 	my_pipes->childpids = malloc(sizeof(pid_t) * (my_pipes->pipe_amount + 1));
 	if (my_pipes->childpids == NULL)
-		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
-	my_pipes->paths = get_paths(my_pipes->my_envp);
-	if (my_pipes->paths == NULL)
 		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
 	my_pipes->stdoutfd = dup(STDOUT_FILENO);
 	if (my_pipes->stdoutfd == -1)

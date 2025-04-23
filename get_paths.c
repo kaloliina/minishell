@@ -1,62 +1,57 @@
 #include "../minishell.h"
 
-char	**get_paths(char ***envp)
+char	**get_paths(t_pipes *my_pipes)
 {
 	int		i = 0;
 	char	**paths;
 	char	*string;
-	while ((*envp)[i] != NULL)
+
+	while ((*my_pipes->my_envp)[i] != NULL)
 	{
-		if (ft_strncmp((*envp)[i], "PATH=", 5) == 0)
+		if (ft_strncmp((*my_pipes->my_envp)[i], "PATH=", 5) == 0)
 		{
-			string = ft_substr((*envp)[i], 5, (ft_strlen((*envp)[i]) - 5));
+			string = ft_substr((*my_pipes->my_envp)[i], 5, (ft_strlen((*my_pipes->my_envp)[i]) - 5));
 			if (string == NULL)
-				return (NULL);
-			break;
+				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+			paths = ft_split(string, ':');
+			free (string);
+			if (paths == NULL)
+				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+			return (paths);
 		}
 		i++;
 	}
-	paths = ft_split(string, ':');
-	if (paths == NULL)
-	{
-		free (string);
-		return (NULL);
-	}
-	free (string);
-	return (paths);
+	return (NULL);
 }
 
+//we need to include my pipes in this because now we return NULL in case of malloc fail and if we didnt find it
+//also we need to add the check if paths is NULL, then strdup command
 char	*get_absolute_path(char **paths, char *command)
 {
-	char	*path_helper = NULL;
-	char	*path = NULL;
-	int		i = 0;
+	char	*path_helper;
+	char	*path;
+	int		i;
 
-	if (access(command, F_OK | X_OK) == 0)
+	i = 0;
+	if (ft_strchr(command, '/') || paths == NULL)
 	{
-	path = ft_strdup(command);
-	return (path);
+		path = ft_strdup(command);
+		//malloc check
+		return (path);
 	}
-	while (paths[i] != NULL)
+	while (paths != NULL && paths[i] != NULL)
 	{
 		path_helper = ft_strjoin(paths[i], "/");
 		if (path_helper == NULL)
 			return (NULL);
 		path = ft_strjoin(path_helper, command);
-		if (path == NULL)
-		{
-			free (path_helper);
-			return (NULL);
-		}
-		if (access(path, F_OK | X_OK) == 0)
-		{
-			free (path_helper);
-			return (path);
-		}
 		free (path_helper);
+		if (path == NULL)
+			return (NULL);
+		if (access(path, F_OK | X_OK) == 0)
+			return (path);
 		free (path);
 		i++;
 	}
-	path = ft_strdup(command);
-	return (path);
+	return (NULL);
 }
