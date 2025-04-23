@@ -1,86 +1,38 @@
 #include "minishell.h"
 
-//fill new envp with existing elements
-int	fill_new_envp(char ***new_envp, char **envp, char **cmd, int args)
+void	cd_no_args(t_exp *expand, t_pipes *my_pipes)
 {
-	int		i;
-	int		j;
+	char	*expansion;
 
-	i = 0;
-	while ((envp)[i])
+	expansion = find_envp(expand, 0, 0);
+	if (!expansion)
 	{
-		(*new_envp)[i] = ft_strdup(envp[i]);
-		if (!(*new_envp)[i])
-			return (-1);
-		i++;
+		ft_printf(2, "minishell: cd: HOME not set\n");
+		my_pipes->exit_status = 1;
 	}
-	j = 1;
-	while (cmd[j])
-	{
-		(*new_envp)[i] = ft_strdup(cmd[j]);
-		//malloc protection
-		i++;
-		j++;
-	}
-	(*new_envp)[i] = NULL;
-	return (0);
+	else if (chdir(expansion) == -1)
+		perror("minishell");
+	free (expansion);
 }
 
-int	add_existing_envp(char **new_envp, char **envp)
+void	execute_exit_helper(char **cmd, int *is_num, int *status)
 {
 	int	i;
 
 	i = 0;
-	while (envp[i])
+	if (cmd[1][i] == '-' || cmd[1][i] == '+')
+		i++;
+	while (cmd[1][i] != '\0')
 	{
-		new_envp[i] = ft_strdup(envp[i]);
-		//malloc protection
+		if (!(cmd[1][i] >= 48 && cmd[1][i] <= 57))
+			*is_num = 0;
 		i++;
 	}
-	return (i);
-}
-
-//add exported element(s) to envp
-int	add_exported_envp(char **new_envp, char **cmd, int i)
-{
-	int	j;
-
-	j = 1;
-	while (cmd[j])
+	if (*is_num == 0)
 	{
-		new_envp[i] = ft_strdup(cmd[j]);
-		//malloc protection
-		i++;
-		j++;
+		ft_printf(2, "minishell: %s: %s: %s\n", cmd[0], cmd[1], ERR_NUM);
+		*status = 2;
 	}
-	return (i);
-}
-
-char	**sort_for_export(char **export, char **envp, int elements)
-{
-	int	i;
-	int	j;
-	int	k;
-
-	i = 0;
-	while (i < elements)
-	{
-		j = 0;
-		k = 0;
-		while (j < elements)
-		{
-			if (ft_strcmp(envp[i], envp[j]) > 0)
-				k++;
-			j++;
-		}
-		export[k] = ft_strdup(envp[i]);
-		if (!export[k])
-		{
-			ft_printf(2, "%s\n", MALLOC);
-			free_array(export); //must also free everything else
-			exit (1);
-		}
-		i++;
-	}
-	return (export);
+	else
+		*status = ft_atoi(cmd[1]);
 }

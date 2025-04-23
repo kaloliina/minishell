@@ -72,7 +72,7 @@ static char	*expand_line(char *file, t_exp *expand)
 			i = expand_line_helper(file, &new_line, expand, i + 1);
 		else
 		{
-			if (file[i] == 39)
+			if (file[i] == '\'')
 				quote = !quote;
 			append_char(&new_line, file[i], expand);
 			i++;
@@ -81,7 +81,6 @@ static char	*expand_line(char *file, t_exp *expand)
 	return (handle_quotes_in_line(new_line, expand));
 }
 
-//goes through filename string and expands it
 char	*handle_filename_helper(char *file, t_data *data, int status)
 {
 	char	*new_file;

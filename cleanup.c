@@ -56,7 +56,8 @@ void	free_sections_tokens(t_data *data)
 
 void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
 {
-	ft_printf(2, "%s\n", msg);
+	if (msg)
+		ft_printf(2, "%s\n", msg);
 	if (input)
 		free (input);
 	if (data)
@@ -75,6 +76,8 @@ void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
 		if (expand->exp)
 			free (expand->exp);
 	}
+	if (!msg)
+		exit (2);
 	exit (1);
 }
 

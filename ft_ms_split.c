@@ -7,9 +7,9 @@ static char	*ft_ms_makestring(char const *s, int start, int len)
 
 static void	ft_ms_setstring(char const *s, int *i, int *len, int *quote)
 {
-	if ((s[*i] == 39 && *quote == 39) || (s[*i] == 34 && *quote == 34))
+	if (*quote && s[*i] == *quote)
 		*quote = 0;
-	else if (!(*quote) && (s[*i] == 39 || s[*i] == 34)
+	else if (!(*quote) && (s[*i] == '\'' || s[*i] == '"')
 		&& ft_ms_checkquote(s, *i + 1, s[*i]))
 		*quote = s[*i];
 	*i = *i + 1;

@@ -9,10 +9,7 @@ int	add_existing_envp(char ***new_envp, char **envp, t_pipes *my_pipes)
 	{
 		(*new_envp)[i] = ft_strdup(envp[i]);
 		if (!(*new_envp)[i])
-		{
-			free_array((*new_envp));
-			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
-		}
+			handle_fatal_envp_exit(*new_envp, my_pipes);
 		i++;
 	}
 	return (i);
@@ -32,7 +29,6 @@ int	is_valid_to_export(char *arg)
 	return (1);
 }
 
-//add exported element(s) to envp
 int	add_exported_envp(char ***new_envp, char **cmd, int i, t_pipes *my_pipes)
 {
 	int	j;
@@ -44,10 +40,7 @@ int	add_exported_envp(char ***new_envp, char **cmd, int i, t_pipes *my_pipes)
 		{
 			(*new_envp)[i] = ft_strdup(cmd[j]);
 			if (!(*new_envp)[i])
-			{
-				free_array((*new_envp));
-				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
-			}
+				handle_fatal_envp_exit(*new_envp, my_pipes);
 			i++;
 		}
 		j++;
@@ -55,7 +48,6 @@ int	add_exported_envp(char ***new_envp, char **cmd, int i, t_pipes *my_pipes)
 	return (i);
 }
 
-//go through envp to find the element to unset
 int	find_unset_element(char *arg, char **envp)
 {
 	int	i;
@@ -82,30 +74,16 @@ char	**fill_unset_envp(char ***new_envp, char **cmd,
 	i = 0;
 	j = 1;
 	k = 0;
-	while (cmd[j])
-	{
-		element = find_unset_element(cmd[j], envp);
-		if (element == -1)
-			j++;
-		else
-			break ;
-	}
+	element = find_first_unset_element(cmd, envp, j);
 	while ((envp)[i])
 	{
 		if (i == element)
-		{
-			i++;
-			j++;
-			element = find_unset_element(cmd[j], envp);
-		}
+			element = find_next_unset_element(&i, &j, cmd, envp);
 		else
 		{
 			(*new_envp)[k] = ft_strdup(envp[i]);
 			if (!(*new_envp)[k])
-			{
-				free_array((*new_envp));
-				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
-			}
+				handle_fatal_envp_exit(*new_envp, my_pipes);
 			i++;
 			k++;
 		}

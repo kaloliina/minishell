@@ -1,11 +1,11 @@
 #include "minishell.h"
 
-static int	is_invalid_pipes(char *line, int i)
+static int	is_invalid_pipes(char *line, int i, int quote)
 {
 	int	pipes;
 
 	pipes = 0;
-	if (line[i] == '|')
+	if (line[i] == '|' && !quote)
 	{
 		i++;
 		pipes++;
@@ -21,7 +21,7 @@ static int	is_invalid_pipes(char *line, int i)
 	return (0);
 }
 
-static int	spaces_between_quotes(char *line, int i)
+static int	spaces_between_pipes(char *line, int i)
 {
 	if (line[i] == ' ')
 	{
@@ -37,9 +37,9 @@ static char	*check_pipes_helper(char *line, t_data *data, int i, int j)
 {
 	char	*new_line;
 
-	if (spaces_between_quotes(line, i))
+	if (spaces_between_pipes(line, i))
 	{
-		ft_printf(2, SYNTAX, "`|'");
+		ft_printf(2, SYNTAX, "|");
 		return (NULL);
 	}
 	new_line = ft_substr(line, 0, (j - 1));
@@ -51,12 +51,21 @@ static char	*check_pipes_helper(char *line, t_data *data, int i, int j)
 	return (line);
 }
 
-static char	*end_of_line_pipe(char **line, t_data *data)
+static char	*end_of_line_pipe(char **line, t_data *data, int *status, int j)
 {
 	char	*temp;
 	char	*new_line;
+	int		backup_fd;
 
+	backup_fd = dup(STDIN_FILENO);
+	signal(SIGINT, heredoc_signal);
 	temp = readline("> ");
+	if (g_signum == SIGINT)
+	{
+		end_pipe_sigint(backup_fd, temp, *line, status);
+		return (NULL);
+	}
+	check_for_ctrld(temp, data, *line);
 	new_line = ft_strjoin(*line, temp);
 	if (!new_line)
 		fatal_parsing_exit(data, NULL, *line, MALLOC);
@@ -65,21 +74,21 @@ static char	*end_of_line_pipe(char **line, t_data *data)
 	*line = new_line;
 	new_line = NULL;
 	temp = NULL;
-	*line = check_pipes(*line, data);
+	*line = check_pipes(*line, data, 0, status);
 	return (*line);
 }
 
-char	*check_pipes(char *line, t_data *data)
+char	*check_pipes(char *line, t_data *data, int i, int *status)
 {
 	char	*new_line;
 	char	*temp;
-	int		i;
 	int		j;
+	int		quote;
 
-	i = 0;
+	quote = 0;
 	while (line[i])
 	{
-		if (is_invalid_pipes(line, i))
+		if (is_invalid_pipes(line, i, quote))
 		{
 			j = i;
 			while (line[i] == '|')
@@ -87,8 +96,12 @@ char	*check_pipes(char *line, t_data *data)
 			if (line[i] != '\0')
 				return (check_pipes_helper(line, data, i, j));
 			else
-				return (end_of_line_pipe(&line, data));
+				return (end_of_line_pipe(&line, data, status, j));
 		}
+		else if (!quote && (line[i] == '"' || line[i] == '\''))
+			quote = line[i];
+		else if (quote && line[i] == quote)
+			quote = 0;
 		i++;
 	}
 	return (line);
