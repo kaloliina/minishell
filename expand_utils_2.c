@@ -59,10 +59,3 @@ void	update_single_quote(char c, int *quote)
 	if (c == '\'')
 		*quote = !(*quote);
 }
-
-char	**no_valid_args(t_exp *expand, int *no_cmd)
-{
-	free_array(expand->new_cmd);
-	*no_cmd = 1;
-	return (NULL);
-}

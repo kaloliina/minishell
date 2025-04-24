@@ -6,7 +6,10 @@ static int	invalid_exp_line(char *file, char **new_file, int k, t_exp *expand)
 
 	i = ft_strlen(file);
 	if (k == 1)
+	{
 		append_replacer(new_file, file, 0, expand);
+		ft_printf(2, ERR_AMB, *new_file);
+	}
 	return (i);
 }
 

@@ -242,6 +242,8 @@ int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
 
 	if (my_pipes->paths == NULL)
 		my_pipes->paths = get_paths(my_pipes);
+	if (!ft_strcmp(node->cmd[0], "") && !node->cmd[1])
+		return (0);
 	my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
 	if (my_pipes->command_path == NULL)
 	{
@@ -341,7 +343,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 			i++;
 		}
 	}
-	my_pipes->childpids = malloc(sizeof(pid_t) * (my_pipes->pipe_amount + 1));
+	my_pipes->childpids = ft_calloc(sizeof(pid_t), (my_pipes->pipe_amount + 1));
 	if (my_pipes->childpids == NULL)
 		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
 	my_pipes->stdoutfd = dup(STDOUT_FILENO);

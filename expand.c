@@ -60,22 +60,17 @@ char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status)
 	return (new_line);
 }
 
-int	handle_cmd(t_node *tmp, t_data *data, int status)
+void	handle_cmd(t_node *tmp, t_data *data, int status)
 {
 	char	**new_cmd;
-	int		no_cmd;
 
-	no_cmd = 0;
-	new_cmd = handle_cmd_helper(tmp->cmd, data, status, &no_cmd);
+	new_cmd = handle_cmd_helper(tmp->cmd, data, status);
 	if (new_cmd)
 	{
 		free_array(tmp->cmd);
 		tmp->cmd = new_cmd;
 		new_cmd = NULL;
 	}
-	if (no_cmd)
-		return (-1);
-	return (0);
 }
 
 void	handle_filename(t_node *tmp, t_data *data, int status)

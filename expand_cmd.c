@@ -73,7 +73,7 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	handle_quotes_in_expansion(expand, new_arg, arg);
 }
 
-char	**handle_cmd_helper(char **cmd, t_data *data, int status, int *no_cmd)
+char	**handle_cmd_helper(char **cmd, t_data *data, int status)
 {
 	int		arg;
 	int		new_arg;
@@ -95,7 +95,7 @@ char	**handle_cmd_helper(char **cmd, t_data *data, int status, int *no_cmd)
 			expand_cmd(cmd, &expand, &arg, &new_arg);
 	}
 	if (!new_arg)
-		return (no_valid_args(&expand, no_cmd));
+		expand.new_cmd[new_arg++] = ft_strdup("");
 	expand.new_cmd[new_arg] = NULL;
 	return (expand.new_cmd);
 }

@@ -10,10 +10,7 @@ static int	handle_exp_and_quotes(t_data *data, int status)
 	while (tmp)
 	{
 		if (tmp->cmd)
-		{
-			if (handle_cmd(tmp, data, status) < 0)
-				return (-1);
-		}
+			handle_cmd(tmp, data, status);
 		if (tmp->file)
 			handle_filename(tmp, data, status);
 		if (tmp->delimiter)
