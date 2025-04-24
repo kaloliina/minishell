@@ -163,7 +163,7 @@ int		is_quote(char *s);
 int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
-int		heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
+int		heredoc(t_node *curr, t_pipes *my_pipes, int status);
 
 //signals
 void	init_signal_handler(int sig);
@@ -171,9 +171,9 @@ void	heredoc_signal(int sig);
 void	parent_signal(int sig);
 
 //heredoc
-void	heredoc_mkdir(char **envp, char **paths);
-void	heredoc_rm(char **envp, char **paths);
-void	heredoc_rmdir(char **envp, char **paths);
+void	heredoc_mkdir(char **envp, t_pipes *my_pipes);
+void	heredoc_rm(char **envp, t_pipes *my_pipes);
+void	heredoc_rmdir(char **envp, t_pipes *my_pipes);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);

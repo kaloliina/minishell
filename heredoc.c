@@ -34,9 +34,9 @@ static int	heredoc_read(t_node *delimiter_node,
 	char	*temp;
 	int		fd_backup;
 
-	signal(SIGINT, heredoc_signal);
 	while (1)
 	{
+		signal(SIGINT, heredoc_signal);
 		line = readline("> ");
 		if (g_signum == SIGINT)
 			return (heredoc_sigint(my_pipes, line, fd));
@@ -57,8 +57,7 @@ static int	heredoc_read(t_node *delimiter_node,
 	return (0);
 }
 
-int	heredoc(t_node *curr, t_pipes *my_pipes,
-	char **paths, int status)
+int	heredoc(t_node *curr, t_pipes *my_pipes, int status)
 {
 	int	newdir;
 	int	fd;
@@ -70,7 +69,7 @@ int	heredoc(t_node *curr, t_pipes *my_pipes,
 		if (errno == ENOENT)
 		{
 			newdir = 1;
-			heredoc_mkdir(*my_pipes->my_envp, paths);
+			heredoc_mkdir(*my_pipes->my_envp, my_pipes);
 		}
 	}
 	fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
@@ -80,9 +79,9 @@ int	heredoc(t_node *curr, t_pipes *my_pipes,
 		return (-1);
 	}
 	flag = heredoc_read(curr, my_pipes, status, fd);
-	heredoc_rm(*my_pipes->my_envp, paths);
+	heredoc_rm(*my_pipes->my_envp, my_pipes);
 	chdir("..");
 	if (newdir)
-		heredoc_rmdir(*my_pipes->my_envp, paths);
+		heredoc_rmdir(*my_pipes->my_envp, my_pipes);
 	return (flag);
 }

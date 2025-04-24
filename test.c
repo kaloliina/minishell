@@ -409,13 +409,13 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 	{
 		if (list->type == COMMAND)
 			my_pipes->command_node = list;
-		if (list->type == REDIR_APPEND || list->type == REDIR_OUTF)
+		if (list->file && *list->file && (list->type == REDIR_APPEND || list->type == REDIR_OUTF))
 			set_outfile(list->file, list->type, my_pipes);
-		if (list->type == REDIR_INF)
+		if (list->file && *list->file && list->type == REDIR_INF)
 			open_infile(list->file, my_pipes);
 		if (list->type == REDIR_HEREDOC)
 		{
-			if (heredoc(list, my_pipes, my_pipes->paths, status) < 0)
+			if (heredoc(list, my_pipes, status) < 0)
 			{
 				free_my_pipes(my_pipes);
 				return (130);
