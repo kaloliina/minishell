@@ -2,6 +2,11 @@
 
 void	open_infile(char *file, t_pipes *my_pipes)
 {
+	if (*file == '\0')
+	{
+		my_pipes->exit_status = 1;
+		return ;
+	}
 	if (my_pipes->exit_status == 0)
 		my_pipes->infile_fd = open(file, O_RDONLY);
 	if (my_pipes->infile_fd == -1 && my_pipes->exit_status == 0)
@@ -18,6 +23,11 @@ void	open_infile(char *file, t_pipes *my_pipes)
 
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 {
+	if (*file == '\0')
+	{
+		my_pipes->exit_status = 1;
+		return ;
+	}
 	if (redir_type == REDIR_OUTF && my_pipes->exit_status == 0)
 		my_pipes->outfile_fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (redir_type == REDIR_APPEND && my_pipes->exit_status == 0)
