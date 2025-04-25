@@ -97,7 +97,7 @@ void	reset_properties(t_pipes *my_pipes)
 }
 
 //Double check the exit status check here
-void	handle_redirections(t_node *node, t_pipes *my_pipes, int status)
+void	handle_redirections(t_node *node, t_pipes *my_pipes)
 {
 	if (my_pipes->exit_status == 1)
 		return ;
@@ -180,8 +180,38 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 		execute_cd(node->cmd, my_pipes);
 }
 
-//This needs to be shorter
-int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
+void	listen_to_signals(int in_parent)
+{
+	if (in_parent == 1)
+	{
+		signal(SIGQUIT, parent_signal);
+		signal(SIGINT, parent_signal);
+	//	my_pipes->exit_status = g_signum + 128;	//can we do this or does it work wrong if signal is not received?
+		g_signum = 0;//must we always do this so old signal is not stored for later		
+	}
+	else
+	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);	
+	}
+
+}
+
+void	execute_builtin_child(t_node *node, t_pipes *my_pipes)
+{
+	listen_to_signals(0);
+	handle_redirections(node, my_pipes);
+	if (my_pipes->exit_status == 1)
+	{
+		free_my_pipes(my_pipes);
+		exit (1);
+	}
+	run_builtin_command(node, my_pipes);
+	free_my_pipes(my_pipes);
+	exit(0);	
+}
+
+int	execute_builtin(t_node *node, t_pipes *my_pipes)
 {
 	int	pid;
 
@@ -191,28 +221,16 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 		if (pid < 0)
 			handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
 		if (pid == 0)
-		{
-			signal(SIGINT, SIG_DFL);
-			signal(SIGQUIT, SIG_DFL);
-			handle_redirections(node, my_pipes, status);
-			close_all_pipes(my_pipes);
-			if (my_pipes->exit_status == 1)
-				exit (1);
-			run_builtin_command(node, my_pipes);
-			exit(0);
-		}
+			execute_builtin_child(node, my_pipes);
 		else
 		{
-			signal(SIGQUIT, parent_signal);
-			signal(SIGINT, parent_signal);
-		//	my_pipes->exit_status = g_signum + 128;	//can we do this or does it work wrong if signal is not received?
-			g_signum = 0;//must we always do this so old signal is not stored for later
+			listen_to_signals(1);
 			return (pid);
 		}
 	}
 	else
 	{
-		handle_redirections(node, my_pipes, status);
+		handle_redirections(node, my_pipes);
 		if (my_pipes->exit_status == 1)
 			return (0);
 		run_builtin_command(node, my_pipes);
@@ -221,83 +239,83 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes, int status)
 }
 
 // Returns: 1=directory, 0=file, -1=error (errno set)
-//Look iinto this struct more
-//Also if this fails, what then?
-int	type_check(const char *path)
+int	prep_for_execution(t_pipes *my_pipes)
 {
 	struct stat	sb;
-	int			type;
 
-	if (stat(path, &sb) == -1)
+	if (my_pipes->paths == NULL)
+		my_pipes->paths = get_paths(my_pipes);
+	if (!ft_strcmp(node->cmd[0], "") && !node->cmd[1])
 		return (-1);
-	return (S_ISDIR(sb.st_mode));
+	my_pipes->command_path = get_absolute_path(my_pipes->paths, my_pipes->command_node->cmd[0]);
+	if (my_pipes->command_path == NULL)
+	{
+		ft_printf(2, ERR_COMMAND, my_pipes->command_node->cmd[0]);
+		my_pipes->exit_status = 127;
+		return (-1);
+	}
+	if (stat(my_pipes->command_path, &sb) == 0 && S_ISDIR(sb.st_mode))
+	{
+		ft_printf(2, ERR_DIR, my_pipes->command_node->cmd[0]);
+		my_pipes->exit_status = 126;
+		return (-1);
+	}
+	return (0);
+}
+
+//if file does not have #!/bin/bash, in bash it still attempts to add
+//  the path so this might need to be tweaked a bit
+//also exit status 0 is unclear
+void	handle_execve_errors(t_pipes *my_pipes)
+{
+	if (errno == ENOENT)
+	{
+		my_pipes->exit_status = 127;
+		handle_fatal_exit(ERR_INVFILE, my_pipes, NULL, my_pipes->command_node->cmd[0]);
+	}
+	else if (errno == EACCES)
+	{
+		my_pipes->exit_status = 126;
+		handle_fatal_exit(ERR_INVPERMS, my_pipes, NULL, my_pipes->command_node->cmd[0]);
+	}
+	else if (errno == ENOEXEC)
+	{
+		my_pipes->exit_status = 0;
+		handle_fatal_exit(ERR_FORMAT, my_pipes, NULL, my_pipes->command_node->cmd[0]);
+	}
+	else
+	{
+		my_pipes->exit_status = 1;
+		handle_fatal_exit(ERR_EXECVE, my_pipes, NULL, my_pipes->command_node->cmd[0]);
+	}
 }
 
 /* EISDIR AND ENOEXEC behace unexpectedly.
 Also it might be worthwhile to add these errno checks in a separate function.
 */
-int	execute_executable(t_node *node, t_pipes *my_pipes, int status)
+//make a function for the signals
+int	execute_executable(t_node *node, t_pipes *my_pipes)
 {
 	int	pid;
 
-	if (my_pipes->paths == NULL)
-		my_pipes->paths = get_paths(my_pipes);
-	if (!ft_strcmp(node->cmd[0], "") && !node->cmd[1])
+	if (prep_for_execution(my_pipes) < 0)
 		return (0);
-	my_pipes->command_path = get_absolute_path(my_pipes->paths, node->cmd[0]);
-	if (my_pipes->command_path == NULL)
-	{
-		ft_printf(2, ERR_COMMAND, node->cmd[0]);
-		my_pipes->exit_status = 127;
-		return (0);
-	}
-	if (type_check(my_pipes->command_path) == 1)
-	{
-		ft_printf(2, ERR_DIR, node->cmd[0]);
-		my_pipes->exit_status = 126;
-		return (0);
-	}
 	pid = fork();
 	if (pid < 0)
 		handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
 	if (pid == 0)
 	{
-		signal(SIGINT, SIG_DFL);
-		signal(SIGQUIT, SIG_DFL);
-		handle_redirections(node, my_pipes, status);
+		listen_to_signals(0);
+		handle_redirections(node, my_pipes);
 		close_all_pipes(my_pipes);
 		if (my_pipes->exit_status == 1)
 			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
-		if (errno == ENOENT)
-		{
-			my_pipes->exit_status = 127;
-			handle_fatal_exit(ERR_INVFILE, my_pipes, NULL, node->cmd[0]);
-		}
-		else if (errno == EACCES)
-		{
-			my_pipes->exit_status = 126;
-			handle_fatal_exit(ERR_INVPERMS, my_pipes, NULL, node->cmd[0]);
-		}
-//if file does not have #!/bin/bash, in bash it still attempts to add the path so this might need to be tweaked a bit
-//also exit status 0 is unclear
-		else if (errno == ENOEXEC)
-		{
-			my_pipes->exit_status = 0;
-			handle_fatal_exit(ERR_FORMAT, my_pipes, NULL, node->cmd[0]);
-		}
-		else
-		{
-			my_pipes->exit_status = 1;
-			handle_fatal_exit(ERR_EXECVE, my_pipes, NULL, node->cmd[0]);
-		}
+		handle_execve_errors(my_pipes);
 	}
 	else
 	{
-		signal(SIGQUIT, parent_signal);
-		signal(SIGINT, parent_signal);
-	//	my_pipes->exit_status = g_signum + 128;	//what if sigquit nor sigint not received? what happens here
-		g_signum = 0;
+		listen_to_signals(1);
 	}
 	return (pid);
 }
@@ -324,7 +342,6 @@ int	is_builtin(char *command)
 	return (0);
 }
 
-//MAKE THIS SHORTER today
 void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 {
 	int	i;
@@ -338,9 +355,8 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 		i = 0;
 		while (i < my_pipes->pipe_amount)
 		{
-			if (pipe(&my_pipes->pipes[i * 2]) < 0)
+			if (pipe(&my_pipes->pipes[i++ * 2]) < 0)
 				handle_fatal_exit(ERR_PIPE, my_pipes, list, NULL);
-			i++;
 		}
 	}
 	my_pipes->childpids = ft_calloc(sizeof(pid_t), (my_pipes->pipe_amount + 1));
@@ -358,14 +374,15 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 Also there might be a situation with sleep where you explicitly have to mark the last process but I was unable to repro the behaviour
 Make this shorter
 */
-int	get_exit_status(int amount, t_pipes *my_pipes)
+int	finalize_execution(int amount, t_pipes *my_pipes)
 {
 	int	status;
 	int	exit_status;
 	int	i;
 
-	i = 0;
 	status = 0;
+	exit_status = my_pipes->exit_status;
+	i = 0;
 	while (i < amount)
 	{
 		if (my_pipes->childpids[i] > 0)
@@ -376,18 +393,10 @@ int	get_exit_status(int amount, t_pipes *my_pipes)
 				exit_status = WEXITSTATUS(status);
 			else if (WIFSIGNALED(status))
 				exit_status = 128 + WTERMSIG(status);
-			else
-				exit_status = my_pipes->exit_status;
 		}
-		else
-			exit_status = my_pipes->exit_status;
 		i++;
 	}
-//	ft_printf(2, "Exit status is %d\n", exit_status);
-//Perhaps these need another exit message
-	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
-		handle_fatal_exit(ERR_FD, my_pipes, NULL, NULL);
-	if (dup2(my_pipes->stdoutfd, STDOUT_FILENO) < 0)
+	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0 || dup2(my_pipes->stdoutfd, STDOUT_FILENO) < 0)
 		handle_fatal_exit(ERR_FD, my_pipes, NULL, NULL);
 	free_my_pipes(my_pipes);
 	return (exit_status);
@@ -415,7 +424,7 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 			open_infile(list->file, my_pipes);
 		if (list->type == REDIR_HEREDOC)
 		{
-			if (heredoc(list, my_pipes, status) < 0)
+			if (heredoc(list, my_pipes, my_pipes->paths, status) < 0)
 			{
 				free_my_pipes(my_pipes);
 				return (130);
@@ -424,16 +433,16 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
 		{
 			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
-				my_pipes->childpids[my_pipes->current_section -1] = execute_builtin(my_pipes->command_node, my_pipes, status);
+				my_pipes->childpids[my_pipes->current_section -1] = execute_builtin(my_pipes->command_node, my_pipes);
 			else if (my_pipes->command_node != NULL)
 			{
-				my_pipes->childpids[my_pipes->current_section -1] = execute_executable(my_pipes->command_node, my_pipes, status);
+				my_pipes->childpids[my_pipes->current_section -1] = execute_executable(my_pipes->command_node, my_pipes);
 				if (my_pipes->childpids[my_pipes->current_section -1] == -1)
-					return (get_exit_status(my_pipes->current_section, my_pipes));
+					return (finalize_execution(my_pipes->current_section, my_pipes));
 			}
 			close_pipes(my_pipes);
 		}
 		list = list->next;
 	}
-	return (get_exit_status(my_pipes->current_section, my_pipes));
+	return (finalize_execution(my_pipes->current_section, my_pipes));
 }
