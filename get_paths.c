@@ -26,7 +26,7 @@ char	**get_paths(t_pipes *my_pipes)
 
 //we need to include my pipes in this because now we return NULL in case of malloc fail and if we didnt find it
 //also we need to add the check if paths is NULL, then strdup command
-char	*get_absolute_path(char **paths, char *command)
+char	*get_absolute_path(char **paths, char *command, t_pipes *my_pipes)
 {
 	char	*path_helper;
 	char	*path;
@@ -36,18 +36,19 @@ char	*get_absolute_path(char **paths, char *command)
 	if (ft_strchr(command, '/') || paths == NULL)
 	{
 		path = ft_strdup(command);
-		//malloc check
+		if (path == NULL)
+			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 		return (path);
 	}
 	while (paths != NULL && paths[i] != NULL)
 	{
 		path_helper = ft_strjoin(paths[i], "/");
 		if (path_helper == NULL)
-			return (NULL);
+			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 		path = ft_strjoin(path_helper, command);
 		free (path_helper);
 		if (path == NULL)
-			return (NULL);
+			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 		if (access(path, F_OK | X_OK) == 0)
 			return (path);
 		free (path);

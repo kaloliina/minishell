@@ -187,12 +187,12 @@ void	listen_to_signals(int in_parent)
 		signal(SIGQUIT, parent_signal);
 		signal(SIGINT, parent_signal);
 	//	my_pipes->exit_status = g_signum + 128;	//can we do this or does it work wrong if signal is not received?
-		g_signum = 0;//must we always do this so old signal is not stored for later		
+		g_signum = 0;//must we always do this so old signal is not stored for later
 	}
 	else
 	{
 		signal(SIGINT, SIG_DFL);
-		signal(SIGQUIT, SIG_DFL);	
+		signal(SIGQUIT, SIG_DFL);
 	}
 
 }
@@ -208,7 +208,7 @@ void	execute_builtin_child(t_node *node, t_pipes *my_pipes)
 	}
 	run_builtin_command(node, my_pipes);
 	free_my_pipes(my_pipes);
-	exit(0);	
+	exit(0);
 }
 
 int	execute_builtin(t_node *node, t_pipes *my_pipes)
@@ -234,8 +234,8 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 		if (my_pipes->exit_status == 1)
 			return (0);
 		run_builtin_command(node, my_pipes);
-		return (0);
 	}
+	return (0);
 }
 
 // Returns: 1=directory, 0=file, -1=error (errno set)
@@ -247,7 +247,7 @@ int	prep_for_execution(t_pipes *my_pipes)
 		my_pipes->paths = get_paths(my_pipes);
 	if (!ft_strcmp(my_pipes->command_node->cmd[0], "") && !my_pipes->command_node->cmd[1])
 		return (-1);
-	my_pipes->command_path = get_absolute_path(my_pipes->paths, my_pipes->command_node->cmd[0]);
+	my_pipes->command_path = get_absolute_path(my_pipes->paths, my_pipes->command_node->cmd[0], my_pipes);
 	if (my_pipes->command_path == NULL)
 	{
 		ft_printf(2, ERR_COMMAND, my_pipes->command_node->cmd[0]);

@@ -12,7 +12,7 @@ void	heredoc_mkdir(char **envp, t_pipes *my_pipes)
 	mkdir_pid = fork();
 	if (mkdir_pid == 0)
 	{
-		mkdir_path = get_absolute_path(my_pipes->paths, "mkdir");
+		mkdir_path = get_absolute_path(my_pipes->paths, "mkdir", my_pipes);
 		mkdir_cmd[0] = "mkdir";
 		mkdir_cmd[1] = "tmp";
 		mkdir_cmd[2] = NULL;
@@ -37,7 +37,7 @@ void	heredoc_rm(char **envp, t_pipes *my_pipes)
 	rm_pid = fork();
 	if (rm_pid == 0)
 	{
-		rm_path = get_absolute_path(my_pipes->paths, "rm");
+		rm_path = get_absolute_path(my_pipes->paths, "rm", my_pipes);
 		rm_cmd[0] = "rm";
 		rm_cmd[1] = "tmpfile";
 		rm_cmd[2] = NULL;
@@ -56,7 +56,7 @@ void	heredoc_rmdir(char **envp, t_pipes *my_pipes)
 	rmdir_pid = fork();
 	if (rmdir_pid == 0)
 	{
-		rmdir_path = get_absolute_path(my_pipes->paths, "rmdir");
+		rmdir_path = get_absolute_path(my_pipes->paths, "rmdir", my_pipes);
 		rmdir_cmd[0] = "rmdir";
 		rmdir_cmd[1] = "tmp";
 		rmdir_cmd[2] = NULL;

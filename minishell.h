@@ -201,7 +201,7 @@ void	execute_exit_helper(char **cmd, int *is_num, int *status);
 
 //execution
 char	**get_paths(t_pipes *my_pipes);
-char	*get_absolute_path(char **paths, char *command);
+char	*get_absolute_path(char **paths, char *command, t_pipes *my_pipes);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
 int		loop_nodes(t_node *list, char ***envp, int status);
