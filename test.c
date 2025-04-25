@@ -245,7 +245,7 @@ int	prep_for_execution(t_pipes *my_pipes)
 
 	if (my_pipes->paths == NULL)
 		my_pipes->paths = get_paths(my_pipes);
-	if (!ft_strcmp(node->cmd[0], "") && !node->cmd[1])
+	if (!ft_strcmp(my_pipes->command_node->cmd[0], "") && !my_pipes->command_node->cmd[1])
 		return (-1);
 	my_pipes->command_path = get_absolute_path(my_pipes->paths, my_pipes->command_node->cmd[0]);
 	if (my_pipes->command_path == NULL)
@@ -424,7 +424,7 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 			open_infile(list->file, my_pipes);
 		if (list->type == REDIR_HEREDOC)
 		{
-			if (heredoc(list, my_pipes, my_pipes->paths, status) < 0)
+			if (heredoc(list, my_pipes, status) < 0)
 			{
 				free_my_pipes(my_pipes);
 				return (130);
