@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-static int	handle_exp_and_quotes(t_data *data, int status)
+static void	handle_exp_and_quotes(t_data *data, int status)
 {
 	t_node	*tmp;
 	char	*new_line;
@@ -27,7 +27,6 @@ static int	handle_exp_and_quotes(t_data *data, int status)
 		}
 		tmp = tmp->next;
 	}
-	return (0);
 }
 
 static int	minishell(char *input, char ***envp, int status)
@@ -48,15 +47,11 @@ static int	minishell(char *input, char ***envp, int status)
 	init_tokens(&data);
 	if (lexer(&data) < 0) //missing filename or delimiter
 		return (2);
-	if (handle_exp_and_quotes(&data, status) < 0)
-	{
-		free_nodes(data.first);
-		return (0);
-	}
+	handle_exp_and_quotes(&data, status);
 	// t_node	*tmp = data.first;
 	// while (tmp)
 	// {
-	// 	printf("type %d file %s delimiter %s", tmp->type, tmp->file, tmp->delimiter);
+	// 	printf("type %d file '%s' delimiter %s", tmp->type, tmp->file, tmp->delimiter);
 	// 	int	k = 0;
 	// 	if (tmp->cmd)
 	// 	{

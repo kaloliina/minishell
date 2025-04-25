@@ -6,12 +6,7 @@ static int	invalid_exp_line(char *file, char **new_file, int k, t_exp *expand)
 
 	i = ft_strlen(file);
 	if (k == 1)
-	{
-		append_replacer(new_file, file, 0, expand);
-		ft_printf(2, ERR_AMB, *new_file);
-		free (*new_file);
-		*new_file = ft_strdup("");
-	}
+		ft_printf(2, ERR_AMB, file);
 	return (i);
 }
 
@@ -47,7 +42,7 @@ static char	*handle_quotes_in_line(char *new_line, t_exp *expand)
 {
 	char	*temp;
 
-	if (!expand->expanded && new_line)
+	if (!expand->expanded && new_line && *new_line)
 	{
 		temp = handle_quotes(new_line, expand->data, expand);
 		if (temp)
