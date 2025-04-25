@@ -6,6 +6,7 @@ static int	heredoc_sigint(t_pipes *my_pipes, char *line, int fd)
 	dup2(my_pipes->stdinfd, STDIN_FILENO);
 	close (my_pipes->stdinfd);
 	my_pipes->stdinfd = -1;
+	my_pipes->exit_status = 130;
 	free (line);
 	close (fd);
 	return (-1);

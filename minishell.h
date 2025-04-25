@@ -204,7 +204,7 @@ char	**get_paths(t_pipes *my_pipes);
 char	*get_absolute_path(char **paths, char *command, t_pipes *my_pipes);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
-int		loop_nodes(t_node *list, char ***envp, int status);
+int		begin_execution(t_node *list, char ***envp, int status);
 void	free_my_pipes(t_pipes *my_pipes);
 
 #endif

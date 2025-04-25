@@ -1,7 +1,6 @@
 #include "../minishell.h"
 
-//Rename the function
-void	close_all_pipes(t_pipes *my_pipes)
+void	close_all_fds(t_pipes *my_pipes)
 {
 	int	i;
 
@@ -41,7 +40,7 @@ void	free_my_pipes(t_pipes *my_pipes)
 			free(my_pipes->command_path);
 			my_pipes->command_path = NULL;
 		}
-		close_all_pipes(my_pipes);
+		close_all_fds(my_pipes);
 		if (my_pipes->pipes)
 		{
 			free(my_pipes->pipes);
@@ -118,8 +117,7 @@ void	handle_redirections(t_node *node, t_pipes *my_pipes)
 		ft_printf(2, "%s\n", ERR_FD);
 }
 
-//Rename the function
-void	close_pipes(t_pipes *my_pipes)
+void	close_pipeline_fds(t_pipes *my_pipes)
 {
 	if (my_pipes->pipe_amount > 0)
 	{
@@ -164,14 +162,15 @@ void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 		execute_cd(node->cmd, my_pipes);
 }
 
+//this one had the following comment after signum:
+//must we always do this so old signal is not stored for later
 void	listen_to_signals(int in_parent)
 {
 	if (in_parent == 1)
 	{
 		signal(SIGQUIT, parent_signal);
 		signal(SIGINT, parent_signal);
-	//	my_pipes->exit_status = g_signum + 128;	//can we do this or does it work wrong if signal is not received?
-		g_signum = 0;//must we always do this so old signal is not stored for later
+		g_signum = 0;
 	}
 	else
 	{
@@ -278,10 +277,6 @@ void	handle_execve_errors(t_pipes *my_pipes)
 	}
 }
 
-/* EISDIR AND ENOEXEC behace unexpectedly.
-Also it might be worthwhile to add these errno checks in a separate function.
-*/
-//make a function for the signals
 int	execute_executable(t_node *node, t_pipes *my_pipes)
 {
 	int	pid;
@@ -295,7 +290,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 	{
 		listen_to_signals(0);
 		handle_redirections(node, my_pipes);
-		close_all_pipes(my_pipes);
+		close_all_fds(my_pipes);
 		if (my_pipes->exit_status == 1)
 			exit(1);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
@@ -392,8 +387,34 @@ int	finalize_execution(int amount, t_pipes *my_pipes)
 	return (exit_status);
 }
 
-//Shorten this
-int	loop_nodes(t_node *list, char ***envp, int status)
+void	loop_nodes(t_node *list, int status, t_pipes *my_pipes)
+{
+	if (list->type == COMMAND)
+		my_pipes->command_node = list;
+	if (list->file && (list->type == REDIR_APPEND || list->type == REDIR_OUTF))
+		set_outfile(list->file, list->type, my_pipes);
+	if (list->file && list->type == REDIR_INF)
+		open_infile(list->file, my_pipes);
+	if (list->type == REDIR_HEREDOC)
+	{
+		if (heredoc(list, my_pipes, status) < 0)
+			return ;
+	}
+	if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0
+			&& list->next->type == PIPE))
+	{
+		if (my_pipes->command_node != NULL
+			&& is_builtin(my_pipes->command_node->cmd[0]) == 1)
+			my_pipes->childpids[my_pipes->current_section -1]
+				= execute_builtin(my_pipes->command_node, my_pipes);
+		else if (my_pipes->command_node != NULL)
+			my_pipes->childpids[my_pipes->current_section -1]
+				= execute_executable(my_pipes->command_node, my_pipes);
+		close_pipeline_fds(my_pipes);
+	}
+}
+
+int	begin_execution(t_node *list, char ***envp, int status)
 {
 	t_pipes	*my_pipes;
 
@@ -406,27 +427,11 @@ int	loop_nodes(t_node *list, char ***envp, int status)
 	initialize_struct(my_pipes, list, envp);
 	while (list != NULL)
 	{
-		if (list->type == COMMAND)
-			my_pipes->command_node = list;
-		if (list->file && (list->type == REDIR_APPEND || list->type == REDIR_OUTF))
-			set_outfile(list->file, list->type, my_pipes);
-		if (list->file && list->type == REDIR_INF)
-			open_infile(list->file, my_pipes);
-		if (list->type == REDIR_HEREDOC)
+		loop_nodes(list, status, my_pipes);
+		if (my_pipes->exit_status == 130)
 		{
-			if (heredoc(list, my_pipes, status) < 0)
-			{
-				free_my_pipes(my_pipes);
-				return (130);
-			}
-		}
-		if ((list->next == NULL) || (list->next && my_pipes->pipe_amount > 0 && list->next->type == PIPE))
-		{
-			if (my_pipes->command_node != NULL && is_builtin(my_pipes->command_node->cmd[0]) == 1)
-				my_pipes->childpids[my_pipes->current_section -1] = execute_builtin(my_pipes->command_node, my_pipes);
-			else if (my_pipes->command_node != NULL)
-				my_pipes->childpids[my_pipes->current_section -1] = execute_executable(my_pipes->command_node, my_pipes);
-			close_pipes(my_pipes);
+			free_my_pipes(my_pipes);
+			return (130);
 		}
 		list = list->next;
 	}
