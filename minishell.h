@@ -17,19 +17,19 @@
 # define SYNTAX "minishell: syntax error near unexpected token `%s'\n"
 # define EXPORT "minishell: export: `%s': not a valid identifier\n"
 # define HD_CTRLD "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n"
-# define ERR_PIPE "minishell: failed to create pipe"
-# define ERR_WAITPID "minishell: waitpid failed"
+# define ERR_PIPE "minishell: failed to create pipe\n"
+# define ERR_WAITPID "minishell: waitpid failed\n"
 # define ERR_COMMAND "%s: command not found\n"
-# define ERR_FORK "failed to fork"
-# define ERR_NUM "numeric argument required"
-# define ERR_ARG "too many arguments"
+# define ERR_FORK "failed to fork\n"
+# define ERR_NUM "numeric argument required\n"
+# define ERR_ARG "too many arguments\n"
 # define ERR_AMB "minishell: %s: ambiguous redirect\n"
 # define ERR_INVFILE "minishell: %s: No such file or directory\n"
 # define ERR_DIR "minishell: %s: Is a directory\n"
 # define ERR_INVPERMS "minishell: %s: Permission denied\n"
-# define ERR_FD "failed to return a file descriptor"
-# define ERR_CLOSE "failed to close a file descriptor"
-# define ERR_EXECVE "minishell: %s: Unknown failure"
+# define ERR_FD "failed to return a file descriptor\n"
+# define ERR_CLOSE "failed to close a file descriptor\n"
+# define ERR_EXECVE "minishell: %s: Unknown failure\n"
 # define ERR_EOF "minishell: syntax error: unexpected end of file\n"
 # define ERR_FORMAT "minishell: %s: cannot execute binary file: Exec format error\n"
 
@@ -54,6 +54,7 @@ typedef struct s_exp
 {
 	bool			expanded;
 	bool			no_element;
+	bool			parsing;	//DO WE USE THIS
 	int				status;
 	char			**new_cmd;
 	char			*exp;
@@ -68,6 +69,7 @@ typedef struct s_node
 	char			*file;
 	char			*delimiter;
 	bool			delimiter_quote;
+	int				hd_fd;
 	struct s_node	*prev;
 	struct s_node	*next;
 }					t_node;
@@ -132,15 +134,16 @@ void	handle_cmd(t_node *tmp, t_data *data, int status);
 char	**handle_cmd_helper(char **cmd, t_data *data, int status);
 void	handle_filename(t_node *tmp, t_data *data, int status);
 char	*handle_filename_helper(char *file, t_data *data, int status);
-char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status);
+char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
+			t_node *heredoc_node);
 char	*handle_quotes(char *s, t_data *data, t_exp *expand);
-char	*find_envp(t_exp *expand, int i, int new_arg);
+char	*find_envp(t_exp *expand, int i, int new_arg, int flag);
 void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes);
-char	*find_exp(char *arg, int *i, int *k, t_data *data);
+char	*find_exp(char *arg, int *i, int *k, t_exp *expand);
 char	*find_replacer(char *arg, int i, t_exp *expand, int new_arg);
 void	append_char(char **new_string, char c, t_exp *expand);
-void	append_char_heredoc(char **new_string, char *s, int i,
-			t_pipes *my_pipes);
+void	append_char_heredoc(char **new_string, char c,
+			t_pipes *my_pipes, t_node *heredoc_node);
 void	append_replacer(char **new_string, char *replacer, int is_freeable,
 			t_exp *expand);
 int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);

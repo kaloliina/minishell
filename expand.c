@@ -33,7 +33,8 @@ char	*handle_quotes(char *s, t_data *data, t_exp *expand)
 	return (handle_quotes_helper(new, s, 0, 0));
 }
 
-char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status)
+char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
+	t_node *heredoc_node)
 {
 	int		i;
 	char	*new_line;
@@ -53,7 +54,7 @@ char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status)
 			i = expand_line_helper(line, &new_line, &expand, i + 1);
 		else
 		{
-			append_char_heredoc(&new_line, line, i, my_pipes);
+			append_char_heredoc(&new_line, line[i], my_pipes, heredoc_node);
 			i++;
 		}
 	}

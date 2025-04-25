@@ -4,7 +4,7 @@ void	cd_no_args(t_exp *expand, t_pipes *my_pipes)
 {
 	char	*expansion;
 
-	expansion = find_envp(expand, 0, 0);
+	expansion = find_envp(expand, 0, 0, 0);	//messed up flag stuff here!!
 	if (!expansion)
 	{
 		ft_printf(2, "minishell: cd: HOME not set\n");

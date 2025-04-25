@@ -15,7 +15,7 @@ int	expand_line_helper(char *file, char **new_file, t_exp *expand, int i)
 	int		k;
 	char	*replacer;
 
-	expand->exp = find_exp(file, &i, &k, expand->data);
+	expand->exp = find_exp(file, &i, &k, expand);
 	if ((expand->exp && *expand->exp) || (file[i] == '?' && file[i - 1] == '$'))
 	{
 		replacer = find_replacer(file, i, expand, 0);

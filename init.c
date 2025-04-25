@@ -9,6 +9,7 @@ t_node	*init_new_node(t_data *data, t_node *new_node)
 	new_node->file = NULL;
 	new_node->delimiter = NULL;
 	new_node->delimiter_quote = 0;
+	new_node->hd_fd = -1;
 	new_node->prev = NULL;
 	new_node->next = NULL;
 	return (new_node);

@@ -28,6 +28,11 @@ void	free_nodes(t_node *node)
 			free (tmp->file);
 		if (tmp->delimiter)
 			free (tmp->delimiter);
+		if (tmp->hd_fd != -1)
+		{
+			close (tmp->hd_fd);
+			tmp->hd_fd = -1;
+		}
 		free (tmp);
 	}
 }
@@ -57,7 +62,7 @@ void	free_sections_tokens(t_data *data)
 void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
 {
 	if (msg)
-		ft_printf(2, "%s\n", msg);
+		ft_printf(2, "%s", msg);
 	if (input)
 		free (input);
 	if (data)
@@ -87,15 +92,15 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
 	int	exit_status;
 
 	exit_status = my_pipes->exit_status;
-	if (conversion == NULL)
+	if (!conversion)
 		ft_printf(2, msg);
 	else
 		ft_printf(2, msg, conversion);
-	if (list == NULL)
+	if (!list)
 		free_nodes(my_pipes->command_node);
 	else
 		free_nodes(list);
-	if (my_pipes != NULL)
+	if (my_pipes)
 	{
 		free_array(*my_pipes->my_envp);
 		free_my_pipes(my_pipes);

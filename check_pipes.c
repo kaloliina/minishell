@@ -68,7 +68,10 @@ static char	*end_of_line_pipe(char **line, t_data *data, int *status, int j)
 	check_for_ctrld(temp, data, *line);
 	new_line = ft_strjoin(*line, temp);
 	if (!new_line)
+	{
+		close (backup_fd);
 		fatal_parsing_exit(data, NULL, *line, MALLOC);
+	}
 	free (*line);
 	free (temp);
 	*line = new_line;
