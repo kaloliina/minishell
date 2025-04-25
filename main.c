@@ -61,7 +61,7 @@ static int	minishell(char *input, char ***envp, int status)
 	// 	printf("\n");
 	// 	tmp = tmp->next;
 	// }
-	status = loop_nodes(data.first, &data.envp, status);
+	status = begin_execution(data.first, &data.envp, status);
 	*envp = data.envp;
 	free_nodes(data.first);
 	return (status);
