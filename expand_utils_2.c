@@ -49,6 +49,7 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 				temp = NULL;
 			}
 		}
+		expand->expanded = 0;
 		(*new_arg)++;
 	}
 	(*arg)++;
