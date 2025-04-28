@@ -15,16 +15,17 @@ void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes)
 	exp->no_element = 0;
 	exp->status = status;
 	exp->new_cmd = NULL;
+	exp->new_line = NULL;
 	exp->exp = NULL;
 	if (data)
 	{
 		exp->data = data;
-		exp->parsing = 1;	//DO WE USE THIS ELEMENT??
+		exp->parsing = 1;
 	}
 	else
 	{
 		exp->data = NULL;
-		exp->parsing = 0;	//DO WE USE THIS ELEMENT??
+		exp->parsing = 0;
 	}
 	if (my_pipes)
 		exp->my_pipes = my_pipes;

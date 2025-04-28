@@ -10,22 +10,22 @@ void	close_all_fds(t_pipes *my_pipes)
 		if (my_pipes->pipes[i] != -1)
 		{
 			if (close(my_pipes->pipes[i]) < 0)
-				ft_printf(2, "%s\n", ERR_CLOSE);
+				ft_printf(2, "%s", ERR_CLOSE);
 			my_pipes->pipes[i] = -1;
 		}
 		i++;
 	}
 	if (my_pipes->stdinfd != -1 && (close(my_pipes->stdinfd) < 0))
-		ft_printf(2, "%s\n", ERR_CLOSE);
+		ft_printf(2, "%s", ERR_CLOSE);
 	my_pipes->stdinfd = -1;
 	if (my_pipes->stdoutfd != -1 && (close(my_pipes->stdoutfd) < 0))
-		ft_printf(2, "%s\n", ERR_CLOSE);
+		ft_printf(2, "%s", ERR_CLOSE);
 	my_pipes->stdoutfd = -1;
 	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
-		ft_printf(2, "%s\n", ERR_CLOSE);
+		ft_printf(2, "%s", ERR_CLOSE);
 	my_pipes->outfile_fd = -1;
 	if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
-		ft_printf(2, "%s\n", ERR_CLOSE);
+		ft_printf(2, "%s", ERR_CLOSE);
 	my_pipes->infile_fd = -1;
 }
 
@@ -124,21 +124,21 @@ void	close_pipeline_fds(t_pipes *my_pipes)
 		if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
 			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
-				ft_printf(2, "%s\n", ERR_CLOSE);
+				ft_printf(2, "%s", ERR_CLOSE);
 			my_pipes->pipes[my_pipes->write_end] = -1;
 		}
 		if (my_pipes->current_section != 1)
 		{
 			if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
-				ft_printf(2, "%s\n", ERR_CLOSE);
+				ft_printf(2, "%s", ERR_CLOSE);
 			my_pipes->pipes[my_pipes->read_end] = -1;
 		}
 	}
 	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
-		ft_printf(2, "%s\n", ERR_CLOSE);
+		ft_printf(2, "%s", ERR_CLOSE);
 	my_pipes->outfile_fd = -1;
 	if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
-		ft_printf(2, "%s\n", ERR_CLOSE);
+		ft_printf(2, "%s", ERR_CLOSE);
 	my_pipes->infile_fd = -1;
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 		reset_properties(my_pipes);
@@ -330,7 +330,7 @@ void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 	int	i;
 
 	*my_pipes = (t_pipes){NULL, NULL, get_pipe_amount(list),
-		1, -1, -1, -1, -1, 0, 1, 0, NULL, NULL, envp, NULL};
+		1, -1, -1, -1, -1, 0, 1, 0, 0, NULL, NULL, envp, NULL};
 	if (my_pipes->pipe_amount > 0)
 	{
 		my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));
@@ -397,6 +397,7 @@ void	loop_nodes(t_node *list, int status, t_pipes *my_pipes)
 		open_infile(list->file, my_pipes);
 	if (list->type == REDIR_HEREDOC)
 	{
+		my_pipes->heredoc_node = list;
 		if (heredoc(list, my_pipes, status) < 0)
 			return ;
 	}

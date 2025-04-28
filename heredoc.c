@@ -55,35 +55,44 @@ static int	heredoc_read(t_node *heredoc_node,
 		free (line);
 	}
 	heredoc_free_close(line, heredoc_node->hd_fd);
-	open_infile("tmpfile", my_pipes);
+	open_infile("minishell_tmpfile", my_pipes);
 	return (0);
 }
 
 int	heredoc(t_node *heredoc_node, t_pipes *my_pipes, int status)
 {
-	int	newdir;
-	int	fd;
-	int	flag;
+	int		fd;
+	int		flag;
+	int		wstatus;
+	pid_t	rm_pid;
 
-	newdir = 0;
+	my_pipes->hd_dir = 1;
 	if (chdir("./tmp") == -1)
 	{
 		if (errno == ENOENT)
 		{
-			newdir = 1;
 			heredoc_mkdir(*my_pipes->my_envp, my_pipes);
+			my_pipes->hd_dir = 2;
 		}
 	}
-	heredoc_node->hd_fd = open("tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
+	heredoc_node->hd_fd = open("minishell_tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	if (heredoc_node->hd_fd < 0)
 	{
-		perror("minishell: tmpfile (here-document)");
+		perror("minishell: minishell_tmpfile (here-document)");
 		return (-1);
 	}
 	flag = heredoc_read(heredoc_node, my_pipes, status);
-	heredoc_rm(*my_pipes->my_envp, my_pipes);
+	rm_pid = heredoc_rm(*my_pipes->my_envp, my_pipes);
+	wstatus = 0;
+	if (waitpid(rm_pid, &wstatus, 0) < 0)
+	{
+		my_pipes->hd_dir = 0;
+		close (my_pipes->infile_fd);
+		my_pipes->infile_fd = -1;
+		handle_fatal_exit(ERR_EXECVE, my_pipes, NULL, "execve");
+	}
 	chdir("..");
-	if (newdir)
-		heredoc_rmdir(*my_pipes->my_envp, my_pipes);
+	if (my_pipes->hd_dir == 2)
+		heredoc_rmdir(*my_pipes->my_envp, my_pipes, rm_pid);
 	return (flag);
 }

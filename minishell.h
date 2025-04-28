@@ -54,9 +54,10 @@ typedef struct s_exp
 {
 	bool			expanded;
 	bool			no_element;
-	bool			parsing;	//DO WE USE THIS
+	bool			parsing;
 	int				status;
 	char			**new_cmd;
+	char			*new_line;
 	char			*exp;
 	struct s_data	*data;
 	struct s_pipes	*my_pipes;
@@ -96,10 +97,12 @@ typedef struct s_pipes
 	int				read_end;
 	int				write_end;
 	int				exit_status;
+	int				hd_dir;
 	char			*command_path;
 	char			**paths;
 	char			***my_envp;
 	struct s_node	*command_node;
+	struct s_node	*heredoc_node;
 }					t_pipes;
 
 //init and input validation
@@ -137,7 +140,7 @@ char	*handle_filename_helper(char *file, t_data *data, int status);
 char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
 			t_node *heredoc_node);
 char	*handle_quotes(char *s, t_data *data, t_exp *expand);
-char	*find_envp(t_exp *expand, int i, int new_arg, int flag);
+char	*find_envp(t_exp *expand, int i, int new_arg);
 void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes);
 char	*find_exp(char *arg, int *i, int *k, t_exp *expand);
 char	*find_replacer(char *arg, int i, t_exp *expand, int new_arg);
@@ -146,7 +149,7 @@ void	append_char_heredoc(char **new_string, char c,
 			t_pipes *my_pipes, t_node *heredoc_node);
 void	append_replacer(char **new_string, char *replacer, int is_freeable,
 			t_exp *expand);
-int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
+int		expand_line_helper(char *line, char **new_line, t_exp *expand, int i);
 int		is_redirection(char *token);
 void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
@@ -175,8 +178,9 @@ void	parent_signal(int sig);
 
 //heredoc
 void	heredoc_mkdir(char **envp, t_pipes *my_pipes);
-void	heredoc_rm(char **envp, t_pipes *my_pipes);
-void	heredoc_rmdir(char **envp, t_pipes *my_pipes);
+int		heredoc_rm(char **envp, t_pipes *my_pipes);
+void	heredoc_rmdir(char **envp, t_pipes *my_pipes, pid_t rm_pid);
+void	handle_tmpfile(t_pipes *my_pipes);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);

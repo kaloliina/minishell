@@ -96,12 +96,16 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
 		ft_printf(2, msg);
 	else
 		ft_printf(2, msg, conversion);
-	if (!list)
+	if (!list && my_pipes->command_node)
 		free_nodes(my_pipes->command_node);
+	else if (!list)
+		free_nodes(my_pipes->heredoc_node);
 	else
 		free_nodes(list);
 	if (my_pipes)
 	{
+		if (my_pipes->hd_dir)
+			handle_tmpfile(my_pipes);
 		free_array(*my_pipes->my_envp);
 		free_my_pipes(my_pipes);
 	}

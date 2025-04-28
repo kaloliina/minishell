@@ -51,6 +51,7 @@ void	init_tokens(t_data *data)
 	if (!data->tokens)
 		fatal_parsing_exit(data, NULL, NULL, MALLOC);
 	i = 0;
+	error = 0;
 	while (data->sections[i])
 	{
 		if (!is_only_quotes(data->sections[i]))

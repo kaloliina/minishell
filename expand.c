@@ -37,28 +37,27 @@ char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
 	t_node *heredoc_node)
 {
 	int		i;
-	char	*new_line;
 	t_exp	expand;
 
 	i = 0;
 	init_exp(&expand, status, NULL, my_pipes);
-	new_line = ft_strdup("");
-	if (!new_line)
+	expand.new_line = ft_strdup("");
+	if (!expand.new_line)
 	{
 		my_pipes->exit_status = 1;
-		handle_fatal_exit(MALLOC, my_pipes, my_pipes->command_node, NULL);
+		handle_fatal_exit(MALLOC, my_pipes, my_pipes->heredoc_node, NULL);
 	}
 	while (line[i])
 	{
 		if (line[i] == '$' && line[i + 1])
-			i = expand_line_helper(line, &new_line, &expand, i + 1);
+			i = expand_line_helper(line, &expand.new_line, &expand, i + 1);
 		else
 		{
-			append_char_heredoc(&new_line, line[i], my_pipes, heredoc_node);
+			append_char_heredoc(&expand.new_line, line[i], my_pipes, heredoc_node);
 			i++;
 		}
 	}
-	return (new_line);
+	return (expand.new_line);
 }
 
 void	handle_cmd(t_node *tmp, t_data *data, int status)
