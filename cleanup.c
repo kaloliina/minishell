@@ -91,7 +91,7 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
 {
 	int	exit_status;
 
-	exit_status = my_pipes->exit_status;
+	exit_status = 1;
 	if (!conversion)
 		ft_printf(2, msg);
 	else
@@ -104,6 +104,7 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
 		free_nodes(list);
 	if (my_pipes)
 	{
+		exit_status = my_pipes->exit_status;
 		if (my_pipes->hd_dir)
 			handle_tmpfile(my_pipes);
 		free_array(*my_pipes->my_envp);
