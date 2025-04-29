@@ -60,11 +60,8 @@ static char	*end_of_line_pipe(char **line, t_data *data, int *status, int j)
 	backup_fd = dup(STDIN_FILENO);
 	signal(SIGINT, heredoc_signal);
 	temp = readline("> ");
-	if (g_signum == SIGINT)
-	{
-		end_pipe_sigint(backup_fd, temp, *line, status);
+	if (end_pipe_sigint(backup_fd, temp, *line, status))
 		return (NULL);
-	}
 	check_for_ctrld(temp, data, *line);
 	new_line = ft_strjoin(*line, temp);
 	if (!new_line)
