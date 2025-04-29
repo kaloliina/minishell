@@ -185,10 +185,14 @@ void	execute_builtin_child(t_node *node, t_pipes *my_pipes)
 	handle_redirections(node, my_pipes);
 	if (my_pipes->exit_status == 1)
 	{
+		free_nodes(my_pipes->command_node);
+		free_array(*my_pipes->my_envp);
 		free_my_pipes(my_pipes);
 		exit (1);
 	}
 	run_builtin_command(node, my_pipes);
+	free_nodes(my_pipes->command_node);
+	free_array(*my_pipes->my_envp);
 	free_my_pipes(my_pipes);
 	exit(0);
 }
