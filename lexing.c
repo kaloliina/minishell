@@ -75,7 +75,6 @@ int	lexer(t_data *data)
 {
 	int		i;
 	int		j;
-	int		temp;
 
 	i = 0;
 	data->first = NULL;

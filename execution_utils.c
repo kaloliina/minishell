@@ -1,5 +1,43 @@
 #include "../minishell.h"
 
+int	get_pipe_amount(t_node *list)
+{
+	t_node	*curr;
+	int		pipe_amount;
+
+	pipe_amount = 0;
+	curr = list;
+	while (curr)
+	{
+		if (curr->type == PIPE)
+			pipe_amount++;
+		curr = curr->next;
+	}
+	return (pipe_amount);
+}
+
+int	is_builtin(char *command)
+{
+	const char	*builtins[7];
+	int			i;
+
+	builtins[0] = "echo";
+	builtins[1] = "cd";
+	builtins[2] = "pwd";
+	builtins[3] = "export";
+	builtins[4] = "unset";
+	builtins[5] = "env";
+	builtins[6] = "exit";
+	i = 0;
+	while (i <= 6)
+	{
+		if (!ft_strcmp(builtins[i], command))
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
 char	**get_paths(t_pipes *my_pipes)
 {
 	int		i;

@@ -38,3 +38,18 @@ void	parent_signal(int sig)
 		g_signum = SIGINT;
 	}
 }
+
+void	listen_to_signals(int in_parent)
+{
+	if (in_parent == 1)
+	{
+		signal(SIGQUIT, parent_signal);
+		signal(SIGINT, parent_signal);
+		g_signum = 0;
+	}
+	else
+	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+	}
+}

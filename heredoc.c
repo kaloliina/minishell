@@ -33,8 +33,6 @@ static int	heredoc_read(t_node *heredoc_node,
 	t_pipes *my_pipes, int status)
 {
 	char	*line;
-	char	*temp;
-	int		fd_backup;
 
 	while (1)
 	{
@@ -61,7 +59,6 @@ static int	heredoc_read(t_node *heredoc_node,
 
 int	heredoc(t_node *heredoc_node, t_pipes *my_pipes, int status)
 {
-	int		fd;
 	int		flag;
 	int		wstatus;
 	pid_t	rm_pid;
@@ -93,6 +90,6 @@ int	heredoc(t_node *heredoc_node, t_pipes *my_pipes, int status)
 	}
 	chdir("..");
 	if (my_pipes->hd_dir == 2)
-		heredoc_rmdir(*my_pipes->my_envp, my_pipes, rm_pid);
+		heredoc_rmdir(*my_pipes->my_envp, my_pipes);
 	return (flag);
 }

@@ -61,8 +61,6 @@ int	find_first_unset_element(char **cmd, char **envp, int j)
 
 int	find_next_unset_element(int *i, int *j, char **cmd, char **envp)
 {
-	int	element;
-
 	(*i)++;
 	(*j)++;
 	return (find_unset_element(cmd[*j], envp));

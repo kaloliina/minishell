@@ -74,7 +74,7 @@ int	heredoc_rm(char **envp, t_pipes *my_pipes)
 	return (rm_pid);
 }
 
-void	heredoc_rmdir(char **envp, t_pipes *my_pipes, pid_t rm_pid)
+void	heredoc_rmdir(char **envp, t_pipes *my_pipes)
 {
 	pid_t	rmdir_pid;
 	char	*rmdir_cmd[3];
@@ -113,6 +113,6 @@ void	handle_tmpfile(t_pipes *my_pipes)
 		handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
 	chdir("..");
 	if (my_pipes->hd_dir == 2)
-		heredoc_rmdir(*my_pipes->my_envp, my_pipes, rm_pid);
+		heredoc_rmdir(*my_pipes->my_envp, my_pipes);
 	my_pipes->hd_dir = 0;
 }

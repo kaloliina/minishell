@@ -8,7 +8,7 @@ static int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
 	expand->exp = find_exp(arg, &i, &k, expand);
 	if ((expand->exp && *expand->exp) || (arg[i] == '?' && arg[i - 1] == '$'))
 	{
-		replacer = find_replacer(arg, i, expand, new_arg);
+		replacer = find_replacer(arg, i, expand);
 		if (replacer)
 		{
 			if (!is_quote(arg))

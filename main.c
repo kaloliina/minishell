@@ -4,7 +4,6 @@ static void	handle_exp_and_quotes(t_data *data, int status)
 {
 	t_node	*tmp;
 	char	*new_line;
-	char	*new_file;
 
 	tmp = data->first;
 	while (tmp)
@@ -98,7 +97,6 @@ static void	start_minishell(char ***my_envp)
 
 int	main(int ac, char **av, char **envp)
 {
-	char	*input;
 	char	**my_envp;
 	int		status;
 

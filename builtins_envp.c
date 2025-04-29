@@ -64,7 +64,6 @@ static void	export_no_args(char **envp, t_pipes *my_pipes)
 void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes)
 {
 	int		i;
-	int		j;
 	int		args;
 	char	**new_envp;
 
