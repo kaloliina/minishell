@@ -9,6 +9,7 @@ t_node	*init_new_node(t_data *data, t_node *new_node)
 	new_node->file = NULL;
 	new_node->delimiter = NULL;
 	new_node->delimiter_quote = 0;
+	new_node->hd_fd = -1;
 	new_node->prev = NULL;
 	new_node->next = NULL;
 	return (new_node);
@@ -50,6 +51,7 @@ void	init_tokens(t_data *data)
 	if (!data->tokens)
 		fatal_parsing_exit(data, NULL, NULL, MALLOC);
 	i = 0;
+	error = 0;
 	while (data->sections[i])
 	{
 		if (!is_only_quotes(data->sections[i]))

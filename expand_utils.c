@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-char	*find_exp(char *arg, int *i, int *k, t_data *data)
+char	*find_exp(char *arg, int *i, int *k, t_exp *expand)
 {
 	int		j;
 	char	*exp;
@@ -10,7 +10,7 @@ char	*find_exp(char *arg, int *i, int *k, t_data *data)
 	count_expandable(arg, i, &j);
 	exp = ft_substr(arg, *k, j);
 	if (!exp)
-		fatal_parsing_exit(data, NULL, NULL, MALLOC);
+		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
 	return (exp);
 }
 
@@ -32,9 +32,18 @@ static char	**find_envp_source(t_exp *expand)
 
 static void	find_envp_failure(t_exp *expand, int new_arg)
 {
-	if (expand->new_cmd)
-		expand->new_cmd[new_arg + 1] = NULL;
-	fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
+	if (expand->parsing)
+	{
+		free (expand->new_line);
+		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
+	}
+	else
+	{
+		free (expand->new_line);
+		if (expand->exp)
+			free (expand->exp);
+		handle_fatal_exit(MALLOC, expand->my_pipes, NULL, NULL);
+	}
 }
 
 char	*find_envp(t_exp *expand, int i, int new_arg)

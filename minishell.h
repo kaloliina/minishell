@@ -17,19 +17,21 @@
 # define SYNTAX "minishell: syntax error near unexpected token `%s'\n"
 # define EXPORT "minishell: export: `%s': not a valid identifier\n"
 # define HD_CTRLD "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n"
-# define ERR_PIPE "minishell: failed to create pipe"
-# define ERR_WAITPID "minishell: waitpid failed"
+# define ERR_PIPE "minishell: failed to create pipe\n"
+# define ERR_WAITPID "minishell: waitpid failed\n"
 # define ERR_COMMAND "%s: command not found\n"
-# define ERR_FORK "failed to fork"
-# define ERR_NUM "numeric argument required"
-# define ERR_ARG "too many arguments"
+# define ERR_FORK "failed to fork\n"
+# define ERR_NUM "numeric argument required\n"
+# define ERR_ARG "too many arguments\n"
+# define ERR_AMB "minishell: %s: ambiguous redirect\n"
 # define ERR_INVFILE "minishell: %s: No such file or directory\n"
 # define ERR_DIR "minishell: %s: Is a directory\n"
 # define ERR_INVPERMS "minishell: %s: Permission denied\n"
-# define ERR_FD "failed to return a file descriptor"
-# define ERR_CLOSE "failed to close a file descriptor"
-# define ERR_EXECVE "minishell: %s: Unknown failure"
+# define ERR_FD "failed to return a file descriptor\n"
+# define ERR_CLOSE "failed to close a file descriptor\n"
+# define ERR_EXECVE "minishell: %s: Unknown failure\n"
 # define ERR_EOF "minishell: syntax error: unexpected end of file\n"
+# define ERR_FORMAT "minishell: %s: cannot execute binary file: Exec format error\n"
 
 extern int	g_signum;
 typedef enum s_type
@@ -52,8 +54,10 @@ typedef struct s_exp
 {
 	bool			expanded;
 	bool			no_element;
+	bool			parsing;
 	int				status;
 	char			**new_cmd;
+	char			*new_line;
 	char			*exp;
 	struct s_data	*data;
 	struct s_pipes	*my_pipes;
@@ -66,6 +70,7 @@ typedef struct s_node
 	char			*file;
 	char			*delimiter;
 	bool			delimiter_quote;
+	int				hd_fd;
 	struct s_node	*prev;
 	struct s_node	*next;
 }					t_node;
@@ -92,10 +97,12 @@ typedef struct s_pipes
 	int				read_end;
 	int				write_end;
 	int				exit_status;
+	int				hd_dir;
 	char			*command_path;
 	char			**paths;
 	char			***my_envp;
 	struct s_node	*command_node;
+	struct s_node	*heredoc_node;
 }					t_pipes;
 
 //init and input validation
@@ -130,18 +137,19 @@ void	handle_cmd(t_node *tmp, t_data *data, int status);
 char	**handle_cmd_helper(char **cmd, t_data *data, int status);
 void	handle_filename(t_node *tmp, t_data *data, int status);
 char	*handle_filename_helper(char *file, t_data *data, int status);
-char	*expand_heredoc(char *line, t_pipes *my_pipes, int fd, int status);
+char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
+			t_node *heredoc_node);
 char	*handle_quotes(char *s, t_data *data, t_exp *expand);
 char	*find_envp(t_exp *expand, int i, int new_arg);
 void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes);
-char	*find_exp(char *arg, int *i, int *k, t_data *data);
+char	*find_exp(char *arg, int *i, int *k, t_exp *expand);
 char	*find_replacer(char *arg, int i, t_exp *expand, int new_arg);
 void	append_char(char **new_string, char c, t_exp *expand);
-void	append_char_heredoc(char **new_string, char *s, int i,
-			t_pipes *my_pipes);
+void	append_char_heredoc(char **new_string, char c,
+			t_pipes *my_pipes, t_node *heredoc_node);
 void	append_replacer(char **new_string, char *replacer, int is_freeable,
 			t_exp *expand);
-int		expand_line_helper(char *file, char **new_file, t_exp *expand, int i);
+int		expand_line_helper(char *line, char **new_line, t_exp *expand, int i);
 int		is_redirection(char *token);
 void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
@@ -161,7 +169,7 @@ int		is_quote(char *s);
 int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
-int		heredoc(t_node *curr, t_pipes *my_pipes, char **paths, int status);
+int		heredoc(t_node *curr, t_pipes *my_pipes, int status);
 
 //signals
 void	init_signal_handler(int sig);
@@ -169,9 +177,10 @@ void	heredoc_signal(int sig);
 void	parent_signal(int sig);
 
 //heredoc
-void	heredoc_mkdir(char **envp, char **paths);
-void	heredoc_rm(char **envp, char **paths);
-void	heredoc_rmdir(char **envp, char **paths);
+void	heredoc_mkdir(char **envp, t_pipes *my_pipes);
+int		heredoc_rm(char **envp, t_pipes *my_pipes);
+void	heredoc_rmdir(char **envp, t_pipes *my_pipes, pid_t rm_pid);
+void	handle_tmpfile(t_pipes *my_pipes);
 
 //builtins
 void	execute_echo(t_node *node, char ***envp);
@@ -198,11 +207,11 @@ void	cd_no_args(t_exp *expand, t_pipes *my_pipes);
 void	execute_exit_helper(char **cmd, int *is_num, int *status);
 
 //execution
-char	**get_paths(char ***envp);
-char	*get_absolute_path(char **paths, char *command);
+char	**get_paths(t_pipes *my_pipes);
+char	*get_absolute_path(char **paths, char *command, t_pipes *my_pipes);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
-int		loop_nodes(t_node *list, char ***envp, int status);
+int		begin_execution(t_node *list, char ***envp, int status);
 void	free_my_pipes(t_pipes *my_pipes);
 
 #endif

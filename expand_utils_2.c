@@ -15,11 +15,18 @@ void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes)
 	exp->no_element = 0;
 	exp->status = status;
 	exp->new_cmd = NULL;
+	exp->new_line = NULL;
 	exp->exp = NULL;
 	if (data)
+	{
 		exp->data = data;
+		exp->parsing = 1;
+	}
 	else
+	{
 		exp->data = NULL;
+		exp->parsing = 0;
+	}
 	if (my_pipes)
 		exp->my_pipes = my_pipes;
 	else
@@ -31,7 +38,11 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 	char	*temp;
 
 	if (expand->no_element)
+	{
+		free (expand->new_cmd[*new_arg]);
+		expand->new_cmd[*new_arg] = NULL;
 		expand->no_element = 0;
+	}
 	else
 	{
 		if (!expand->expanded)
@@ -40,10 +51,12 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 					expand->data, expand);
 			if (temp)
 			{
+				free (expand->new_cmd[*new_arg]);
 				expand->new_cmd[*new_arg] = temp;
 				temp = NULL;
 			}
 		}
+		expand->expanded = 0;
 		(*new_arg)++;
 	}
 	(*arg)++;
