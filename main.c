@@ -47,19 +47,6 @@ static int	minishell(char *input, char ***envp, int status)
 	if (lexer(&data) < 0) //missing filename or delimiter
 		return (2);
 	handle_exp_and_quotes(&data, status);
-	// t_node	*tmp = data.first;
-	// while (tmp)
-	// {
-	// 	printf("type %d file '%s' delimiter %s", tmp->type, tmp->file, tmp->delimiter);
-	// 	int	k = 0;
-	// 	if (tmp->cmd)
-	// 	{
-	// 		while (tmp->cmd[k])
-	// 			printf(" cmd %s", tmp->cmd[k++]);
-	// 	}
-	// 	printf("\n");
-	// 	tmp = tmp->next;
-	// }
 	status = begin_execution(data.first, &data.envp, status);
 	*envp = data.envp;
 	free_nodes(data.first);
@@ -103,10 +90,12 @@ int	main(int ac, char **av, char **envp)
 	(void)av;
 	status = 0;
 	if (ac != 1)
+	{
+		ft_printf(2, "minishell: expected format: <./minishell>\n");
 		return (0);
+	}
 	my_envp = copy_envp(envp);
 	start_minishell(&my_envp);
 	free_array(my_envp);
-	clear_history();
 	return (0);
 }

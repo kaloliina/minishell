@@ -62,7 +62,7 @@ static char	*end_of_line_pipe(char **line, t_data *data, int *status)
 	temp = readline("> ");
 	if (end_pipe_sigint(backup_fd, temp, *line, status))
 		return (NULL);
-	check_for_ctrld(temp, data, *line);
+	check_for_ctrld(temp, data, *line, backup_fd);
 	new_line = ft_strjoin(*line, temp);
 	if (!new_line)
 	{
@@ -75,6 +75,7 @@ static char	*end_of_line_pipe(char **line, t_data *data, int *status)
 	new_line = NULL;
 	temp = NULL;
 	*line = check_pipes(*line, data, 0, status);
+	close (backup_fd);
 	return (*line);
 }
 
