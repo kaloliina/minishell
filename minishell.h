@@ -140,10 +140,10 @@ char	*handle_filename_helper(char *file, t_data *data, int status);
 char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
 			t_node *heredoc_node);
 char	*handle_quotes(char *s, t_data *data, t_exp *expand);
-char	*find_envp(t_exp *expand, int i, int new_arg);
+char	*find_envp(t_exp *expand, int i);
 void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes);
 char	*find_exp(char *arg, int *i, int *k, t_exp *expand);
-char	*find_replacer(char *arg, int i, t_exp *expand, int new_arg);
+char	*find_replacer(char *arg, int i, t_exp *expand);
 void	append_char(char **new_string, char c, t_exp *expand);
 void	append_char_heredoc(char **new_string, char c,
 			t_pipes *my_pipes, t_node *heredoc_node);
@@ -175,17 +175,18 @@ int		heredoc(t_node *curr, t_pipes *my_pipes, int status);
 void	init_signal_handler(int sig);
 void	heredoc_signal(int sig);
 void	parent_signal(int sig);
+void	listen_to_signals(int in_parent);
 
 //heredoc
 void	heredoc_mkdir(char **envp, t_pipes *my_pipes, int status);
 int		heredoc_rm(char **envp, t_pipes *my_pipes);
-void	heredoc_rmdir(char **envp, t_pipes *my_pipes, pid_t rm_pid);
+void	heredoc_rmdir(char **envp, t_pipes *my_pipes);
 void	handle_tmpfile(t_pipes *my_pipes);
 void	check_tmp_dir(t_pipes *my_pipes);
 void	check_rm_success(t_pipes *my_pipes, pid_t pid, bool rm);
 
 //builtins
-void	execute_echo(t_node *node, char ***envp);
+void	execute_echo(t_node *node);
 void	execute_env(char ***envp);
 void	execute_pwd(t_pipes *my_pipes);
 void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes);
@@ -209,11 +210,25 @@ void	cd_no_args(t_exp *expand, t_pipes *my_pipes);
 void	execute_exit_helper(char **cmd, int *is_num, int *status);
 
 //execution
-char	**get_paths(t_pipes *my_pipes);
-char	*get_absolute_path(char **paths, char *command, t_pipes *my_pipes);
+//execution handler
+int		begin_execution(t_node *list, char ***envp, int status);
+//execution - close free and reset
+void	close_pipeline_fds(t_pipes *my_pipes);
+void	reset_properties(t_pipes *my_pipes);
+void	free_my_pipes(t_pipes *my_pipes);
+void	close_all_fds(t_pipes *my_pipes);
+//execution redirections
+void	handle_redirections(t_pipes *my_pipes);
 void	open_infile(char *file, t_pipes *my_pipes);
 void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
-int		begin_execution(t_node *list, char ***envp, int status);
-void	free_my_pipes(t_pipes *my_pipes);
+//execution_builtin
+int		execute_builtin(t_node *node, t_pipes *my_pipes);
+//execution external
+int		execute_executable(t_node *node, t_pipes *my_pipes);
+//execution utils
+char	**get_paths(t_pipes *my_pipes);
+char	*get_absolute_path(char **paths, char *command, t_pipes *my_pipes);
+int		is_builtin(char *command);
+int		get_pipe_amount(t_node *list);
 
 #endif

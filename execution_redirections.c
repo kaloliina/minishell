@@ -1,5 +1,31 @@
 #include "../minishell.h"
 
+void	handle_redirections(t_pipes *my_pipes)
+{
+	if (my_pipes->exit_status == 1)
+		return ;
+	my_pipes->exit_status = 0;
+	if (my_pipes->outfile_fd >= 0
+		&& (dup2(my_pipes->outfile_fd, STDOUT_FILENO) < 0))
+		my_pipes->exit_status = 1;
+	if (my_pipes->infile_fd >= 0
+		&& (dup2(my_pipes->infile_fd, STDIN_FILENO) < 0))
+		my_pipes->exit_status = 1;
+	if (my_pipes->current_section != 1 && my_pipes->infile_fd == -1)
+	{
+		if (dup2(my_pipes->pipes[my_pipes->read_end], STDIN_FILENO) < 0)
+			my_pipes->exit_status = 1;
+	}
+	if ((my_pipes->current_section != my_pipes->pipe_amount + 1)
+		&& my_pipes->outfile_fd == -1)
+	{
+		if (dup2(my_pipes->pipes[my_pipes->write_end], STDOUT_FILENO) < 0)
+			my_pipes->exit_status = 1;
+	}
+	if (my_pipes->exit_status == 1)
+		ft_printf(2, "%s\n", ERR_FD);
+}
+
 void	open_infile(char *file, t_pipes *my_pipes)
 {
 	if (*file == '\0')

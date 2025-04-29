@@ -15,8 +15,6 @@ static void	set_redir_type(t_node *new_node, t_data *data, int i, int j)
 static void	missing_file_delimiter(t_data *data, t_index *index,
 	t_node *new_node)
 {
-	char	*redir;
-
 	if (data->tokens[index->i + 1])
 		ft_printf(2, SYNTAX, "|");
 	else if (new_node->prev && (new_node->prev->type == REDIR_APPEND

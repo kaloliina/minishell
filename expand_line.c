@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-static int	invalid_exp_line(char *line, char **new_line, int k, t_exp *expand)
+static int	invalid_exp_line(char *line, int k)
 {
 	int	i;
 
@@ -18,7 +18,7 @@ int	expand_line_helper(char *line, char **new_line, t_exp *expand, int i)
 	expand->exp = find_exp(line, &i, &k, expand);
 	if ((expand->exp && *expand->exp) || (line[i] == '?' && line[i - 1] == '$'))
 	{
-		replacer = find_replacer(line, i, expand, 0);
+		replacer = find_replacer(line, i, expand);
 		if (replacer)
 		{
 			if (!is_quote(line))
@@ -32,7 +32,7 @@ int	expand_line_helper(char *line, char **new_line, t_exp *expand, int i)
 		else if (line[i] && line[i + 1])
 			i = k + ft_strlen(expand->exp);
 		else
-			i = invalid_exp_line(line, new_line, k, expand);
+			i = invalid_exp_line(line, k);
 		free (expand->exp);
 	}
 	return (i);
@@ -58,7 +58,6 @@ static char	*expand_line(char *line, t_exp *expand)
 {
 	int		i;
 	int		quote;
-	char	*temp;
 
 	i = 0;
 	quote = 0;

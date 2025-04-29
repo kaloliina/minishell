@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-void	execute_echo(t_node *node, char ***envp)
+void	execute_echo(t_node *node)
 {
 	int		i;
 
@@ -52,7 +52,6 @@ void	execute_pwd(t_pipes *my_pipes)
 
 void	execute_cd(char **cmd, t_pipes *my_pipes)
 {
-	char	*expansion;
 	t_exp	expand;
 
 	init_exp(&expand, 0, NULL, my_pipes);

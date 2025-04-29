@@ -1,6 +1,6 @@
 NAME = minishell
 CC = cc -g
-CFLAGS =
+CFLAGS = -Wall -Wextra -Werror
 LIBFTDIR = ./libft
 LIBFT = $(LIBFTDIR)/libft.a
 
@@ -10,10 +10,12 @@ SRC = add_spaces.c add_spaces_utils.c add_spaces_utils_2.c \
 	builtins_utils.c builtins_envp_utils_2.c check_pipes.c \
 	cleanup.c copy_envp.c expand_cmd.c expand_line.c \
 	expand_utils.c expand_utils_2.c expand.c expand_append.c \
-	ft_ms_split.c ft_ms_split_utils.c get_paths.c \
-	handle_files.c heredoc.c heredoc_tmpfile.c heredoc_tmpfile_utils.c \
-	init.c lexing_cmd.c lexing_redir.c lexing.c main.c \
-	signals.c test.c utils.c check_pipes_utils.c
+	ft_ms_split.c ft_ms_split_utils.c execution_handler.c \
+	execution_redirections.c execution_external.c \
+	execution_close_and_reset.c execution_builtin.c \
+	execution_utils.c heredoc.c heredoc_tmpfile.c init.c \
+	lexing_cmd.c lexing_redir.c lexing.c main.c signals.c \
+	utils.c check_pipes_utils.c heredoc_tmpfile_utils.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)

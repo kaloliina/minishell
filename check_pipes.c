@@ -51,7 +51,7 @@ static char	*check_pipes_helper(char *line, t_data *data, int i, int j)
 	return (line);
 }
 
-static char	*end_of_line_pipe(char **line, t_data *data, int *status, int j)
+static char	*end_of_line_pipe(char **line, t_data *data, int *status)
 {
 	char	*temp;
 	char	*new_line;
@@ -80,8 +80,6 @@ static char	*end_of_line_pipe(char **line, t_data *data, int *status, int j)
 
 char	*check_pipes(char *line, t_data *data, int i, int *status)
 {
-	char	*new_line;
-	char	*temp;
 	int		j;
 	int		quote;
 
@@ -96,7 +94,7 @@ char	*check_pipes(char *line, t_data *data, int i, int *status)
 			if (line[i] != '\0')
 				return (check_pipes_helper(line, data, i, j));
 			else
-				return (end_of_line_pipe(&line, data, status, j));
+				return (end_of_line_pipe(&line, data, status));
 		}
 		else if (!quote && (line[i] == '"' || line[i] == '\''))
 			quote = line[i];

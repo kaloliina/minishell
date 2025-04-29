@@ -14,12 +14,12 @@ char	*find_exp(char *arg, int *i, int *k, t_exp *expand)
 	return (exp);
 }
 
-char	*find_replacer(char *arg, int i, t_exp *expand, int new_arg)
+char	*find_replacer(char *arg, int i, t_exp *expand)
 {
 	if (arg[i] == '?' && arg[i - 1] == '$')
 		return (ft_itoa(expand->status));
 	else
-		return (find_envp(expand, 0, new_arg));
+		return (find_envp(expand, 0));
 }
 
 static char	**find_envp_source(t_exp *expand)
@@ -30,7 +30,7 @@ static char	**find_envp_source(t_exp *expand)
 		return (expand->data->envp);
 }
 
-static void	find_envp_failure(t_exp *expand, int new_arg)
+static void	find_envp_failure(t_exp *expand)
 {
 	if (expand->parsing)
 	{
@@ -46,7 +46,7 @@ static void	find_envp_failure(t_exp *expand, int new_arg)
 	}
 }
 
-char	*find_envp(t_exp *expand, int i, int new_arg)
+char	*find_envp(t_exp *expand, int i)
 {
 	int		len;
 	int		envp_len;
@@ -67,7 +67,7 @@ char	*find_envp(t_exp *expand, int i, int new_arg)
 			replacer = ft_substr(envp[i], len + 1,
 					((ft_strlen(envp[i]) - len - 1)));
 			if (!replacer)
-				find_envp_failure(expand, new_arg);
+				find_envp_failure(expand);
 		}
 		i++;
 	}
