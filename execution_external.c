@@ -13,12 +13,14 @@ static int	prep_for_execution(t_pipes *my_pipes)
 			my_pipes->command_node->cmd[0], my_pipes);
 	if (my_pipes->command_path == NULL)
 	{
+		ft_printf(2, "minishell: ");
 		ft_printf(2, ERR_COMMAND, my_pipes->command_node->cmd[0]);
 		my_pipes->exit_status = 127;
 		return (-1);
 	}
 	if (stat(my_pipes->command_path, &sb) == 0 && S_ISDIR(sb.st_mode))
 	{
+		ft_printf(2, "minishell: ");
 		ft_printf(2, ERR_DIR, my_pipes->command_node->cmd[0]);
 		my_pipes->exit_status = 126;
 		return (-1);

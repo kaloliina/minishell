@@ -92,6 +92,8 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
 	int	exit_status;
 
 	exit_status = 1;
+	if (msg)
+		ft_printf(2, "minishell: ");
 	if (!conversion)
 		ft_printf(2, msg);
 	else

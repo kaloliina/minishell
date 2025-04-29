@@ -42,6 +42,7 @@ static int	heredoc_read(t_node *heredoc_node,
 			return (heredoc_sigint(my_pipes, line, heredoc_node->hd_fd));
 		if (!line)
 		{
+			ft_printf(2, "minishell: warning: ");
 			ft_printf(2, HD_CTRLD, heredoc_node->delimiter);
 			break ;
 		}
@@ -60,7 +61,6 @@ static int	heredoc_read(t_node *heredoc_node,
 int	heredoc(t_node *heredoc_node, t_pipes *my_pipes, int status)
 {
 	int		flag;
-	int		wstatus;
 	pid_t	rm_pid;
 
 	check_tmp_dir(my_pipes);

@@ -4,6 +4,7 @@ void	check_for_ctrld(char *temp, t_data *data, char *line)
 {
 	if (!temp)
 	{
+		ft_printf(2, "minishell: ");
 		ft_printf(2, ERR_EOF);
 		ft_printf(2, "exit\n");
 		fatal_parsing_exit(data, NULL, line, NULL);

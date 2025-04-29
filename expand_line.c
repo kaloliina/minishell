@@ -6,7 +6,10 @@ static int	invalid_exp_line(char *line, int k)
 
 	i = ft_strlen(line);
 	if (k == 1)
+	{
+		ft_printf(2, "minishell: ");
 		ft_printf(2, ERR_AMB, line);
+	}
 	return (i);
 }
 
