@@ -30,7 +30,8 @@ void	execute_exit_helper(char **cmd, int *is_num, int *status)
 	}
 	if (*is_num == 0)
 	{
-		ft_printf(2, "minishell: %s: %s: %s\n", cmd[0], cmd[1], ERR_NUM);
+		ft_printf(2, "exit\n");
+		ft_printf(2, "minishell: %s: %s: %s", cmd[0], cmd[1], ERR_NUM);
 		*status = 2;
 	}
 	else

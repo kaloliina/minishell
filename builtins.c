@@ -62,7 +62,7 @@ void	execute_cd(char **cmd, t_pipes *my_pipes)
 		cd_no_args(&expand, my_pipes);
 	else if (count_elements(cmd) > 2)
 	{
-		ft_printf(2, "minishell: %s: %s\n", cmd[0], ERR_ARG);
+		ft_printf(2, "minishell: %s: %s", cmd[0], ERR_ARG);
 		my_pipes->exit_status = 1;
 	}
 	else if (count_elements(cmd) == 2)
@@ -88,7 +88,8 @@ void	execute_exit(char **cmd, t_pipes *my_pipes)
 	i = 0;
 	if (count_elements(cmd) > 2)
 	{
-		ft_printf(2, "minishell: %s: %s\n", cmd[0], ERR_ARG);
+		ft_printf(2, "exit\n");
+		ft_printf(2, "minishell: %s: %s", cmd[0], ERR_ARG);
 		status = 1;
 	}
 	else if (cmd[1] != NULL)

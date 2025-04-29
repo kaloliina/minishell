@@ -10,22 +10,22 @@ void	close_all_fds(t_pipes *my_pipes)
 		if (my_pipes->pipes[i] != -1)
 		{
 			if (close(my_pipes->pipes[i]) < 0)
-				ft_printf(2, "%s", ERR_CLOSE);
+				ft_printf(2, "minishell: %s", ERR_CLOSE);
 			my_pipes->pipes[i] = -1;
 		}
 		i++;
 	}
 	if (my_pipes->stdinfd != -1 && (close(my_pipes->stdinfd) < 0))
-		ft_printf(2, "%s", ERR_CLOSE);
+		ft_printf(2, "minishell: %s", ERR_CLOSE);
 	my_pipes->stdinfd = -1;
 	if (my_pipes->stdoutfd != -1 && (close(my_pipes->stdoutfd) < 0))
-		ft_printf(2, "%s", ERR_CLOSE);
+		ft_printf(2, "minishell: %s", ERR_CLOSE);
 	my_pipes->stdoutfd = -1;
 	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
-		ft_printf(2, "%s", ERR_CLOSE);
+		ft_printf(2, "minishell: %s", ERR_CLOSE);
 	my_pipes->outfile_fd = -1;
 	if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
-		ft_printf(2, "%s", ERR_CLOSE);
+		ft_printf(2, "minishell: %s", ERR_CLOSE);
 	my_pipes->infile_fd = -1;
 }
 
@@ -82,21 +82,21 @@ void	close_pipeline_fds(t_pipes *my_pipes)
 		if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
 			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
-				ft_printf(2, "%s", ERR_CLOSE);
+				ft_printf(2, "minishell: %s", ERR_CLOSE);
 			my_pipes->pipes[my_pipes->write_end] = -1;
 		}
 		if (my_pipes->current_section != 1)
 		{
 			if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
-				ft_printf(2, "%s", ERR_CLOSE);
+				ft_printf(2, "minishell: %s", ERR_CLOSE);
 			my_pipes->pipes[my_pipes->read_end] = -1;
 		}
 	}
 	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
-		ft_printf(2, "%s", ERR_CLOSE);
+		ft_printf(2, "minishell: %s", ERR_CLOSE);
 	my_pipes->outfile_fd = -1;
 	if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
-		ft_printf(2, "%s", ERR_CLOSE);
+		ft_printf(2, "minishell: %s", ERR_CLOSE);
 	my_pipes->infile_fd = -1;
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 		reset_properties(my_pipes);

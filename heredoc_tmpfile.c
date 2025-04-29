@@ -89,7 +89,7 @@ void	heredoc_rmdir(char **envp, t_pipes *my_pipes)
 	rmdir_pid = fork();
 	if (rmdir_pid == 0)
 	{
-		rmdir_path = get_absolute_path(my_pipes->paths, "rmdi", my_pipes);
+		rmdir_path = get_absolute_path(my_pipes->paths, "rmdir", my_pipes);
 		rmdir_cmd[0] = "rmdir";
 		rmdir_cmd[1] = "tmp";
 		rmdir_cmd[2] = NULL;

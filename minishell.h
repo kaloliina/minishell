@@ -13,27 +13,27 @@
 # include <sys/wait.h>
 # include <sys/stat.h>
 # include <errno.h>
-# define MALLOC "minishell: memory allocation failure\n"
-# define SYNTAX "minishell: syntax error near unexpected token `%s'\n"
-# define EXPORT "minishell: export: `%s': not a valid identifier\n"
-# define HD_CTRLD "minishell: warning: here-document delimited by end-of-file (wanted `%s')\n"
-# define ERR_PIPE "minishell: failed to create pipe\n"
-# define ERR_WAITPID "minishell: waitpid failed\n"
+# define MALLOC "memory allocation failure\n"
+# define SYNTAX "syntax error near unexpected token `%s'\n"
+# define EXPORT "export: `%s': not a valid identifier\n"
+# define HD_CTRLD "here-document delimited by end-of-file (wanted `%s')\n"
+# define ERR_PIPE "failed to create pipe\n"
+# define ERR_WAITPID "waitpid failed\n"
 # define ERR_COMMAND "%s: command not found\n"
 # define ERR_FORK "failed to fork\n"
 # define ERR_NUM "numeric argument required\n"
 # define ERR_ARG "too many arguments\n"
-# define ERR_AMB "minishell: %s: ambiguous redirect\n"
-# define ERR_INVFILE "minishell: %s: No such file or directory\n"
-# define ERR_DIR "minishell: %s: Is a directory\n"
-# define ERR_INVPERMS "minishell: %s: Permission denied\n"
+# define ERR_AMB "%s: ambiguous redirect\n"
+# define ERR_INVFILE "%s: No such file or directory\n"
+# define ERR_DIR "%s: Is a directory\n"
+# define ERR_INVPERMS "%s: Permission denied\n"
 # define ERR_FD "failed to return a file descriptor\n"
 # define ERR_CLOSE "failed to close a file descriptor\n"
-# define ERR_EXECVE "minishell: %s: Unknown failure\n"
-# define ERR_EOF "minishell: syntax error: unexpected end of file\n"
-# define ERR_FORMAT "minishell: %s: cannot execute binary file: Exec format error\n"
+# define ERR_EXECVE "%s: Unknown failure\n"
+# define ERR_EOF "syntax error: unexpected end of file\n"
+# define ERR_FORMAT "%s: cannot execute binary file: Exec format error\n"
 
-extern int	g_signum;
+extern volatile sig_atomic_t	g_signum;
 typedef enum s_type
 {
 	PIPE,

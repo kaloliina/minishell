@@ -23,7 +23,7 @@ void	handle_redirections(t_pipes *my_pipes)
 			my_pipes->exit_status = 1;
 	}
 	if (my_pipes->exit_status == 1)
-		ft_printf(2, "%s\n", ERR_FD);
+		ft_printf(2, "minishell: %s", ERR_FD);
 }
 
 void	open_infile(char *file, t_pipes *my_pipes)
@@ -37,6 +37,7 @@ void	open_infile(char *file, t_pipes *my_pipes)
 		my_pipes->infile_fd = open(file, O_RDONLY);
 	if (my_pipes->infile_fd == -1 && my_pipes->exit_status == 0)
 	{
+		ft_printf(2, "minishell: ");
 		if (errno == ENOENT)
 			ft_printf(2, ERR_INVFILE, file);
 		else if (errno == EACCES)
@@ -60,6 +61,7 @@ void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 		my_pipes->outfile_fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (my_pipes->outfile_fd == -1 && my_pipes->exit_status == 0)
 	{
+		ft_printf(2, "minishell: ");
 		if (errno == ENOENT)
 			ft_printf(2, ERR_INVFILE, file);
 		else if (errno == EACCES)
