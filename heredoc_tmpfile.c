@@ -1,41 +1,39 @@
 #include "minishell.h"
 
-void	execve_fail_hd(t_pipes *my_pipes)
+void	execve_fail_hd(t_pipes *my_pipes, char *msg)
 {
 	if (errno == ENOENT)
 	{
 		my_pipes->exit_status = 127;
 		handle_fatal_exit(ERR_INVFILE, my_pipes,
-			NULL, "execve");
+			NULL, msg);
 	}
 	else if (errno == EACCES)
 	{
 		my_pipes->exit_status = 126;
 		handle_fatal_exit(ERR_INVPERMS, my_pipes,
-			NULL, "execve");
+			NULL, msg);
 	}
 	else if (errno == ENOEXEC)
 	{
 		my_pipes->exit_status = 0;
 		handle_fatal_exit(ERR_FORMAT, my_pipes,
-			NULL, "execve");
+			NULL, msg);
 	}
 	else
 	{
 		my_pipes->exit_status = 1;
 		handle_fatal_exit(ERR_EXECVE, my_pipes,
-			NULL, "execve");
+			NULL, msg);
 	}
 }
 
-void	heredoc_mkdir(char **envp, t_pipes *my_pipes)
+void	heredoc_mkdir(char **envp, t_pipes *my_pipes, int status)
 {
 	pid_t	mkdir_pid;
-	int		status;
 	char	*mkdir_cmd[3];
 	char	*mkdir_path;
 
-	status = 0;
 	if (!my_pipes->paths)
 		my_pipes->paths = get_paths(my_pipes);
 	mkdir_pid = fork();
@@ -46,12 +44,15 @@ void	heredoc_mkdir(char **envp, t_pipes *my_pipes)
 		mkdir_cmd[1] = "tmp";
 		mkdir_cmd[2] = NULL;
 		execve(mkdir_path, mkdir_cmd, envp);
-		execve_fail_hd(my_pipes);
+		execve_fail_hd(my_pipes, "execve");
 	}
 	if (waitpid(mkdir_pid, &status, 0) < 0)
 		handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
-	if (my_pipes->exit_status)
+	if (WIFEXITED(status) && WEXITSTATUS(status))
+	{
+		my_pipes->exit_status = WEXITSTATUS(status);
 		handle_fatal_exit(NULL, my_pipes, NULL, NULL);
+	}
 	chdir("./tmp");
 }
 
@@ -69,7 +70,10 @@ int	heredoc_rm(char **envp, t_pipes *my_pipes)
 		rm_cmd[1] = "minishell_tmpfile";
 		rm_cmd[2] = NULL;
 		execve(rm_path, rm_cmd, envp);
-		execve_fail_hd(my_pipes);
+		my_pipes->hd_dir = 0;
+		close (my_pipes->infile_fd);
+		my_pipes->infile_fd = -1;
+		execve_fail_hd(my_pipes, "execve");
 	}
 	return (rm_pid);
 }
@@ -85,20 +89,17 @@ void	heredoc_rmdir(char **envp, t_pipes *my_pipes)
 	rmdir_pid = fork();
 	if (rmdir_pid == 0)
 	{
-		rmdir_path = get_absolute_path(my_pipes->paths, "rmdir", my_pipes);
+		rmdir_path = get_absolute_path(my_pipes->paths, "rmdi", my_pipes);
 		rmdir_cmd[0] = "rmdir";
 		rmdir_cmd[1] = "tmp";
 		rmdir_cmd[2] = NULL;
 		execve(rmdir_path, rmdir_cmd, envp);
-		execve_fail_hd(my_pipes);
-	}
-	if (waitpid(rmdir_pid, &status, 0) < 0)
-	{
 		my_pipes->hd_dir = 0;
 		close (my_pipes->infile_fd);
 		my_pipes->infile_fd = -1;
-		handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
+		execve_fail_hd(my_pipes, "execve");
 	}
+	check_rm_success(my_pipes, rmdir_pid, 0);
 	my_pipes->hd_dir = 0;
 }
 
@@ -111,6 +112,13 @@ void	handle_tmpfile(t_pipes *my_pipes)
 	rm_pid = heredoc_rm(*my_pipes->my_envp, my_pipes);
 	if (waitpid(rm_pid, &status, 0) < 0)
 		handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
+	if (WIFEXITED(status) && WEXITSTATUS(status))
+	{
+		my_pipes->exit_status = WEXITSTATUS(status);
+		close (my_pipes->infile_fd);
+		my_pipes->infile_fd = -1;
+		handle_fatal_exit(NULL, my_pipes, NULL, NULL);
+	}
 	chdir("..");
 	if (my_pipes->hd_dir == 2)
 		heredoc_rmdir(*my_pipes->my_envp, my_pipes);

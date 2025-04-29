@@ -53,7 +53,8 @@ char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
 			i = expand_line_helper(line, &expand.new_line, &expand, i + 1);
 		else
 		{
-			append_char_heredoc(&expand.new_line, line[i], my_pipes, heredoc_node);
+			append_char_heredoc(&expand.new_line, line[i],
+				my_pipes, heredoc_node);
 			i++;
 		}
 	}
@@ -64,7 +65,7 @@ void	handle_cmd(t_node *tmp, t_data *data, int status)
 {
 	char	**new_cmd;
 
-	new_cmd = handle_cmd_helper(tmp->cmd, data, status);
+	new_cmd = handle_cmd_helper(tmp->cmd, data, status, 0);
 	if (new_cmd)
 	{
 		free_array(tmp->cmd);

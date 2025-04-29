@@ -6,10 +6,10 @@ void	init_signal_handler(int sig)
 {
 	if (sig == SIGINT)
 	{
-		write(1, "\n", 1);	//prints a newline
-		rl_on_new_line();	//informs readline that we are on a new line
-		rl_replace_line("", 0);	//if ctrl+c was pressed after typing something, that text will be erased on new line
-		rl_redisplay();	//redisplay prompt and input line (which is now empty)
+		write(1, "\n", 1);
+		rl_on_new_line();
+		rl_replace_line("", 0);
+		rl_redisplay();
 		g_signum = SIGINT;
 	}
 }

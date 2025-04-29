@@ -116,7 +116,7 @@ int		is_missing_post_space(char *input, int i, int quote);
 int		is_triple_redirection(char *input, int i);
 char	*check_pipes(char *line, t_data *data, int i, int *status);
 void	check_for_ctrld(char *temp, t_data *data, char *line);
-void	end_pipe_sigint(int backup_fd, char *temp, char *line, int *status);
+int		end_pipe_sigint(int backup_fd, char *temp, char *line, int *status);
 int		is_only_pipes(char *input);
 void	init_sections(t_data *data, char *line);
 void	init_tokens(t_data *data);
@@ -134,7 +134,7 @@ char	**ft_ms_freearray(char **array, int j, int *error);
 
 //parsing
 void	handle_cmd(t_node *tmp, t_data *data, int status);
-char	**handle_cmd_helper(char **cmd, t_data *data, int status);
+char	**handle_cmd_helper(char **cmd, t_data *data, int status, int arg);
 void	handle_filename(t_node *tmp, t_data *data, int status);
 char	*handle_filename_helper(char *file, t_data *data, int status);
 char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
@@ -178,10 +178,12 @@ void	parent_signal(int sig);
 void	listen_to_signals(int in_parent);
 
 //heredoc
-void	heredoc_mkdir(char **envp, t_pipes *my_pipes);
+void	heredoc_mkdir(char **envp, t_pipes *my_pipes, int status);
 int		heredoc_rm(char **envp, t_pipes *my_pipes);
 void	heredoc_rmdir(char **envp, t_pipes *my_pipes);
 void	handle_tmpfile(t_pipes *my_pipes);
+void	check_tmp_dir(t_pipes *my_pipes);
+void	check_rm_success(t_pipes *my_pipes, pid_t pid, bool rm);
 
 //builtins
 void	execute_echo(t_node *node);

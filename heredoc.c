@@ -63,16 +63,9 @@ int	heredoc(t_node *heredoc_node, t_pipes *my_pipes, int status)
 	int		wstatus;
 	pid_t	rm_pid;
 
-	my_pipes->hd_dir = 1;
-	if (chdir("./tmp") == -1)
-	{
-		if (errno == ENOENT)
-		{
-			heredoc_mkdir(*my_pipes->my_envp, my_pipes);
-			my_pipes->hd_dir = 2;
-		}
-	}
-	heredoc_node->hd_fd = open("minishell_tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
+	check_tmp_dir(my_pipes);
+	heredoc_node->hd_fd
+		= open("minishell_tmpfile", O_CREAT | O_TRUNC | O_WRONLY, 0777);
 	if (heredoc_node->hd_fd < 0)
 	{
 		perror("minishell: minishell_tmpfile (here-document)");
@@ -80,14 +73,7 @@ int	heredoc(t_node *heredoc_node, t_pipes *my_pipes, int status)
 	}
 	flag = heredoc_read(heredoc_node, my_pipes, status);
 	rm_pid = heredoc_rm(*my_pipes->my_envp, my_pipes);
-	wstatus = 0;
-	if (waitpid(rm_pid, &wstatus, 0) < 0)
-	{
-		my_pipes->hd_dir = 0;
-		close (my_pipes->infile_fd);
-		my_pipes->infile_fd = -1;
-		handle_fatal_exit(ERR_EXECVE, my_pipes, NULL, "execve");
-	}
+	check_rm_success(my_pipes, rm_pid, 1);
 	chdir("..");
 	if (my_pipes->hd_dir == 2)
 		heredoc_rmdir(*my_pipes->my_envp, my_pipes);

@@ -74,13 +74,11 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	handle_quotes_in_expansion(expand, new_arg, arg);
 }
 
-char	**handle_cmd_helper(char **cmd, t_data *data, int status)
+char	**handle_cmd_helper(char **cmd, t_data *data, int status, int arg)
 {
-	int		arg;
 	int		new_arg;
 	t_exp	expand;
 
-	arg = 0;
 	new_arg = 0;
 	init_exp(&expand, status, data, NULL);
 	expand.new_cmd = ft_calloc(sizeof(char *), count_elements(cmd) + 1);
