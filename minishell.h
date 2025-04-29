@@ -115,7 +115,7 @@ int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
 int		is_triple_redirection(char *input, int i);
 char	*check_pipes(char *line, t_data *data, int i, int *status);
-void	check_for_ctrld(char *temp, t_data *data, char *line);
+void	check_for_ctrld(char *temp, t_data *data, char *line, int backup_fd);
 int		end_pipe_sigint(int backup_fd, char *temp, char *line, int *status);
 int		is_only_pipes(char *input);
 void	init_sections(t_data *data, char *line);

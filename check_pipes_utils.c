@@ -1,9 +1,10 @@
 #include "minishell.h"
 
-void	check_for_ctrld(char *temp, t_data *data, char *line)
+void	check_for_ctrld(char *temp, t_data *data, char *line, int backup_fd)
 {
 	if (!temp)
 	{
+		close (backup_fd);
 		ft_printf(2, "minishell: ");
 		ft_printf(2, ERR_EOF);
 		ft_printf(2, "exit\n");
