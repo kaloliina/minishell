@@ -16,11 +16,11 @@ static int	count_missing_spaces(char *input)
 		}
 		else
 		{
-			if (i > 0 && is_char_redirection(input[i]) && input[i - 1] != ' '
+			if (i > 0 && is_char_redirection(input[i]) && !is_whitespace(input[i - 1])
 				&& !is_char_redirection(input[i - 1]))
 				extras++;
 			if (is_char_redirection(input[i]) && input[i + 1]
-				&& input[i + 1] != ' '
+				&& !is_whitespace(input[i + 1])
 				&& !is_char_redirection(input[i + 1]))
 				extras++;
 			i++;

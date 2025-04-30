@@ -47,6 +47,7 @@ static int	minishell(char *input, char ***envp, int status)
 	if (lexer(&parser) < 0) //missing filename or delimiter
 		return (2);
 	handle_exp_and_quotes(&parser, status);
+	printf("file is '%s'\n", parser.first->file);
 	status = begin_execution(parser.first, &parser.envp, status);
 	*envp = parser.envp;
 	free_nodes(parser.first);
@@ -58,7 +59,7 @@ static int	is_only_space(char *input)
 	int	i;
 
 	i = 0;
-	while (input[i] == ' ' || input[i] == '\t')
+	while (is_whitespace(input[i]))
 		i++;
 	if (input[i] == '\0')
 		return (1);

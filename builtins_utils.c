@@ -19,7 +19,7 @@ void	cd_no_args(t_exp *expand, t_pipes *my_pipes)
 	free (expand->exp);
 }
 
-int	exit_is_nonnumeric_arg(char *arg,  t_pipes *my_pipes)
+int	exit_is_nonnumeric_arg(char *arg, t_pipes *my_pipes)
 {
 	int	i;
 

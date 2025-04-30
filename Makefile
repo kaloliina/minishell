@@ -15,7 +15,8 @@ SRC = add_spaces.c add_spaces_utils.c add_spaces_utils_2.c \
 	execution_close_and_reset.c execution_builtin.c \
 	execution_utils.c heredoc.c heredoc_tmpfile.c init.c \
 	lexing_cmd.c lexing_redir.c lexing.c main.c signals.c \
-	utils.c check_pipes_utils.c heredoc_tmpfile_utils.c
+	utils.c check_pipes_utils.c heredoc_tmpfile_utils.c \
+	utils_2.c
 OBJ = $(SRC:.c=.o)
 
 all: $(NAME)

@@ -9,7 +9,7 @@ static int	is_invalid_pipes(char *line, int i, int quote)
 	{
 		i++;
 		pipes++;
-		while (line[i] == '|' || line[i] == ' ')
+		while (line[i] == '|' || is_whitespace(line[i]))
 		{
 			if (line[i] == '|')
 				pipes++;
@@ -23,9 +23,9 @@ static int	is_invalid_pipes(char *line, int i, int quote)
 
 static int	spaces_between_pipes(char *line, int i)
 {
-	if (line[i] == ' ')
+	if (is_whitespace(line[i]))
 	{
-		while (line[i] == ' ')
+		while (is_whitespace(line[i]))
 			i++;
 		if (line[i] == '|')
 			return (1);

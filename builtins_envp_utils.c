@@ -24,7 +24,7 @@ int	is_valid_to_export(char *arg)
 		return (0);
 	while (!is_exp_delimiter(arg[i]))
 		i++;
-	if (arg[i] != '=' && arg[i] != '\0')
+	if (arg[i] != '=')
 		return (0);
 	return (1);
 }

@@ -40,7 +40,7 @@ static int	is_only_dollar(char *arg, int i)
 static int	is_expandable(char *arg, int i, int quote)
 {
 	if (arg[i] == '$' && arg[i + 1]
-		&& !quote && arg[i + 1] != ' ')
+		&& !quote && !is_whitespace(arg[i + 1]))
 		return (1);
 	return (0);
 }
