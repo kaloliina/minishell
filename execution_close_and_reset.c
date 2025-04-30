@@ -7,7 +7,7 @@ void	close_all_fds(t_pipes *my_pipes)
 	i = 0;
 	while (my_pipes->pipes && i < my_pipes->pipe_amount * 2)
 	{
-		if (my_pipes->pipes[i] != -1)
+		if (my_pipes->pipes[i] > 0)
 		{
 			if (close(my_pipes->pipes[i]) < 0)
 				ft_printf(2, "minishell: %s", ERR_CLOSE);

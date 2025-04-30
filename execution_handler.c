@@ -8,7 +8,7 @@ static void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 		1, -1, -1, -1, -1, 0, 1, 0, 0, NULL, NULL, envp, NULL, NULL};
 	if (my_pipes->pipe_amount > 0)
 	{
-		my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));
+		my_pipes->pipes = ft_calloc(sizeof(int), (my_pipes->pipe_amount * 2));
 		if (my_pipes->pipes == NULL)
 			handle_fatal_exit(MALLOC, my_pipes, list, NULL);
 		i = 0;
