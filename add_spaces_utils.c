@@ -41,7 +41,7 @@ int	is_only_pipes(char *input)
 	int	i;
 
 	i = 0;
-	while (is_whitespace(input[i + 1]))
+	while (is_whitespace(input[i]))
 		i++;
 	if (input[i] != '|')
 		return (0);

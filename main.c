@@ -47,7 +47,6 @@ static int	minishell(char *input, char ***envp, int status)
 	if (lexer(&parser) < 0) //missing filename or delimiter
 		return (2);
 	handle_exp_and_quotes(&parser, status);
-	printf("file is '%s'\n", parser.first->file);
 	status = begin_execution(parser.first, &parser.envp, status);
 	*envp = parser.envp;
 	free_nodes(parser.first);
