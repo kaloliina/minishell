@@ -55,9 +55,6 @@ void	execute_cd(char **cmd, t_pipes *my_pipes)
 	t_exp	expand;
 
 	init_exp(&expand, 0, NULL, my_pipes);
-	expand.exp = ft_strdup("HOME");
-	if (!expand.exp)
-		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 	if (count_elements(cmd) == 1)
 		cd_no_args(&expand, my_pipes);
 	else if (count_elements(cmd) > 2)
@@ -74,30 +71,32 @@ void	execute_cd(char **cmd, t_pipes *my_pipes)
 			my_pipes->exit_status = 1;
 		}
 	}
-	free (expand.exp);
 }
 
 void	execute_exit(char **cmd, t_pipes *my_pipes)
 {
 	int	status;
-	int	i;
-	int	is_num;
 
 	status = 0;
-	is_num = 1;
-	i = 0;
+	if (exit_is_nonnumeric_arg(cmd[1], my_pipes))
+		exit (2);
 	if (count_elements(cmd) > 2)
 	{
-		ft_printf(2, "exit\n");
+		if (!my_pipes->pipe_amount)
+			ft_printf(2, "exit\n");
 		ft_printf(2, "minishell: %s: %s", cmd[0], ERR_ARG);
-		status = 1;
+		if (my_pipes->pipe_amount)
+		{
+			cleanup_in_exec(my_pipes, NULL);
+			exit (1);
+		}
+		my_pipes->exit_status = 1;
+		return ;
 	}
-	else if (cmd[1] != NULL)
-		execute_exit_helper(cmd, &is_num, &status);
-	if (is_num && count_elements(cmd) <= 2)
+	if (cmd[1] != NULL)
+		status = ft_atoi(cmd[1]);
+	if (!my_pipes->pipe_amount)
 		ft_printf(1, "exit\n");
-	free_array(*my_pipes->my_envp);
-	free_nodes(my_pipes->command_node);
-	free_my_pipes(my_pipes);
-	exit (status);
+	cleanup_in_exec(my_pipes, NULL);
+	exit ((unsigned int) status);
 }

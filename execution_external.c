@@ -47,7 +47,7 @@ static void	handle_execve_errors(t_pipes *my_pipes)
 	}
 	else if (errno == ENOEXEC)
 	{
-		my_pipes->exit_status = 0;
+		my_pipes->exit_status = 1;
 		handle_fatal_exit(ERR_FORMAT, my_pipes,
 			NULL, my_pipes->command_node->cmd[0]);
 	}

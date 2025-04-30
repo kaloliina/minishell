@@ -56,7 +56,8 @@ int	find_unset_element(char *arg, char **envp)
 	while (envp[i] && arg)
 	{
 		if (!ft_strncmp(envp[i], arg, ft_strlen(arg))
-			&& envp[i][ft_strlen(arg)] == '=')
+			&& envp[i][ft_strlen(arg)] == '='
+			&& ft_strcmp(arg, "_"))
 			return (i);
 		i++;
 	}

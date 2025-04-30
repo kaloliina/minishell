@@ -31,7 +31,7 @@ void	append_char(char **new_string, char c, t_exp *expand)
 	if (!*new_string)
 	{
 		free (temp);
-		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
+		fatal_parsing_exit(expand->parser, expand, NULL, MALLOC);
 	}
 	free (temp);
 }
@@ -47,7 +47,7 @@ void	append_replacer(char **new_string, char *replacer,
 	{
 		free (temp);
 		free (replacer);
-		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
+		fatal_parsing_exit(expand->parser, expand, NULL, MALLOC);
 	}
 	free (temp);
 	if (is_freeable)

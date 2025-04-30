@@ -47,7 +47,7 @@ static char	*handle_quotes_in_line(char *new_line, t_exp *expand)
 
 	if (!expand->expanded && new_line && *new_line)
 	{
-		temp = handle_quotes(new_line, expand->data, expand);
+		temp = handle_quotes(new_line, expand->parser, expand);
 		if (temp)
 		{
 			new_line = temp;
@@ -66,7 +66,7 @@ static char	*expand_line(char *line, t_exp *expand)
 	quote = 0;
 	expand->new_line = ft_strdup("");
 	if (!expand->new_line)
-		fatal_parsing_exit(expand->data, NULL, NULL, MALLOC);
+		fatal_parsing_exit(expand->parser, NULL, NULL, MALLOC);
 	while (line[i])
 	{
 		if (line[i] == '$' && line[i + 1] && !quote)
@@ -82,13 +82,13 @@ static char	*expand_line(char *line, t_exp *expand)
 	return (handle_quotes_in_line(expand->new_line, expand));
 }
 
-char	*handle_filename_helper(char *line, t_data *data, int status)
+char	*handle_filename_helper(char *line, t_data *parser, int status)
 {
 	t_exp	expand;
 
-	init_exp(&expand, status, data, NULL);
+	init_exp(&expand, status, parser, NULL);
 	if (!ft_strchr(line, '$'))
-		expand.new_line = handle_quotes(line, data, NULL);
+		expand.new_line = handle_quotes(line, parser, NULL);
 	else
 		expand.new_line = expand_line(line, &expand);
 	return (expand.new_line);

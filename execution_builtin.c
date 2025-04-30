@@ -33,7 +33,7 @@ static void	execute_builtin_child(t_node *node, t_pipes *my_pipes)
 	free_nodes(my_pipes->command_node);
 	free_array(*my_pipes->my_envp);
 	free_my_pipes(my_pipes);
-	exit(0);
+	exit (0);
 }
 
 int	execute_builtin(t_node *node, t_pipes *my_pipes)

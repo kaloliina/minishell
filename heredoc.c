@@ -12,21 +12,39 @@ static int	heredoc_sigint(t_pipes *my_pipes, char *line, int fd)
 	return (-1);
 }
 
-static void	heredoc_expand(char **line, t_pipes *my_pipes, int status,
-	t_node *heredoc_node)
-{
-	char	*temp;
-
-	temp = expand_heredoc(*line, my_pipes, status, heredoc_node);
-	if (temp)
-		*line = temp;
-}
-
 static void	heredoc_free_close(char *line, int fd)
 {
 	if (line)
 		free (line);
 	close (fd);
+}
+
+static void	expand_heredoc(char **line, t_pipes *my_pipes, int status,
+	t_node *heredoc_node)
+{
+	int		i;
+	t_exp	expand;
+
+	i = 0;
+	init_exp(&expand, status, NULL, my_pipes);
+	expand.new_line = ft_strdup("");
+	if (!expand.new_line)
+	{
+		my_pipes->exit_status = 1;
+		handle_fatal_exit(MALLOC, my_pipes, my_pipes->heredoc_node, NULL);
+	}
+	while ((*line)[i])
+	{
+		if ((*line)[i] == '$' && (*line)[i + 1])
+			i = expand_line_helper(*line, &expand.new_line, &expand, i + 1);
+		else
+		{
+			append_char_heredoc(&expand.new_line, (*line)[i],
+				my_pipes, heredoc_node);
+			i++;
+		}
+	}
+	*line = expand.new_line;
 }
 
 static int	heredoc_read(t_node *heredoc_node,
@@ -49,7 +67,7 @@ static int	heredoc_read(t_node *heredoc_node,
 		if (!ft_strcmp(line, heredoc_node->delimiter))
 			break ;
 		if (!heredoc_node->delimiter_quote)
-			heredoc_expand(&line, my_pipes, status, heredoc_node);
+			expand_heredoc(&line, my_pipes, status, heredoc_node);
 		ft_printf(heredoc_node->hd_fd, "%s\n", line);
 		free (line);
 	}

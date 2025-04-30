@@ -68,7 +68,7 @@ static int	check_closing_quote(char *s, int i, int quote)
 	return (0);
 }
 
-static int	check_quotes(char *input)
+int	is_unclosed_quote(char *input)
 {
 	int	i;
 	int	temp;
@@ -82,7 +82,7 @@ static int	check_quotes(char *input)
 			temp = check_closing_quote(input, i + 1, input[i]);
 			if (!temp)
 			{
-				ft_printf(2, "minishell: unclosed quote(s)\n");
+				ft_printf(2, "minishell: unclosed quote\n");
 				return (-1);
 			}
 			else
@@ -94,18 +94,14 @@ static int	check_quotes(char *input)
 	return (0);
 }
 
-char	*add_spaces(char *input, t_data *data)
+char	*add_spaces(char *input, t_data *parser)
 {
 	int		extras;
 	char	*line;
 
-	if (check_quotes(input) < 0)
-		return (NULL);
-	if (is_only_pipes(input))
-		return (NULL);
 	extras = count_missing_spaces(input);
 	line = malloc(ft_strlen(input) + extras + 1);
 	if (!line)
-		fatal_parsing_exit(data, NULL, input, MALLOC);
+		fatal_parsing_exit(parser, NULL, input, MALLOC);
 	return (add_spaces_helper(line, input, 0, 0));
 }

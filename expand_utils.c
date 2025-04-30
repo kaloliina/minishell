@@ -10,7 +10,7 @@ char	*find_exp(char *arg, int *i, int *k, t_exp *expand)
 	count_expandable(arg, i, &j);
 	exp = ft_substr(arg, *k, j);
 	if (!exp)
-		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
+		fatal_parsing_exit(expand->parser, expand, NULL, MALLOC);
 	return (exp);
 }
 
@@ -24,10 +24,10 @@ char	*find_replacer(char *arg, int i, t_exp *expand)
 
 static char	**find_envp_source(t_exp *expand)
 {
-	if (!expand->data)
+	if (!expand->parser)
 		return (*expand->my_pipes->my_envp);
 	else
-		return (expand->data->envp);
+		return (expand->parser->envp);
 }
 
 static void	find_envp_failure(t_exp *expand)
@@ -35,7 +35,7 @@ static void	find_envp_failure(t_exp *expand)
 	if (expand->parsing)
 	{
 		free (expand->new_line);
-		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
+		fatal_parsing_exit(expand->parser, expand, NULL, MALLOC);
 	}
 	else
 	{

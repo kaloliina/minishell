@@ -101,3 +101,20 @@ void	close_pipeline_fds(t_pipes *my_pipes)
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 		reset_properties(my_pipes);
 }
+
+void	cleanup_in_exec(t_pipes *my_pipes, t_node *list)
+{
+	if (!list && my_pipes->command_node)
+		free_nodes(my_pipes->command_node);
+	else if (!list)
+		free_nodes(my_pipes->heredoc_node);
+	else
+		free_nodes(list);
+	if (my_pipes)
+	{
+		if (my_pipes->hd_dir)
+			handle_tmpfile(my_pipes);
+		free_array(*my_pipes->my_envp);
+		free_my_pipes(my_pipes);
+	}
+}

@@ -9,7 +9,7 @@ void	count_expandable(char *arg, int *i, int *j)
 	}
 }
 
-void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes)
+void	init_exp(t_exp *exp, int status, t_data *parser, t_pipes *my_pipes)
 {
 	exp->expanded = 0;
 	exp->no_element = 0;
@@ -17,14 +17,14 @@ void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes)
 	exp->new_cmd = NULL;
 	exp->new_line = NULL;
 	exp->exp = NULL;
-	if (data)
+	if (parser)
 	{
-		exp->data = data;
+		exp->parser = parser;
 		exp->parsing = 1;
 	}
 	else
 	{
-		exp->data = NULL;
+		exp->parser = NULL;
 		exp->parsing = 0;
 	}
 	if (my_pipes)
@@ -48,7 +48,7 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 		if (!expand->expanded)
 		{
 			temp = handle_quotes(expand->new_cmd[*new_arg],
-					expand->data, expand);
+					expand->parser, expand);
 			if (temp)
 			{
 				free (expand->new_cmd[*new_arg]);

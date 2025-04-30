@@ -45,6 +45,7 @@ int	is_only_pipes(char *input)
 		i++;
 	if (input[i] != '|')
 		return (0);
+	ft_printf(2, "minishell: ");
 	if (input[i] == '|' && input[i + 1] == '|')
 		ft_printf(2, SYNTAX, "||");
 	else

@@ -37,40 +37,40 @@ void	free_nodes(t_node *node)
 	}
 }
 
-void	free_sections_tokens(t_data *data)
+void	free_sections_tokens(t_data *parser)
 {
 	int	i;
 
 	i = 0;
-	if (data->sections)
+	if (parser->sections)
 	{
-		while (data->sections[i])
-			free (data->sections[i++]);
-		free (data->sections);
-		data->sections = NULL;
+		while (parser->sections[i])
+			free (parser->sections[i++]);
+		free (parser->sections);
+		parser->sections = NULL;
 	}
 	i = 0;
-	if (data->tokens)
+	if (parser->tokens)
 	{
-		while (data->tokens[i])
-			free_array(data->tokens[i++]);
-		free (data->tokens);
-		data->tokens = NULL;
+		while (parser->tokens[i])
+			free_array(parser->tokens[i++]);
+		free (parser->tokens);
+		parser->tokens = NULL;
 	}
 }
 
-void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
+void	fatal_parsing_exit(t_data *parser, t_exp *expand, char *input, char *msg)
 {
 	if (msg)
 		ft_printf(2, "%s", msg);
 	if (input)
 		free (input);
-	if (data)
+	if (parser)
 	{
-		free_array(data->envp);
-		free_sections_tokens(data);
-		if (data->first)
-			free_nodes(data->first);
+		free_array(parser->envp);
+		free_sections_tokens(parser);
+		if (parser->first)
+			free_nodes(parser->first);
 	}
 	if (expand)
 	{
@@ -94,9 +94,9 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
 	exit_status = 1;
 	if (msg)
 		ft_printf(2, "minishell: ");
-	if (!conversion)
+	if (msg && !conversion)
 		ft_printf(2, msg);
-	else
+	else if (msg && conversion)
 		ft_printf(2, msg, conversion);
 	if (!list && my_pipes->command_node)
 		free_nodes(my_pipes->command_node);

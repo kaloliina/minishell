@@ -33,7 +33,7 @@ static int	spaces_between_pipes(char *line, int i)
 	return (0);
 }
 
-static char	*check_pipes_helper(char *line, t_data *data, int i, int j)
+static char	*check_pipes_helper(char *line, t_data *parser, int i, int j)
 {
 	char	*new_line;
 
@@ -44,14 +44,14 @@ static char	*check_pipes_helper(char *line, t_data *data, int i, int j)
 	}
 	new_line = ft_substr(line, 0, (j - 1));
 	if (!new_line)
-		fatal_parsing_exit(data, NULL, line, MALLOC);
+		fatal_parsing_exit(parser, NULL, line, MALLOC);
 	free (line);
 	line = new_line;
 	new_line = NULL;
 	return (line);
 }
 
-static char	*end_of_line_pipe(char **line, t_data *data, int *status)
+static char	*end_of_line_pipe(char **line, t_data *parser, int *status)
 {
 	char	*temp;
 	char	*new_line;
@@ -62,24 +62,24 @@ static char	*end_of_line_pipe(char **line, t_data *data, int *status)
 	temp = readline("> ");
 	if (end_pipe_sigint(backup_fd, temp, *line, status))
 		return (NULL);
-	check_for_ctrld(temp, data, *line, backup_fd);
+	check_for_ctrld(temp, parser, *line, backup_fd);
 	new_line = ft_strjoin(*line, temp);
 	if (!new_line)
 	{
 		close (backup_fd);
-		fatal_parsing_exit(data, NULL, *line, MALLOC);
+		fatal_parsing_exit(parser, NULL, *line, MALLOC);
 	}
 	free (*line);
 	free (temp);
 	*line = new_line;
 	new_line = NULL;
 	temp = NULL;
-	*line = check_pipes(*line, data, 0, status);
+	*line = check_pipes(*line, parser, 0, status);
 	close (backup_fd);
 	return (*line);
 }
 
-char	*check_pipes(char *line, t_data *data, int i, int *status)
+char	*check_pipes(char *line, t_data *parser, int i, int *status)
 {
 	int		j;
 	int		quote;
@@ -93,9 +93,9 @@ char	*check_pipes(char *line, t_data *data, int i, int *status)
 			while (line[i] == '|')
 				i++;
 			if (line[i] != '\0')
-				return (check_pipes_helper(line, data, i, j));
+				return (check_pipes_helper(line, parser, i, j));
 			else
-				return (end_of_line_pipe(&line, data, status));
+				return (end_of_line_pipe(&line, parser, status));
 		}
 		else if (!quote && (line[i] == '"' || line[i] == '\''))
 			quote = line[i];

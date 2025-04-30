@@ -4,6 +4,9 @@ void	cd_no_args(t_exp *expand, t_pipes *my_pipes)
 {
 	char	*expansion;
 
+	expand->exp = ft_strdup("HOME");
+	if (!expand->exp)
+		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
 	expansion = find_envp(expand, 0);
 	if (!expansion)
 	{
@@ -11,29 +14,29 @@ void	cd_no_args(t_exp *expand, t_pipes *my_pipes)
 		my_pipes->exit_status = 1;
 	}
 	else if (chdir(expansion) == -1)
-		perror("minishell");
+		perror("minishell: cd");
 	free (expansion);
+	free (expand->exp);
 }
 
-void	execute_exit_helper(char **cmd, int *is_num, int *status)
+int	exit_is_nonnumeric_arg(char *arg,  t_pipes *my_pipes)
 {
 	int	i;
 
 	i = 0;
-	if (cmd[1][i] == '-' || cmd[1][i] == '+')
+	if (arg[i] == '-' || arg[i] == '+')
 		i++;
-	while (cmd[1][i] != '\0')
+	while (arg[i])
 	{
-		if (!(cmd[1][i] >= 48 && cmd[1][i] <= 57))
-			*is_num = 0;
+		if (!(arg[i] >= 48 && arg[i] <= 57))
+		{
+			if (!my_pipes->pipe_amount)
+				ft_printf(2, "exit\n");
+			ft_printf(2, "minishell: %s: %s: %s", "exit", arg, ERR_NUM);
+			cleanup_in_exec(my_pipes, NULL);
+			return (1);
+		}
 		i++;
 	}
-	if (*is_num == 0)
-	{
-		ft_printf(2, "exit\n");
-		ft_printf(2, "minishell: %s: %s: %s", cmd[0], cmd[1], ERR_NUM);
-		*status = 2;
-	}
-	else
-		*status = ft_atoi(cmd[1]);
+	return (0);
 }

@@ -34,6 +34,7 @@
 # define ERR_FORMAT "%s: cannot execute binary file: Exec format error\n"
 
 extern volatile sig_atomic_t	g_signum;
+
 typedef enum s_type
 {
 	PIPE,
@@ -59,7 +60,7 @@ typedef struct s_exp
 	char			**new_cmd;
 	char			*new_line;
 	char			*exp;
-	struct s_data	*data;
+	struct s_data	*parser;
 	struct s_pipes	*my_pipes;
 }		t_exp;
 
@@ -107,41 +108,40 @@ typedef struct s_pipes
 
 //init and input validation
 char	**copy_envp(char **envp);
-void	init_data(t_data *data, char ***envp);
-char	*add_spaces(char *input, t_data *data);
+void	init_parser(t_data *parser, char ***envp);
+int		is_unclosed_quote(char *input);
+char	*add_spaces(char *input, t_data *parser);
 void	update_quote(char c, int *quote);
 int		is_missing_pre_space(char *input, int i, int quote);
 int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
 int		is_triple_redirection(char *input, int i);
-char	*check_pipes(char *line, t_data *data, int i, int *status);
-void	check_for_ctrld(char *temp, t_data *data, char *line, int backup_fd);
+char	*check_pipes(char *line, t_data *parser, int i, int *status);
+void	check_for_ctrld(char *temp, t_data *parser, char *line, int backup_fd);
 int		end_pipe_sigint(int backup_fd, char *temp, char *line, int *status);
 int		is_only_pipes(char *input);
-void	init_sections(t_data *data, char *line);
-void	init_tokens(t_data *data);
+void	init_sections(t_data *parser, char *line);
+void	init_tokens(t_data *parser);
 
 //lexing
-int		lexer(t_data *data);
-int		make_all_redir_nodes(t_data *data, int i);
-t_node	*init_new_node(t_data *data, t_node *new_node);
-int		set_cmd_node(t_data *data, t_index *index, t_node *new_node);
-int		count_args(t_data *data, int i, int j);
+int		lexer(t_data *parser);
+int		make_all_redir_nodes(t_data *parser, int i);
+t_node	*init_new_node(t_data *parser, t_node *new_node);
+int		set_cmd_node(t_data *parser, t_index *index, t_node *new_node);
+int		count_args(t_data *parser, int i, int j);
 char	**ft_ms_split(char const *s, char c, int *error);
 int		ft_ms_strings(char const *s, char c, int i);
 int		ft_ms_checkquote(char const *s, int i, char quote);
 char	**ft_ms_freearray(char **array, int j, int *error);
 
 //parsing
-void	handle_cmd(t_node *tmp, t_data *data, int status);
-char	**handle_cmd_helper(char **cmd, t_data *data, int status, int arg);
-void	handle_filename(t_node *tmp, t_data *data, int status);
-char	*handle_filename_helper(char *file, t_data *data, int status);
-char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
-			t_node *heredoc_node);
-char	*handle_quotes(char *s, t_data *data, t_exp *expand);
+void	handle_cmd(t_node *tmp, t_data *parser, int status);
+char	**handle_cmd_helper(char **cmd, t_data *parser, int status, int arg);
+void	handle_filename(t_node *tmp, t_data *parser, int status);
+char	*handle_filename_helper(char *file, t_data *parser, int status);
+char	*handle_quotes(char *s, t_data *parser, t_exp *expand);
 char	*find_envp(t_exp *expand, int i);
-void	init_exp(t_exp *exp, int status, t_data *data, t_pipes *my_pipes);
+void	init_exp(t_exp *exp, int status, t_data *parser, t_pipes *my_pipes);
 char	*find_exp(char *arg, int *i, int *k, t_exp *expand);
 char	*find_replacer(char *arg, int i, t_exp *expand);
 void	append_char(char **new_string, char c, t_exp *expand);
@@ -158,8 +158,8 @@ void	update_single_quote(char c, int *quote);
 //cleanup
 void	free_array(char **array);
 void	free_nodes(t_node *node);
-void	free_sections_tokens(t_data *data);
-void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg);
+void	free_sections_tokens(t_data *parser);
+void	fatal_parsing_exit(t_data *parser, t_exp *expand, char *input, char *msg);
 void	handle_fatal_exit(char *msg, t_pipes *my_pipes,
 			t_node *list, char *conversion);
 
@@ -207,7 +207,7 @@ int		find_next_unset_element(int *i, int *j, char **cmd, char **envp);
 void	handle_fatal_envp_exit(char **new_envp, t_pipes *my_pipes);
 int		export_validation(char **cmd, int i);
 void	cd_no_args(t_exp *expand, t_pipes *my_pipes);
-void	execute_exit_helper(char **cmd, int *is_num, int *status);
+int		exit_is_nonnumeric_arg(char *arg, t_pipes *my_pipes);
 
 //execution
 //execution handler
@@ -217,6 +217,7 @@ void	close_pipeline_fds(t_pipes *my_pipes);
 void	reset_properties(t_pipes *my_pipes);
 void	free_my_pipes(t_pipes *my_pipes);
 void	close_all_fds(t_pipes *my_pipes);
+void	cleanup_in_exec(t_pipes *my_pipes, t_node *list);
 //execution redirections
 void	handle_redirections(t_pipes *my_pipes);
 void	open_infile(char *file, t_pipes *my_pipes);
