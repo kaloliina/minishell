@@ -36,13 +36,13 @@ static int	set_redir_node(t_node *new_node, t_data *parser, t_index *index)
 			new_node->delimiter
 				= ft_strdup(parser->tokens[index->i][index->j + 1]);
 			if (!new_node->delimiter)
-				fatal_parsing_exit(parser, NULL, NULL, MALLOC);
+				fatal_parsing_error(parser, NULL, NULL, MALLOC);
 		}
 		else
 		{
 			new_node->file = ft_strdup(parser->tokens[index->i][index->j + 1]);
 			if (!new_node->file)
-				fatal_parsing_exit(parser, NULL, NULL, MALLOC);
+				fatal_parsing_error(parser, NULL, NULL, MALLOC);
 		}
 	}
 	else

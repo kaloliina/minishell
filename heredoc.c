@@ -31,7 +31,7 @@ static void	expand_heredoc(char **line, t_pipes *my_pipes, int status,
 	if (!expand.new_line)
 	{
 		my_pipes->exit_status = 1;
-		handle_fatal_exit(MALLOC, my_pipes, my_pipes->heredoc_node, NULL);
+		fatal_exec_error(MALLOC, my_pipes, my_pipes->heredoc_node, NULL);
 	}
 	while ((*line)[i])
 	{

@@ -1,19 +1,44 @@
 #include "minishell.h"
 
-void	fatal_export_failure(char **export, int elements, t_pipes *my_pipes)
+static int	export_fill_envp(char ***new_envp, char **cmd, char **envp,
+	t_pipes *my_pipes)
 {
 	int	i;
+	int	j;
 
 	i = 0;
-	while (i < elements)
+	j = 0;
+	while (envp[i])
 	{
-		if (export[i])
-			free (export[i]);
+		j = find_existing_envp(new_envp, cmd, envp, i);
+		if (j < 0)
+			(*new_envp)[i] = ft_strdup(envp[i]);
+		if (!(*new_envp)[i])
+			fatal_export_unset_error(*new_envp, my_pipes);
 		i++;
 	}
-	free (export);
-	export = NULL;
-	handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+	return (add_exported_envp(new_envp, cmd, i, my_pipes));
+}
+
+static int	add_exported_envp(char ***new_envp, char **cmd, int i,
+	t_pipes *my_pipes)
+{
+	int	j;
+
+	j = 1;
+	while (cmd[j])
+	{
+		if (is_valid_to_export(cmd[j])
+			&& !is_replacer_envp(my_pipes->my_envp, cmd[j]))
+		{
+			(*new_envp)[i] = ft_strdup(cmd[j]);
+			if (!(*new_envp)[i])
+				fatal_export_unset_error(*new_envp, my_pipes);
+			i++;
+		}
+		j++;
+	}
+	return (i);
 }
 
 static char	**sort_for_export(char **export, char **envp,
@@ -38,7 +63,7 @@ static char	**sort_for_export(char **export, char **envp,
 			}
 			export[k] = ft_strdup(envp[i]);
 			if (!export[k])
-				fatal_export_failure(export, elements, my_pipes);
+				fatal_sort_for_export_error(export, elements, my_pipes);
 		}
 		i++;
 	}
@@ -54,7 +79,7 @@ static void	export_no_args(char **envp, t_pipes *my_pipes)
 	elements = count_elements(envp) - 1;
 	export = ft_calloc(sizeof(char *), (elements + 1));
 	if (!export)
-		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+		fatal_exec_error(MALLOC, my_pipes, NULL, NULL);
 	export = sort_for_export(export, envp, elements, my_pipes);
 	export[elements] = NULL;
 	i = 0;
@@ -79,38 +104,9 @@ void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes)
 		return ;
 	new_envp = malloc(sizeof(char *) * (i + 1 + args));
 	if (!new_envp)
-		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+		fatal_exec_error(MALLOC, my_pipes, NULL, NULL);
 	i = export_fill_envp(&new_envp, cmd, *envp, my_pipes);
 	new_envp[i] = NULL;
-	free_array(*envp);
-	*envp = NULL;
-	*envp = new_envp;
-}
-
-void	execute_unset(char **cmd, char ***envp, t_pipes *my_pipes)
-{
-	int		i;
-	int		j;
-	int		args;
-	char	**new_envp;
-
-	if (!cmd[1])
-		return ;
-	i = count_elements(*envp);
-	j = 1;
-	args = 0;
-	while (cmd[j])
-	{
-		if (find_unset_element(cmd[j], *envp) != -1)
-			args++;
-		j++;
-	}
-	if (!args)
-		return ;
-	new_envp = malloc(sizeof(char *) * ((i - args) + 2));
-	if (!new_envp)
-		handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
-	new_envp = fill_unset_envp(&new_envp, cmd, *envp, my_pipes);
 	free_array(*envp);
 	*envp = NULL;
 	*envp = new_envp;

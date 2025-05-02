@@ -54,7 +54,7 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	quote = 0;
 	expand->new_cmd[*new_arg] = ft_strdup("");
 	if (!expand->new_cmd[*new_arg])
-		fatal_parsing_exit(expand->parser, expand, NULL, MALLOC);
+		fatal_parsing_error(expand->parser, expand, NULL, MALLOC);
 	while (cmd[*arg][i])
 	{
 		if (is_only_dollar(cmd[*arg], i))
@@ -83,7 +83,7 @@ char	**handle_cmd_helper(char **cmd, t_data *parser, int status, int arg)
 	init_exp(&expand, status, parser, NULL);
 	expand.new_cmd = ft_calloc(sizeof(char *), count_elements(cmd) + 1);
 	if (!expand.new_cmd)
-		fatal_parsing_exit(parser, &expand, NULL, MALLOC);
+		fatal_parsing_error(parser, &expand, NULL, MALLOC);
 	expand.new_cmd[0] = NULL;
 	while (cmd[arg])
 	{
@@ -97,7 +97,7 @@ char	**handle_cmd_helper(char **cmd, t_data *parser, int status, int arg)
 	{
 		expand.new_cmd[new_arg++] = ft_strdup("");
 		if (!expand.new_cmd[new_arg - 1])
-			fatal_parsing_exit(parser, &expand, NULL, MALLOC);
+			fatal_parsing_error(parser, &expand, NULL, MALLOC);
 	}
 	expand.new_cmd[new_arg] = NULL;
 	return (expand.new_cmd);

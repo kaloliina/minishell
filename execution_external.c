@@ -36,25 +36,25 @@ static void	handle_execve_errors(t_pipes *my_pipes)
 	if (errno == ENOENT)
 	{
 		my_pipes->exit_status = 127;
-		handle_fatal_exit(ERR_INVFILE, my_pipes,
+		fatal_exec_error(ERR_INVFILE, my_pipes,
 			NULL, my_pipes->command_node->cmd[0]);
 	}
 	else if (errno == EACCES)
 	{
 		my_pipes->exit_status = 126;
-		handle_fatal_exit(ERR_INVPERMS, my_pipes,
+		fatal_exec_error(ERR_INVPERMS, my_pipes,
 			NULL, my_pipes->command_node->cmd[0]);
 	}
 	else if (errno == ENOEXEC)
 	{
 		my_pipes->exit_status = 1;
-		handle_fatal_exit(ERR_FORMAT, my_pipes,
+		fatal_exec_error(ERR_FORMAT, my_pipes,
 			NULL, my_pipes->command_node->cmd[0]);
 	}
 	else
 	{
 		my_pipes->exit_status = 1;
-		handle_fatal_exit(ERR_EXECVE, my_pipes,
+		fatal_exec_error(ERR_EXECVE, my_pipes,
 			NULL, my_pipes->command_node->cmd[0]);
 	}
 }
@@ -68,7 +68,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 		return (0);
 	pid = fork();
 	if (pid < 0)
-		handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_FORK, my_pipes, NULL, NULL);
 	if (pid == 0)
 	{
 		listen_to_signals(0);

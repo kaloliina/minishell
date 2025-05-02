@@ -10,7 +10,7 @@ void	check_rm_success(t_pipes *my_pipes, pid_t pid, bool rm)
 		my_pipes->hd_dir = 0;
 		close (my_pipes->infile_fd);
 		my_pipes->infile_fd = -1;
-		handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_WAITPID, my_pipes, NULL, NULL);
 	}
 	if (WIFEXITED(status) && WEXITSTATUS(status))
 	{
@@ -20,7 +20,7 @@ void	check_rm_success(t_pipes *my_pipes, pid_t pid, bool rm)
 		my_pipes->hd_dir = 0;
 		close (my_pipes->infile_fd);
 		my_pipes->infile_fd = -1;
-		handle_fatal_exit(NULL, my_pipes, NULL, NULL);
+		fatal_exec_error(NULL, my_pipes, NULL, NULL);
 	}
 }
 

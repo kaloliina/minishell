@@ -44,7 +44,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 	{
 		pid = fork();
 		if (pid < 0)
-			handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
+			fatal_exec_error(ERR_FORK, my_pipes, NULL, NULL);
 		if (pid == 0)
 			execute_builtin_child(node, my_pipes);
 		else

@@ -66,7 +66,7 @@ static char	*expand_line(char *line, t_exp *expand)
 	quote = 0;
 	expand->new_line = ft_strdup("");
 	if (!expand->new_line)
-		fatal_parsing_exit(expand->parser, NULL, NULL, MALLOC);
+		fatal_parsing_error(expand->parser, NULL, NULL, MALLOC);
 	while (line[i])
 	{
 		if (line[i] == '$' && line[i + 1] && !quote)

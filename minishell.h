@@ -162,9 +162,9 @@ void	update_single_quote(char c, int *quote);
 void	free_array(char **array);
 void	free_nodes(t_node *node);
 void	free_sections_tokens(t_data *parser);
-void	fatal_parsing_exit(t_data *parser, t_exp *expand,
+void	fatal_parsing_error(t_data *parser, t_exp *expand,
 			char *input, char *msg);
-void	handle_fatal_exit(char *msg, t_pipes *my_pipes,
+void	fatal_exec_error(char *msg, t_pipes *my_pipes,
 			t_node *list, char *conversion);
 
 //utils
@@ -206,16 +206,16 @@ int		add_exported_envp(char ***new_envp, char **cmd, int i,
 			t_pipes *my_pipes);
 char	**fill_unset_envp(char ***new_envp, char **cmd,
 			char **envp, t_pipes *my_pipes);
+int		export_validation(char **cmd, int i);
 int		is_valid_to_export(char *arg);
 int		count_args_to_export(char **cmd);
 int		find_existing_envp(char ***new_envp, char **cmd, char **envp, int i);
 int		find_unset_element(char *arg, char **envp);
 int		find_first_unset_element(char **cmd, char **envp, int j);
 int		find_next_unset_element(int *i, int *j, char **cmd, char **envp);
+void	fatal_sort_for_export_failure(char **export, int elements,
+			t_pipes *my_pipes);
 void	fatal_export_unset_error(char **new_envp, t_pipes *my_pipes);
-int		export_validation(char **cmd, int i);
-void	cd_no_args(t_exp *expand, t_pipes *my_pipes);
-int		exit_is_nonnumeric_arg(char *arg, t_pipes *my_pipes);
 void	fatal_pwd_error(char *msg, t_pipes *my_pipes, int i);
 
 //execution

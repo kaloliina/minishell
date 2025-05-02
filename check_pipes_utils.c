@@ -8,7 +8,7 @@ void	check_for_ctrld(char *temp, t_data *parser, char *line, int backup_fd)
 		ft_printf(2, "minishell: ");
 		ft_printf(2, ERR_EOF);
 		ft_printf(2, "exit\n");
-		fatal_parsing_exit(parser, NULL, line, NULL);
+		fatal_parsing_error(parser, NULL, line, NULL);
 	}
 }
 

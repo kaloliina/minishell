@@ -60,7 +60,7 @@ void	free_sections_tokens(t_data *parser)
 	}
 }
 
-void	fatal_parsing_exit(t_data *parser, t_exp *expand,
+void	fatal_parsing_error(t_data *parser, t_exp *expand,
 	char *input, char *msg)
 {
 	if (msg)
@@ -88,7 +88,7 @@ void	fatal_parsing_exit(t_data *parser, t_exp *expand,
 	exit (1);
 }
 
-void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
+void	fatal_exec_exit(char *msg, t_pipes *my_pipes, t_node *list,
 	char *conversion)
 {
 	int	exit_status;

@@ -10,23 +10,23 @@ static void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 	{
 		my_pipes->pipes = ft_calloc(sizeof(int), (my_pipes->pipe_amount * 2));
 		if (my_pipes->pipes == NULL)
-			handle_fatal_exit(MALLOC, my_pipes, list, NULL);
+			fatal_exec_error(MALLOC, my_pipes, list, NULL);
 		i = 0;
 		while (i < my_pipes->pipe_amount)
 		{
 			if (pipe(&my_pipes->pipes[(i++) * 2]) < 0)
-				handle_fatal_exit(ERR_PIPE, my_pipes, list, NULL);
+				fatal_exec_error(ERR_PIPE, my_pipes, list, NULL);
 		}
 	}
 	my_pipes->childpids = ft_calloc(sizeof(pid_t), (my_pipes->pipe_amount + 1));
 	if (my_pipes->childpids == NULL)
-		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
+		fatal_exec_error(MALLOC, my_pipes, list, NULL);
 	my_pipes->stdoutfd = dup(STDOUT_FILENO);
 	if (my_pipes->stdoutfd == -1)
-		handle_fatal_exit(ERR_FD, my_pipes, list, NULL);
+		fatal_exec_error(ERR_FD, my_pipes, list, NULL);
 	my_pipes->stdinfd = dup(STDIN_FILENO);
 	if (my_pipes->stdinfd == -1)
-		handle_fatal_exit(ERR_FD, my_pipes, list, NULL);
+		fatal_exec_error(ERR_FD, my_pipes, list, NULL);
 }
 
 /*
@@ -45,7 +45,7 @@ static int	finalize_execution(int amount, t_pipes *my_pipes)
 		if (my_pipes->childpids[i] > 0)
 		{
 			if (waitpid(my_pipes->childpids[i], &exit_status, 0) < 0)
-				handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
+				fatal_exec_error(ERR_WAITPID, my_pipes, NULL, NULL);
 			if (WIFEXITED(exit_status))
 				exit_status = WEXITSTATUS(exit_status);
 			else if (WIFSIGNALED(exit_status))
@@ -57,7 +57,7 @@ static int	finalize_execution(int amount, t_pipes *my_pipes)
 	}
 	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0
 		|| dup2(my_pipes->stdoutfd, STDOUT_FILENO) < 0)
-		handle_fatal_exit(ERR_FD, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_FD, my_pipes, NULL, NULL);
 	free_my_pipes(my_pipes);
 	return (exit_status);
 }
@@ -98,7 +98,7 @@ int	begin_execution(t_node *list, char ***envp, int status)
 	if (my_pipes == NULL)
 	{
 		free_array(*envp);
-		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
+		fatal_exec_error(MALLOC, my_pipes, list, NULL);
 	}
 	initialize_struct(my_pipes, list, envp);
 	while (list != NULL)

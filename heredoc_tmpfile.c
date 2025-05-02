@@ -5,25 +5,25 @@ void	execve_fail_hd(t_pipes *my_pipes, char *msg)
 	if (errno == ENOENT)
 	{
 		my_pipes->exit_status = 127;
-		handle_fatal_exit(ERR_INVFILE, my_pipes,
+		fatal_exec_error(ERR_INVFILE, my_pipes,
 			NULL, msg);
 	}
 	else if (errno == EACCES)
 	{
 		my_pipes->exit_status = 126;
-		handle_fatal_exit(ERR_INVPERMS, my_pipes,
+		fatal_exec_error(ERR_INVPERMS, my_pipes,
 			NULL, msg);
 	}
 	else if (errno == ENOEXEC)
 	{
 		my_pipes->exit_status = 0;
-		handle_fatal_exit(ERR_FORMAT, my_pipes,
+		fatal_exec_error(ERR_FORMAT, my_pipes,
 			NULL, msg);
 	}
 	else
 	{
 		my_pipes->exit_status = 1;
-		handle_fatal_exit(ERR_EXECVE, my_pipes,
+		fatal_exec_error(ERR_EXECVE, my_pipes,
 			NULL, msg);
 	}
 }
@@ -47,11 +47,11 @@ void	heredoc_mkdir(char **envp, t_pipes *my_pipes, int status)
 		execve_fail_hd(my_pipes, "execve");
 	}
 	if (waitpid(mkdir_pid, &status, 0) < 0)
-		handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_WAITPID, my_pipes, NULL, NULL);
 	if (WIFEXITED(status) && WEXITSTATUS(status))
 	{
 		my_pipes->exit_status = WEXITSTATUS(status);
-		handle_fatal_exit(NULL, my_pipes, NULL, NULL);
+		fatal_exec_error(NULL, my_pipes, NULL, NULL);
 	}
 	chdir("./tmp");
 }
@@ -111,13 +111,13 @@ void	handle_tmpfile(t_pipes *my_pipes)
 	status = 0;
 	rm_pid = heredoc_rm(*my_pipes->my_envp, my_pipes);
 	if (waitpid(rm_pid, &status, 0) < 0)
-		handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_WAITPID, my_pipes, NULL, NULL);
 	if (WIFEXITED(status) && WEXITSTATUS(status))
 	{
 		my_pipes->exit_status = WEXITSTATUS(status);
 		close (my_pipes->infile_fd);
 		my_pipes->infile_fd = -1;
-		handle_fatal_exit(NULL, my_pipes, NULL, NULL);
+		fatal_exec_error(NULL, my_pipes, NULL, NULL);
 	}
 	chdir("..");
 	if (my_pipes->hd_dir == 2)
