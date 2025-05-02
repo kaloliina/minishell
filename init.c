@@ -20,7 +20,7 @@ void	init_sections(t_data *parser, char *line)
 	int	error;
 
 	error = 0;
-	parser->sections = ft_ms_split(line, '|', &error);
+	parser->sections = split_to_sections(line, '|', &error);
 	if (!parser->sections && error)
 		fatal_parsing_exit(parser, NULL, line, MALLOC);
 	parser->sections_amount = count_elements(parser->sections);
@@ -44,8 +44,8 @@ static char	**init_only_quotes_section(t_data *parser, int i)
 
 void	init_tokens(t_data *parser)
 {
-	int	i;
-	int	error;
+	int		i;
+	int		error;
 
 	parser->tokens = malloc(sizeof(char **) * (parser->sections_amount + 1));
 	if (!parser->tokens)
@@ -56,7 +56,7 @@ void	init_tokens(t_data *parser)
 	{
 		if (!is_only_quotes(parser->sections[i]))
 		{
-			parser->tokens[i] = ft_ms_split(parser->sections[i], ' ', &error);
+			parser->tokens[i] = split_to_tokens(parser->sections[i], &error);
 			if (!parser->tokens[i] && error)
 				fatal_parsing_exit(parser, NULL, NULL, MALLOC);
 		}

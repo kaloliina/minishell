@@ -15,6 +15,8 @@ void	cd_no_args(t_exp *expand, t_pipes *my_pipes)
 	}
 	else if (chdir(expansion) == -1)
 		perror("minishell: cd");
+	else
+		update_envp(my_pipes);
 	free (expansion);
 	free (expand->exp);
 }

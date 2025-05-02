@@ -1,11 +1,9 @@
 #include "minishell.h"
 
-static int	count_missing_spaces(char *input)
+static int	count_missing_spaces(char *input, int i)
 {
-	int	i;
 	int	extras;
 
-	i = 0;
 	extras = 0;
 	while (input[i])
 	{
@@ -16,7 +14,8 @@ static int	count_missing_spaces(char *input)
 		}
 		else
 		{
-			if (i > 0 && is_char_redirection(input[i]) && !is_whitespace(input[i - 1])
+			if (i > 0 && is_char_redirection(input[i])
+				&& !is_whitespace(input[i - 1])
 				&& !is_char_redirection(input[i - 1]))
 				extras++;
 			if (is_char_redirection(input[i]) && input[i + 1]
@@ -99,7 +98,7 @@ char	*add_spaces(char *input, t_data *parser)
 	int		extras;
 	char	*line;
 
-	extras = count_missing_spaces(input);
+	extras = count_missing_spaces(input, 0);
 	line = malloc(ft_strlen(input) + extras + 1);
 	if (!line)
 		fatal_parsing_exit(parser, NULL, input, MALLOC);

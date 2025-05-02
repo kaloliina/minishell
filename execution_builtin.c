@@ -5,7 +5,7 @@ static void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 	if (!ft_strcmp(node->cmd[0], "echo"))
 		execute_echo(node);
 	else if (!ft_strcmp(node->cmd[0], "pwd"))
-		execute_pwd(my_pipes);
+		execute_pwd(my_pipes, NULL, 0);
 	else if (!ft_strcmp(node->cmd[0], "env"))
 		execute_env(my_pipes->my_envp);
 	else if (!ft_strcmp(node->cmd[0], "export"))

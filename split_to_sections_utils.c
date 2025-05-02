@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-char	**ft_ms_freearray(char **array, int j, int *error)
+char	**split_freearray(char **array, int j, int *error)
 {
 	int	i;
 
@@ -15,7 +15,7 @@ char	**ft_ms_freearray(char **array, int j, int *error)
 	return (NULL);
 }
 
-int	ft_ms_checkquote(char const *s, int i, char quote)
+int	split_checkquote(char const *s, int i, char quote)
 {
 	while (s[i])
 	{
@@ -26,7 +26,7 @@ int	ft_ms_checkquote(char const *s, int i, char quote)
 	return (0);
 }
 
-int	ft_ms_strings(char const *s, char c, int i)
+int	sectionsplit_strings(char const *s, char c, int i)
 {
 	int		strings;
 	int		quote;

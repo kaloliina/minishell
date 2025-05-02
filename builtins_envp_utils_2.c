@@ -65,9 +65,3 @@ int	find_next_unset_element(int *i, int *j, char **cmd, char **envp)
 	(*j)++;
 	return (find_unset_element(cmd[*j], envp));
 }
-
-void	handle_fatal_envp_exit(char **new_envp, t_pipes *my_pipes)
-{
-	free_array(new_envp);
-	handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
-}

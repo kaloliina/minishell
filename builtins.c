@@ -35,7 +35,7 @@ void	execute_env(char ***envp)
 	}
 }
 
-void	execute_pwd(t_pipes *my_pipes)
+void	execute_pwd(t_pipes *my_pipes, char ***envp, int i)
 {
 	char	*buf;
 
@@ -45,8 +45,17 @@ void	execute_pwd(t_pipes *my_pipes)
 	getcwd(buf, 4096);
 	if (!buf)
 		perror("minishell");
-	else
+	else if (!envp && !i)
 		ft_printf(1, "%s\n", buf);
+	else
+	{
+		(*envp)[i] = ft_strjoin("PWD=", buf);
+		if (!(*envp)[i])
+		{
+			free (buf);
+			fatal_pwd_error(MALLOC, my_pipes, i);
+		}
+	}
 	free (buf);
 }
 
@@ -70,6 +79,8 @@ void	execute_cd(char **cmd, t_pipes *my_pipes)
 			perror("");
 			my_pipes->exit_status = 1;
 		}
+		else
+			update_envp(my_pipes);
 	}
 }
 
@@ -78,7 +89,7 @@ void	execute_exit(char **cmd, t_pipes *my_pipes)
 	int	status;
 
 	status = 0;
-	if (exit_is_nonnumeric_arg(cmd[1], my_pipes))
+	if (cmd[1] && exit_is_nonnumeric_arg(cmd[1], my_pipes))
 		exit (2);
 	if (count_elements(cmd) > 2)
 	{

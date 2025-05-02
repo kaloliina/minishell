@@ -10,6 +10,7 @@ void	free_array(char **array)
 		while (array[i])
 			free (array[i++]);
 		free (array);
+		array = NULL;
 	}
 }
 
@@ -59,7 +60,8 @@ void	free_sections_tokens(t_data *parser)
 	}
 }
 
-void	fatal_parsing_exit(t_data *parser, t_exp *expand, char *input, char *msg)
+void	fatal_parsing_exit(t_data *parser, t_exp *expand,
+	char *input, char *msg)
 {
 	if (msg)
 		ft_printf(2, "%s", msg);
