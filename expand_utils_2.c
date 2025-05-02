@@ -17,6 +17,7 @@ void	init_exp(t_exp *exp, int status, t_data *parser, t_pipes *my_pipes)
 	exp->new_cmd = NULL;
 	exp->new_line = NULL;
 	exp->exp = NULL;
+	exp->expansion = NULL;
 	if (parser)
 	{
 		exp->parser = parser;

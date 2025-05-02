@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-static int	find_first_unset_element(char **cmd, char **envp, int j)
+int	find_first_unset_element(char **cmd, char **envp, int j)
 {
 	int	element;
 
@@ -15,14 +15,14 @@ static int	find_first_unset_element(char **cmd, char **envp, int j)
 	return (element);
 }
 
-static int	find_next_unset_element(int *i, int *j, char **cmd, char **envp)
+int	find_next_unset_element(int *i, int *j, char **cmd, char **envp)
 {
 	(*i)++;
 	(*j)++;
 	return (find_unset_element(cmd[*j], envp));
 }
 
-static int	find_unset_element(char *arg, char **envp)
+int	find_unset_element(char *arg, char **envp)
 {
 	int	i;
 
@@ -38,7 +38,7 @@ static int	find_unset_element(char *arg, char **envp)
 	return (-1);
 }
 
-static char	**fill_unset_envp(char ***new_envp, char **cmd,
+char	**fill_unset_envp(char ***new_envp, char **cmd,
 	char **envp, t_pipes *my_pipes)
 {
 	int	i;
@@ -87,9 +87,9 @@ void	execute_unset(char **cmd, char ***envp, t_pipes *my_pipes)
 	}
 	if (!args)
 		return ;
-	new_envp = malloc(sizeof(char *) * ((i - args) + 2));
+	new_envp = ft_calloc(((i - args) + 2), sizeof(char *));
 	if (!new_envp)
-		fatal_exec_error(MALLOC, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 	new_envp = fill_unset_envp(&new_envp, cmd, *envp, my_pipes);
 	free_array(*envp);
 	*envp = NULL;

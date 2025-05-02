@@ -6,10 +6,7 @@ static int	invalid_exp_line(char *line, int k)
 
 	i = ft_strlen(line);
 	if (k == 1)
-	{
-		ft_printf(2, "minishell: ");
-		ft_printf(2, ERR_AMB, line);
-	}
+		print_error(ERR_AMB, line, NULL);
 	return (i);
 }
 
@@ -66,7 +63,7 @@ static char	*expand_line(char *line, t_exp *expand)
 	quote = 0;
 	expand->new_line = ft_strdup("");
 	if (!expand->new_line)
-		fatal_parsing_error(expand->parser, NULL, NULL, MALLOC);
+		fatal_parsing_error(expand->parser, NULL, NULL, ERR_MALLOC);
 	while (line[i])
 	{
 		if (line[i] == '$' && line[i + 1] && !quote)

@@ -29,7 +29,7 @@ char	*handle_quotes(char *s, t_data *parser, t_exp *expand)
 
 	new = malloc(ft_strlen(s) + 1);
 	if (!new)
-		fatal_parsing_error(parser, expand, NULL, MALLOC);
+		fatal_parsing_error(parser, expand, NULL, ERR_MALLOC);
 	return (handle_quotes_helper(new, s, 0, 0));
 }
 

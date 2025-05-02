@@ -14,7 +14,7 @@ void	append_char_heredoc(char **new_string, char c,
 	{
 		my_pipes->exit_status = 1;
 		free (temp);
-		fatal_exec_error(MALLOC, my_pipes, heredoc_node, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, heredoc_node, NULL);
 	}
 	free (temp);
 }
@@ -31,7 +31,7 @@ void	append_char(char **new_string, char c, t_exp *expand)
 	if (!*new_string)
 	{
 		free (temp);
-		fatal_parsing_error(expand->parser, expand, NULL, MALLOC);
+		fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
 	}
 	free (temp);
 }
@@ -47,7 +47,13 @@ void	append_replacer(char **new_string, char *replacer,
 	{
 		free (temp);
 		free (replacer);
-		fatal_parsing_error(expand->parser, expand, NULL, MALLOC);
+		if (expand->parsing)
+			fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
+		else
+		{
+			free (expand->exp);
+			fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
+		}
 	}
 	free (temp);
 	if (is_freeable)

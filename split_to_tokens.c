@@ -34,7 +34,7 @@ static	char	**tokensplit_makearray(char const *s, int *error)
 {
 	char	**array;
 
-	array = malloc((tokensplit_strings(s, 0) + 1) * sizeof(char *));
+	array = ft_calloc((tokensplit_strings(s, 0) + 1), sizeof(char *));
 	if (!array)
 	{
 		*error = 1;

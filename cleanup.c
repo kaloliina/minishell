@@ -64,7 +64,7 @@ void	fatal_parsing_error(t_data *parser, t_exp *expand,
 	char *input, char *msg)
 {
 	if (msg)
-		ft_printf(2, "%s", msg);
+		print_error(msg, NULL, NULL);
 	if (input)
 		free (input);
 	if (parser)
@@ -80,6 +80,8 @@ void	fatal_parsing_error(t_data *parser, t_exp *expand,
 			free_my_pipes(expand->my_pipes);
 		if (expand->new_cmd)
 			free_array(expand->new_cmd);
+		if (expand->new_line)
+			free (expand->new_line);
 		if (expand->exp)
 			free (expand->exp);
 	}
@@ -88,18 +90,14 @@ void	fatal_parsing_error(t_data *parser, t_exp *expand,
 	exit (1);
 }
 
-void	fatal_exec_exit(char *msg, t_pipes *my_pipes, t_node *list,
+void	fatal_exec_error(char *msg, t_pipes *my_pipes, t_node *list,
 	char *conversion)
 {
 	int	exit_status;
 
 	exit_status = 1;
 	if (msg)
-		ft_printf(2, "minishell: ");
-	if (msg && !conversion)
-		ft_printf(2, msg);
-	else if (msg && conversion)
-		ft_printf(2, msg, conversion);
+		print_error(msg, conversion, NULL);
 	if (!list && my_pipes->command_node)
 		free_nodes(my_pipes->command_node);
 	else if (!list)

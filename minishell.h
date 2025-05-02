@@ -13,15 +13,16 @@
 # include <sys/wait.h>
 # include <sys/stat.h>
 # include <errno.h>
-# define MALLOC "memory allocation failure\n"
-# define SYNTAX "syntax error near unexpected token `%s'\n"
-# define EXPORT "export: `%s': not a valid identifier\n"
-# define HD_CTRLD "here-document delimited by end-of-file (wanted `%s')\n"
+# define ERR_MALLOC "memory allocation failure\n"
+# define ERR_SYNTAX "syntax error near unexpected token `%s'\n"
+# define ERR_EXPORT "export: `%s': not a valid identifier\n"
+# define ERR_HD "warning: here-document delimited by end-of-file "
+# define ERR_HD_DLM "(wanted `%s')\n"
 # define ERR_PIPE "pipe: Too many open files\n"
 # define ERR_WAITPID "waitpid: No child processes\n"
 # define ERR_COMMAND "%s: command not found\n"
 # define ERR_FORK "fork: Resource temporarily unavailable\n"
-# define ERR_NUM "numeric argument required\n"
+# define ERR_NUM "exit: numeric argument required\n"
 # define ERR_ARG "too many arguments\n"
 # define ERR_AMB "%s: ambiguous redirect\n"
 # define ERR_INVFILE "%s: No such file or directory\n"
@@ -60,6 +61,7 @@ typedef struct s_exp
 	char			**new_cmd;
 	char			*new_line;
 	char			*exp;
+	char			*expansion;
 	struct s_data	*parser;
 	struct s_pipes	*my_pipes;
 }		t_exp;
@@ -174,6 +176,7 @@ int		is_only_quotes(char *s);
 int		is_exp_delimiter(char c);
 int		is_char_redirection(char c);
 int		is_whitespace(char c);
+void	print_error(char *msg, char *conversion_1, char *conversion_2);
 
 //signals
 void	init_signal_handler(int sig);
@@ -193,12 +196,12 @@ void	check_rm_success(t_pipes *my_pipes, pid_t pid, bool rm);
 //builtins
 void	execute_echo(t_node *node);
 void	execute_env(char ***envp);
-void	execute_pwd(t_pipes *my_pipes, char ***envp, int i);
+void	execute_pwd(t_pipes *my_pipes, char ***envp, int i, t_exp *expand);
 void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_cd(char **cmd, t_pipes *my_pipes);
 void	execute_unset(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_exit(char **cmd, t_pipes *my_pipes);
-void	update_envp(t_pipes *my_pipes);
+void	update_envp(t_pipes *my_pipes, t_exp *expand);
 int		is_replacer_envp(char ***envp, char *arg);
 int		export_fill_envp(char ***new_envp, char **cmd, char **envp,
 			t_pipes *my_pipes);
@@ -213,10 +216,10 @@ int		find_existing_envp(char ***new_envp, char **cmd, char **envp, int i);
 int		find_unset_element(char *arg, char **envp);
 int		find_first_unset_element(char **cmd, char **envp, int j);
 int		find_next_unset_element(int *i, int *j, char **cmd, char **envp);
-void	fatal_sort_for_export_failure(char **export, int elements,
+void	fatal_sort_for_export_error(char **export, int elements,
 			t_pipes *my_pipes);
 void	fatal_export_unset_error(char **new_envp, t_pipes *my_pipes);
-void	fatal_pwd_error(char *msg, t_pipes *my_pipes, int i);
+void	fatal_pwd_error(char *msg, t_pipes *my_pipes, int i, t_exp *expand);
 
 //execution
 //execution handler

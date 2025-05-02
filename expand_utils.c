@@ -9,8 +9,13 @@ char	*find_exp(char *arg, int *i, int *k, t_exp *expand)
 	*k = *i;
 	count_expandable(arg, i, &j);
 	exp = ft_substr(arg, *k, j);
-	if (!exp)
-		fatal_parsing_error(expand->parser, expand, NULL, MALLOC);
+	if (!exp && expand->parsing)
+		fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
+	else if (!exp)
+	{
+		free (expand->new_line);
+		fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
+	}
 	return (exp);
 }
 
@@ -33,16 +38,13 @@ static char	**find_envp_source(t_exp *expand)
 static void	find_envp_failure(t_exp *expand)
 {
 	if (expand->parsing)
-	{
-		free (expand->new_line);
-		fatal_parsing_error(expand->parser, expand, NULL, MALLOC);
-	}
+		fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
 	else
 	{
 		free (expand->new_line);
 		if (expand->exp)
 			free (expand->exp);
-		fatal_exec_error(MALLOC, expand->my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
 	}
 }
 

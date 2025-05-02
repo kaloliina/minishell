@@ -20,15 +20,16 @@ static void	free_envp_array(char **envp, int i)
 				free (envp[j++]);
 		}
 	}
+	free (envp);
 }
 
-void	fatal_pwd_error(char *msg, t_pipes *my_pipes, int i)
+void	fatal_pwd_error(char *msg, t_pipes *my_pipes, int i, t_exp *expand)
 {
 	int	exit_status;
 
 	exit_status = 1;
 	if (msg)
-		ft_printf(2, "minishell: %s", msg);
+		print_error(msg, NULL, NULL);
 	if (my_pipes->command_node)
 		free_nodes(my_pipes->command_node);
 	else
@@ -41,16 +42,23 @@ void	fatal_pwd_error(char *msg, t_pipes *my_pipes, int i)
 		free_envp_array(*my_pipes->my_envp, i);
 		free_my_pipes(my_pipes);
 	}
+	if (expand)
+	{
+		if (expand->exp)
+			free (expand->exp);
+		if (expand->expansion)
+			free (expand->expansion);
+	}
 	exit (exit_status);
 }
 
-void	execute_pwd(t_pipes *my_pipes, char ***envp, int i)
+void	execute_pwd(t_pipes *my_pipes, char ***envp, int i, t_exp *expand)
 {
 	char	*buf;
 
 	buf = malloc(4096);
 	if (!buf)
-		fatal_exec_error(MALLOC, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 	getcwd(buf, 4096);
 	if (!buf)
 		perror("minishell");
@@ -62,7 +70,7 @@ void	execute_pwd(t_pipes *my_pipes, char ***envp, int i)
 		if (!(*envp)[i])
 		{
 			free (buf);
-			fatal_pwd_error(MALLOC, my_pipes, i);
+			fatal_pwd_error(ERR_MALLOC, my_pipes, i, expand);
 		}
 	}
 	free (buf);

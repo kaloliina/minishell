@@ -45,7 +45,7 @@ static	char	**sectionsplit_makearray(char const *s, char c, int *error)
 {
 	char	**array;
 
-	array = malloc((sectionsplit_strings(s, c, 0) + 1) * sizeof(char *));
+	array = ft_calloc((sectionsplit_strings(s, c, 0) + 1), sizeof(char *));
 	if (!array)
 	{
 		*error = 1;

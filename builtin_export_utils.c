@@ -52,7 +52,7 @@ int	export_validation(char **cmd, int i)
 		j = 0;
 		if (!(ft_isalpha(cmd[i][j]) || cmd[i][j] == '_'))
 		{
-			ft_printf(2, EXPORT, cmd[i]);
+			print_error(ERR_EXPORT, cmd[i], NULL);
 			return (-1);
 		}
 		while (cmd[i][j])
@@ -61,7 +61,7 @@ int	export_validation(char **cmd, int i)
 				j++;
 			if (cmd[i][j] != '=' && cmd[i][j] != '\0')
 			{
-				ft_printf(2, EXPORT, cmd[i]);
+				print_error(ERR_EXPORT, cmd[i], NULL);
 				return (-1);
 			}
 			j = ft_strlen(cmd[i]);

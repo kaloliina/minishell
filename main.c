@@ -103,7 +103,7 @@ int	main(int ac, char **av, char **envp)
 	status = 0;
 	if (ac != 1)
 	{
-		ft_printf(2, "minishell: expected format: <./minishell>\n");
+		print_error("expected format: <./minishell>\n", NULL, NULL);
 		return (0);
 	}
 	my_envp = copy_envp(envp);

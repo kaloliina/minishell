@@ -31,7 +31,7 @@ static void	expand_heredoc(char **line, t_pipes *my_pipes, int status,
 	if (!expand.new_line)
 	{
 		my_pipes->exit_status = 1;
-		fatal_exec_error(MALLOC, my_pipes, my_pipes->heredoc_node, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, my_pipes->heredoc_node, NULL);
 	}
 	while ((*line)[i])
 	{
@@ -60,8 +60,8 @@ static int	heredoc_read(t_node *heredoc_node,
 			return (heredoc_sigint(my_pipes, line, heredoc_node->hd_fd));
 		if (!line)
 		{
-			ft_printf(2, "minishell: warning: ");
-			ft_printf(2, HD_CTRLD, heredoc_node->delimiter);
+			print_error(ERR_HD, NULL, NULL);
+			print_error(ERR_HD_DLM, heredoc_node->delimiter, NULL);
 			break ;
 		}
 		if (!ft_strcmp(line, heredoc_node->delimiter))

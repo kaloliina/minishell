@@ -8,9 +8,9 @@ static void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 		1, -1, -1, -1, -1, 0, 1, 0, 0, NULL, NULL, envp, NULL, NULL};
 	if (my_pipes->pipe_amount > 0)
 	{
-		my_pipes->pipes = ft_calloc(sizeof(int), (my_pipes->pipe_amount * 2));
+		my_pipes->pipes = ft_calloc((my_pipes->pipe_amount * 2), sizeof(int));
 		if (my_pipes->pipes == NULL)
-			fatal_exec_error(MALLOC, my_pipes, list, NULL);
+			fatal_exec_error(ERR_MALLOC, my_pipes, list, NULL);
 		i = 0;
 		while (i < my_pipes->pipe_amount)
 		{
@@ -18,9 +18,9 @@ static void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 				fatal_exec_error(ERR_PIPE, my_pipes, list, NULL);
 		}
 	}
-	my_pipes->childpids = ft_calloc(sizeof(pid_t), (my_pipes->pipe_amount + 1));
+	my_pipes->childpids = ft_calloc((my_pipes->pipe_amount + 1), sizeof(pid_t));
 	if (my_pipes->childpids == NULL)
-		fatal_exec_error(MALLOC, my_pipes, list, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, list, NULL);
 	my_pipes->stdoutfd = dup(STDOUT_FILENO);
 	if (my_pipes->stdoutfd == -1)
 		fatal_exec_error(ERR_FD, my_pipes, list, NULL);
@@ -98,7 +98,7 @@ int	begin_execution(t_node *list, char ***envp, int status)
 	if (my_pipes == NULL)
 	{
 		free_array(*envp);
-		fatal_exec_error(MALLOC, my_pipes, list, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, list, NULL);
 	}
 	initialize_struct(my_pipes, list, envp);
 	while (list != NULL)

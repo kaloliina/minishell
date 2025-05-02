@@ -12,8 +12,8 @@ static int	exit_is_nonnumeric_arg(char *arg, t_pipes *my_pipes)
 		if (!(arg[i] >= 48 && arg[i] <= 57))
 		{
 			if (!my_pipes->pipe_amount)
-				ft_printf(2, "exit\n");
-			ft_printf(2, "minishell: %s: %s: %s", "exit", arg, ERR_NUM);
+				ft_printf(1, "exit\n");
+			print_error("%s: %s", arg, ERR_NUM);
 			cleanup_in_exec(my_pipes, NULL);
 			return (1);
 		}
@@ -32,8 +32,8 @@ void	execute_exit(char **cmd, t_pipes *my_pipes)
 	if (count_elements(cmd) > 2)
 	{
 		if (!my_pipes->pipe_amount)
-			ft_printf(2, "exit\n");
-		ft_printf(2, "minishell: %s: %s", cmd[0], ERR_ARG);
+			ft_printf(1, "exit\n");
+		print_error("exit: %s", ERR_ARG, NULL);
 		if (my_pipes->pipe_amount)
 		{
 			cleanup_in_exec(my_pipes, NULL);

@@ -39,12 +39,13 @@ static char	*check_pipes_helper(char *line, t_data *parser, int i, int j)
 
 	if (whitespace_between_pipes(line, i))
 	{
-		ft_printf(2, SYNTAX, "|");
+		print_error(ERR_SYNTAX, "|", NULL);
+		free (line);
 		return (NULL);
 	}
 	new_line = ft_substr(line, 0, (j - 1));
 	if (!new_line)
-		fatal_parsing_error(parser, NULL, line, MALLOC);
+		fatal_parsing_error(parser, NULL, line, ERR_MALLOC);
 	free (line);
 	line = new_line;
 	new_line = NULL;
@@ -67,7 +68,7 @@ static char	*end_of_line_pipe(char **line, t_data *parser, int *status)
 	if (!new_line)
 	{
 		close (backup_fd);
-		fatal_parsing_error(parser, NULL, *line, MALLOC);
+		fatal_parsing_error(parser, NULL, *line, ERR_MALLOC);
 	}
 	free (*line);
 	free (temp);

@@ -13,15 +13,13 @@ static int	prep_for_execution(t_pipes *my_pipes)
 			my_pipes->command_node->cmd[0], my_pipes);
 	if (my_pipes->command_path == NULL)
 	{
-		ft_printf(2, "minishell: ");
-		ft_printf(2, ERR_COMMAND, my_pipes->command_node->cmd[0]);
+		print_error(ERR_COMMAND, my_pipes->command_node->cmd[0], NULL);
 		my_pipes->exit_status = 127;
 		return (-1);
 	}
 	if (stat(my_pipes->command_path, &sb) == 0 && S_ISDIR(sb.st_mode))
 	{
-		ft_printf(2, "minishell: ");
-		ft_printf(2, ERR_DIR, my_pipes->command_node->cmd[0]);
+		print_error(ERR_DIR, my_pipes->command_node->cmd[0], NULL);
 		my_pipes->exit_status = 126;
 		return (-1);
 	}
@@ -75,7 +73,7 @@ int	execute_executable(t_node *node, t_pipes *my_pipes)
 		handle_redirections(my_pipes);
 		close_all_fds(my_pipes);
 		if (my_pipes->exit_status == 1)
-			exit(1);
+			fatal_exec_error(NULL, my_pipes, NULL, NULL);
 		execve(my_pipes->command_path, &node->cmd[0], *(my_pipes->my_envp));
 		handle_execve_errors(my_pipes);
 	}

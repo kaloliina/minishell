@@ -16,14 +16,14 @@ static void	missing_file_delimiter(t_data *parser, t_index *index,
 	t_node *new_node)
 {
 	if (parser->tokens[index->i + 1])
-		ft_printf(2, SYNTAX, "|");
+		print_error(ERR_SYNTAX, "|", NULL);
 	else if (new_node->prev && (new_node->prev->type == REDIR_APPEND
 			|| new_node->prev->type == REDIR_HEREDOC
 			|| new_node->prev->type == REDIR_INF
 			|| new_node->prev->type == REDIR_OUTF))
-		ft_printf(2, SYNTAX, parser->tokens[index->i][index->j]);
+		print_error(ERR_SYNTAX, parser->tokens[index->i][index->j], NULL);
 	else
-		ft_printf(2, SYNTAX, "newline");
+		print_error(ERR_SYNTAX, "newline", NULL);
 }
 
 static int	set_redir_node(t_node *new_node, t_data *parser, t_index *index)
@@ -36,13 +36,13 @@ static int	set_redir_node(t_node *new_node, t_data *parser, t_index *index)
 			new_node->delimiter
 				= ft_strdup(parser->tokens[index->i][index->j + 1]);
 			if (!new_node->delimiter)
-				fatal_parsing_error(parser, NULL, NULL, MALLOC);
+				fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
 		}
 		else
 		{
 			new_node->file = ft_strdup(parser->tokens[index->i][index->j + 1]);
 			if (!new_node->file)
-				fatal_parsing_error(parser, NULL, NULL, MALLOC);
+				fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
 		}
 	}
 	else

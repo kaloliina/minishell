@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-static int	export_fill_envp(char ***new_envp, char **cmd, char **envp,
+int	export_fill_envp(char ***new_envp, char **cmd, char **envp,
 	t_pipes *my_pipes)
 {
 	int	i;
@@ -20,7 +20,7 @@ static int	export_fill_envp(char ***new_envp, char **cmd, char **envp,
 	return (add_exported_envp(new_envp, cmd, i, my_pipes));
 }
 
-static int	add_exported_envp(char ***new_envp, char **cmd, int i,
+int	add_exported_envp(char ***new_envp, char **cmd, int i,
 	t_pipes *my_pipes)
 {
 	int	j;
@@ -77,9 +77,9 @@ static void	export_no_args(char **envp, t_pipes *my_pipes)
 	char	**export;
 
 	elements = count_elements(envp) - 1;
-	export = ft_calloc(sizeof(char *), (elements + 1));
+	export = ft_calloc((elements + 1), sizeof(char *));
 	if (!export)
-		fatal_exec_error(MALLOC, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 	export = sort_for_export(export, envp, elements, my_pipes);
 	export[elements] = NULL;
 	i = 0;
@@ -102,9 +102,9 @@ void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes)
 	args = count_args_to_export(cmd);
 	if (!args)
 		return ;
-	new_envp = malloc(sizeof(char *) * (i + 1 + args));
+	new_envp = ft_calloc((i + 1 + args), sizeof(char *));
 	if (!new_envp)
-		fatal_exec_error(MALLOC, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 	i = export_fill_envp(&new_envp, cmd, *envp, my_pipes);
 	new_envp[i] = NULL;
 	free_array(*envp);

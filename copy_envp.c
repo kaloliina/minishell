@@ -6,7 +6,7 @@ static void	convert_new_shlvl(int i, int level, char ***my_envp,
 	level_nbr = ft_itoa(level);
 	if (!level_nbr)
 	{
-		ft_printf(2, "minishell: %s", MALLOC);
+		print_error(ERR_MALLOC, NULL, NULL);
 		free_array(*my_envp);
 		exit (1);
 	}
@@ -14,7 +14,7 @@ static void	convert_new_shlvl(int i, int level, char ***my_envp,
 	free (level_nbr);
 	if (!(*my_envp)[i])
 	{
-		ft_printf(2, "minishell: %s", MALLOC);
+		print_error(ERR_MALLOC, NULL, NULL);
 		free_array(*my_envp);
 		exit (1);
 	}
@@ -30,7 +30,7 @@ static int	handle_shlvl(char **envp, int i, char ***my_envp)
 		level_nbr = ft_substr(envp[i], 6, ft_strlen(envp[i]) - 6);
 		if (!level_nbr)
 		{
-			ft_printf(2, "minishell: %s", MALLOC);
+			print_error(ERR_MALLOC, NULL, NULL);
 			free_array(*my_envp);
 			exit (1);
 		}
@@ -50,10 +50,10 @@ char	**copy_envp(char **envp)
 	int		i;
 
 	i = count_elements(envp);
-	my_envp = ft_calloc(sizeof(char *), (i + 1));
+	my_envp = ft_calloc((i + 1), sizeof(char *));
 	if (!my_envp)
 	{
-		ft_printf(2, "minishell: %s", MALLOC);
+		print_error(ERR_MALLOC, NULL, NULL);
 		exit (1);
 	}
 	i = 0;
@@ -63,7 +63,7 @@ char	**copy_envp(char **envp)
 		my_envp[i] = ft_strdup(envp[i]);
 		if (!my_envp[i])
 		{
-			ft_printf(2, "minishell: %s", MALLOC);
+			print_error(ERR_MALLOC, NULL, NULL);
 			free_array(my_envp);
 			exit (1);
 		}
