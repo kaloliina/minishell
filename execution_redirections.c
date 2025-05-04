@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execution_redirections.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:51 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:10:52 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/04 19:47:57 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,11 @@ void	open_infile(char *file, t_pipes *my_pipes)
 		return ;
 	}
 	if (my_pipes->exit_status == 0)
+	{
+		if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
+			print_error(ERR_CLOSE, NULL, NULL);
 		my_pipes->infile_fd = open(file, O_RDONLY);
+	}
 	if (my_pipes->infile_fd == -1 && my_pipes->exit_status == 0)
 	{
 		if (errno == ENOENT)
@@ -66,6 +70,8 @@ void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 		my_pipes->exit_status = 1;
 		return ;
 	}
+	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
+		print_error(ERR_CLOSE, NULL, NULL);
 	if (redir_type == REDIR_OUTF && my_pipes->exit_status == 0)
 		my_pipes->outfile_fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (redir_type == REDIR_APPEND && my_pipes->exit_status == 0)
