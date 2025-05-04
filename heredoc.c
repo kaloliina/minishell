@@ -1,22 +1,34 @@
 #include "minishell.h"
 
-static int	heredoc_sigint(t_pipes *my_pipes, char *line, int fd)
+static int	heredoc_sigint(t_pipes *my_pipes, char *line)
 {
 	g_signum = 0;
-	dup2(my_pipes->stdinfd, STDIN_FILENO);
-	close (my_pipes->stdinfd);
+	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
+	{
+		my_pipes->exit_status = 1;
+		print_error(ERR_FD, NULL, NULL);
+	}
+	if (my_pipes->stdinfd != -1
+		&& close(my_pipes->stdinfd) < 0)
+		print_error(ERR_CLOSE, NULL, NULL);
 	my_pipes->stdinfd = -1;
 	my_pipes->exit_status = 130;
 	free (line);
-	close (fd);
+	if (my_pipes->heredoc_node->hd_fd != -1
+		&& close(my_pipes->heredoc_node->hd_fd) < 0)
+		print_error(ERR_CLOSE, NULL, NULL);
+	my_pipes->heredoc_node->hd_fd = -1;
 	return (-1);
 }
 
-static void	heredoc_free_close(char *line, int fd)
+static void	heredoc_free_close(char *line, t_pipes *my_pipes)
 {
 	if (line)
 		free (line);
-	close (fd);
+	if (my_pipes->heredoc_node->hd_fd != -1
+		&& close(my_pipes->heredoc_node->hd_fd) < 0)
+		print_error(ERR_CLOSE, NULL, NULL);
+	my_pipes->heredoc_node->hd_fd = -1;
 }
 
 static void	expand_heredoc(char **line, t_pipes *my_pipes, int status,
@@ -57,7 +69,7 @@ static int	heredoc_read(t_node *heredoc_node,
 		signal(SIGINT, heredoc_signal);
 		line = readline("> ");
 		if (g_signum == SIGINT)
-			return (heredoc_sigint(my_pipes, line, heredoc_node->hd_fd));
+			return (heredoc_sigint(my_pipes, line));
 		if (!line)
 		{
 			print_error(ERR_HD, NULL, NULL);
@@ -71,7 +83,7 @@ static int	heredoc_read(t_node *heredoc_node,
 		ft_printf(heredoc_node->hd_fd, "%s\n", line);
 		free (line);
 	}
-	heredoc_free_close(line, heredoc_node->hd_fd);
+	heredoc_free_close(line, my_pipes);
 	open_infile("minishell_tmpfile", my_pipes);
 	return (0);
 }
@@ -79,7 +91,6 @@ static int	heredoc_read(t_node *heredoc_node,
 int	heredoc(t_node *heredoc_node, t_pipes *my_pipes, int status)
 {
 	int		flag;
-	pid_t	rm_pid;
 
 	check_tmp_dir(my_pipes);
 	heredoc_node->hd_fd
@@ -90,9 +101,13 @@ int	heredoc(t_node *heredoc_node, t_pipes *my_pipes, int status)
 		return (-1);
 	}
 	flag = heredoc_read(heredoc_node, my_pipes, status);
-	rm_pid = heredoc_rm(*my_pipes->my_envp, my_pipes);
-	check_rm_success(my_pipes, rm_pid, 1);
-	chdir("..");
+	if (unlink("minishell_tmpfile") < 0)
+	{
+		my_pipes->hd_dir = 0;
+		fatal_exec_error(ERR_UNLINK, my_pipes, NULL, NULL);
+	}
+	if (chdir("..") < 0)
+		perror("minishell: chdir");
 	if (my_pipes->hd_dir == 2)
 		heredoc_rmdir(*my_pipes->my_envp, my_pipes);
 	return (flag);

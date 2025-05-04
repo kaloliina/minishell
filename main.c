@@ -40,11 +40,11 @@ static int	minishell(char *input, char ***envp, int status)
 	line = add_spaces(input, &parser);
 	exit_status = 2;
 	line = check_pipes(line, &parser, 0, &exit_status);
-	if (!line) //only whitespace between two pipes
+	if (!line)
 		return (exit_status);
 	init_sections(&parser, line);
 	init_tokens(&parser);
-	if (lexer(&parser) < 0) //missing filename or delimiter
+	if (lexer(&parser) < 0)
 		return (2);
 	handle_exp_and_quotes(&parser, status);
 	status = begin_execution(parser.first, &parser.envp, status);

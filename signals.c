@@ -20,7 +20,8 @@ void	heredoc_signal(int sig)
 	{
 		write(1, "\n", 1);
 		rl_on_new_line();
-		close (STDIN_FILENO);
+		if (close(STDIN_FILENO) < 0)
+			print_error(ERR_CLOSE, NULL, NULL);
 		g_signum = SIGINT;
 	}
 }

@@ -61,8 +61,11 @@ static void	cd_no_args(t_exp *expand, t_pipes *my_pipes)
 		print_error("cd: HOME not set\n", NULL, NULL);
 		my_pipes->exit_status = 1;
 	}
-	else if (chdir(expand->expansion) == -1)
+	else if (chdir(expand->expansion) < 0)
+	{
 		perror("minishell: cd");
+		my_pipes->exit_status = 1;
+	}
 	else
 		update_envp(my_pipes, expand);
 	free (expand->expansion);
@@ -83,7 +86,7 @@ void	execute_cd(char **cmd, t_pipes *my_pipes)
 	}
 	else if (count_elements(cmd) == 2)
 	{
-		if (chdir(cmd[1]) == -1)
+		if (chdir(cmd[1]) < 0)
 		{
 			print_error("cd: %s: ", cmd[1], NULL);
 			perror("");

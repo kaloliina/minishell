@@ -59,24 +59,24 @@ static char	*end_of_line_pipe(char **line, t_data *parser, int *status)
 	int		backup_fd;
 
 	backup_fd = dup(STDIN_FILENO);
+	if (backup_fd < 0)
+		fatal_parsing_error(parser, NULL, *line, ERR_FD);
 	signal(SIGINT, heredoc_signal);
 	temp = readline("> ");
-	if (end_pipe_sigint(backup_fd, temp, *line, status))
+	if (end_pipe_sigint(temp, *line, status, backup_fd))
 		return (NULL);
-	check_for_ctrld(temp, parser, *line, backup_fd);
+	end_pipe_ctrld(temp, parser, *line, backup_fd);
 	new_line = ft_strjoin(*line, temp);
 	if (!new_line)
 	{
-		close (backup_fd);
+		if (backup_fd != -1 && close(backup_fd) < 0)
+			print_error(ERR_CLOSE, NULL, NULL);
 		fatal_parsing_error(parser, NULL, *line, ERR_MALLOC);
 	}
-	free (*line);
-	free (temp);
-	*line = new_line;
-	new_line = NULL;
-	temp = NULL;
+	end_pipe_helper(line, temp, &new_line);
 	*line = check_pipes(*line, parser, 0, status);
-	close (backup_fd);
+	if (backup_fd != -1 && close(backup_fd) < 0)
+		print_error(ERR_CLOSE, NULL, NULL);
 	return (*line);
 }
 

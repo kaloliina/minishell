@@ -22,7 +22,7 @@
 # define ERR_WAITPID "waitpid: No child processes\n"
 # define ERR_COMMAND "%s: command not found\n"
 # define ERR_FORK "fork: Resource temporarily unavailable\n"
-# define ERR_NUM "exit: numeric argument required\n"
+# define ERR_NUM "exit: %s: numeric argument required\n"
 # define ERR_ARG "too many arguments\n"
 # define ERR_AMB "%s: ambiguous redirect\n"
 # define ERR_INVFILE "%s: No such file or directory\n"
@@ -33,6 +33,7 @@
 # define ERR_EXECVE "%s: Unknown failure\n"
 # define ERR_EOF "syntax error: unexpected end of file\n"
 # define ERR_FORMAT "%s: cannot execute binary file: Exec format error\n"
+# define ERR_UNLINK "unlink: failed to remove file minishell_tmpfile\n"
 
 extern volatile sig_atomic_t	g_signum;
 
@@ -119,8 +120,9 @@ int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
 int		is_triple_redirection(char *input, int i);
 char	*check_pipes(char *line, t_data *parser, int i, int *status);
-void	check_for_ctrld(char *temp, t_data *parser, char *line, int backup_fd);
-int		end_pipe_sigint(int backup_fd, char *temp, char *line, int *status);
+void	end_pipe_ctrld(char *temp, t_data *parser, char *line, int backup_fd);
+int		end_pipe_sigint(char *temp, char *line, int *status, int backup_fd);
+void	end_pipe_helper(char **line, char *temp, char **new_line);
 int		is_only_pipes(char *input);
 void	init_sections(t_data *parser, char *line);
 void	init_tokens(t_data *parser);
@@ -187,11 +189,10 @@ void	listen_to_signals(int in_parent);
 //heredoc
 int		heredoc(t_node *curr, t_pipes *my_pipes, int status);
 void	heredoc_mkdir(char **envp, t_pipes *my_pipes, int status);
-int		heredoc_rm(char **envp, t_pipes *my_pipes);
 void	heredoc_rmdir(char **envp, t_pipes *my_pipes);
 void	handle_tmpfile(t_pipes *my_pipes);
 void	check_tmp_dir(t_pipes *my_pipes);
-void	check_rm_success(t_pipes *my_pipes, pid_t pid, bool rm);
+void	check_rmdir_success(t_pipes *my_pipes, pid_t pid);
 
 //builtins
 void	execute_echo(t_node *node);

@@ -34,10 +34,7 @@ static char	**init_only_quotes_section(t_data *parser, int i)
 		fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
 	parser->tokens[i][0] = ft_strdup(parser->sections[i]);
 	if (!parser->tokens[i][0])
-	{
-		parser->tokens[i + 1] = NULL;
 		fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
-	}
 	parser->tokens[i][1] = NULL;
 	return (parser->tokens[i]);
 }

@@ -7,7 +7,7 @@ int	find_first_unset_element(char **cmd, char **envp, int j)
 	while (cmd[j])
 	{
 		element = find_unset_element(cmd[j], envp);
-		if (element == -1)
+		if (element < 0)
 			j++;
 		else
 			break ;

@@ -1,5 +1,5 @@
 NAME = minishell
-CC = cc -g
+CC = cc
 CFLAGS = -Wall -Wextra -Werror
 LIBFTDIR = ./libft
 LIBFT = $(LIBFTDIR)/libft.a

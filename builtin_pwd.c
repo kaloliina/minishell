@@ -59,9 +59,8 @@ void	execute_pwd(t_pipes *my_pipes, char ***envp, int i, t_exp *expand)
 	buf = malloc(4096);
 	if (!buf)
 		fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
-	getcwd(buf, 4096);
-	if (!buf)
-		perror("minishell");
+	if (!getcwd(buf, 4096))
+		perror("minishell: pwd");
 	else if (!envp && !i)
 		ft_printf(1, "%s\n", buf);
 	else

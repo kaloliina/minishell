@@ -31,7 +31,8 @@ void	free_nodes(t_node *node)
 			free (tmp->delimiter);
 		if (tmp->hd_fd != -1)
 		{
-			close (tmp->hd_fd);
+			if (close(tmp->hd_fd) < 0)
+				print_error(ERR_CLOSE, NULL, NULL);
 			tmp->hd_fd = -1;
 		}
 		free (tmp);
@@ -98,6 +99,8 @@ void	fatal_exec_error(char *msg, t_pipes *my_pipes, t_node *list,
 	exit_status = 1;
 	if (msg)
 		print_error(msg, conversion, NULL);
+	if (my_pipes && my_pipes->hd_dir)
+		handle_tmpfile(my_pipes);
 	if (!list && my_pipes->command_node)
 		free_nodes(my_pipes->command_node);
 	else if (!list)
@@ -107,8 +110,6 @@ void	fatal_exec_error(char *msg, t_pipes *my_pipes, t_node *list,
 	if (my_pipes)
 	{
 		exit_status = my_pipes->exit_status;
-		if (my_pipes->hd_dir)
-			handle_tmpfile(my_pipes);
 		free_array(*my_pipes->my_envp);
 		free_my_pipes(my_pipes);
 	}

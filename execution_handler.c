@@ -29,10 +29,6 @@ static void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 		fatal_exec_error(ERR_FD, my_pipes, list, NULL);
 }
 
-/*
-There might be a situation with sleep where you explicitly have to
-mark the last process but I was unable to repro the behaviour
-*/
 static int	finalize_execution(int amount, t_pipes *my_pipes)
 {
 	int	exit_status;

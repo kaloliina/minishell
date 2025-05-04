@@ -55,8 +55,6 @@ void	free_my_pipes(t_pipes *my_pipes)
 	}
 }
 
-//Double check the if statement here
-//I removed && ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0])), double check this
 void	reset_properties(t_pipes *my_pipes)
 {
 	if (my_pipes->command_path != NULL)

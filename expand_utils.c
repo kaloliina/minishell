@@ -21,8 +21,21 @@ char	*find_exp(char *arg, int *i, int *k, t_exp *expand)
 
 char	*find_replacer(char *arg, int i, t_exp *expand)
 {
+	char	*status;
+
 	if (arg[i] == '?' && arg[i - 1] == '$')
-		return (ft_itoa(expand->status));
+	{
+		status = ft_itoa(expand->status);
+		if (!status && expand->parsing)
+			fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
+		else if (!status)
+		{
+			free (expand->exp);
+			free (expand->new_line);
+			fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
+		}
+		return (status);
+	}
 	else
 		return (find_envp(expand, 0));
 }

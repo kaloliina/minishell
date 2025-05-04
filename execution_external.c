@@ -26,9 +26,6 @@ static int	prep_for_execution(t_pipes *my_pipes)
 	return (0);
 }
 
-//if file does not have #!/bin/bash, in bash it still attempts to add
-//the path so this might need to be tweaked a bit
-//also exit status 0 is unclear
 static void	handle_execve_errors(t_pipes *my_pipes)
 {
 	if (errno == ENOENT)
@@ -57,7 +54,6 @@ static void	handle_execve_errors(t_pipes *my_pipes)
 	}
 }
 
-//do I even need to close all fds here? execve closes them anyway..?
 int	execute_executable(t_node *node, t_pipes *my_pipes)
 {
 	int	pid;
