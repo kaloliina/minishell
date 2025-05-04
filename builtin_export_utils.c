@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:50 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:09:51 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/04 20:00:09 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ int	is_valid_to_export(char *arg)
 		return (0);
 	while (!is_exp_delimiter(arg[i]))
 		i++;
-	if (arg[i] != '=')
+	if (arg[i] != '=' && arg[i] != '\0')
 		return (0);
 	return (1);
 }

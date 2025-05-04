@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:55 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:09:56 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/04 21:18:58 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ int	add_exported_envp(char ***new_envp, char **cmd, int i,
 	return (i);
 }
 
-static char	**sort_for_export(char **export, char **envp,
+static void	sort_for_export(char ***export, char **envp,
 	int elements, t_pipes *my_pipes)
 {
 	int	i;
@@ -61,25 +61,25 @@ static char	**sort_for_export(char **export, char **envp,
 	int	k;
 
 	i = 0;
-	while (i < elements)
+	while (envp[i])
 	{
 		j = 0;
 		k = 0;
 		if (ft_strncmp(envp[i], "_=", 2))
 		{
-			while (j < elements)
+			while (envp[j])
 			{
-				if (ft_strcmp(envp[i], envp[j]) > 0)
+				if (i != j && (ft_strncmp(envp[j], "_=", 2))
+					&& (ft_strcmp(envp[i], envp[j]) > 0))
 					k++;
 				j++;
 			}
-			export[k] = ft_strdup(envp[i]);
-			if (!export[k])
-				fatal_sort_for_export_error(export, elements, my_pipes);
+			(*export)[k] = add_quotes_export(envp, i);
+			if (!(*export)[k])
+				fatal_sort_for_export_error(*export, elements, my_pipes);
 		}
 		i++;
 	}
-	return (export);
 }
 
 static void	export_no_args(char **envp, t_pipes *my_pipes)
@@ -92,7 +92,7 @@ static void	export_no_args(char **envp, t_pipes *my_pipes)
 	export = ft_calloc((elements + 1), sizeof(char *));
 	if (!export)
 		fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
-	export = sort_for_export(export, envp, elements, my_pipes);
+	sort_for_export(&export, envp, elements, my_pipes);
 	export[elements] = NULL;
 	i = 0;
 	while (export[i])

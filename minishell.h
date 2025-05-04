@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:12:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:12:18 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/04 21:18:54 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,6 +212,7 @@ void	execute_export(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_cd(char **cmd, t_pipes *my_pipes);
 void	execute_unset(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_exit(char **cmd, t_pipes *my_pipes);
+char	*add_quotes_export(char **envp, int i);
 void	update_envp(t_pipes *my_pipes, t_exp *expand);
 int		is_replacer_envp(char ***envp, char *arg);
 int		export_fill_envp(char ***new_envp, char **cmd, char **envp,

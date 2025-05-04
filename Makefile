@@ -7,8 +7,8 @@ LIBFT = $(LIBFTDIR)/libft.a
 HEADERS = minishell.h $(LIBFTDIR)/libft.h
 SRC = add_spaces.c add_spaces_utils.c add_spaces_utils_2.c \
 	builtin_cd.c builtin_echo.c builtin_env.c builtin_exit.c \
-	builtin_export_unset_errors.c builtin_export_utils.c \
-	builtin_export.c builtin_pwd.c builtin_unset.c \
+	builtin_export_unset_errors.c builtin_export_utils_2.c \
+	builtin_export_utils.c builtin_export.c builtin_pwd.c builtin_unset.c \
 	check_pipes.c check_pipes_utils.c cleanup.c \
 	copy_envp.c execution_builtin.c execution_close_and_reset.c \
 	execution_external.c execution_handler.c execution_redirections.c \

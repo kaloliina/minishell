@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:34 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:09:35 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/04 20:00:40 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,8 @@ void	execute_env(char ***envp)
 	i = 0;
 	while ((*envp)[i])
 	{
-		ft_printf(1, "%s\n", (*envp)[i]);
+		if (ft_strchr((*envp)[i], '='))
+			ft_printf(1, "%s\n", (*envp)[i]);
 		i++;
 	}
 }
