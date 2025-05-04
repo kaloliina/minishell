@@ -1,15 +1,25 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   minishell.h                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:12:15 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/04 18:12:18 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef MINISHELL_H
 # define MINISHELL_H
+# include "libft/libft.h"
 # include <stdlib.h>
 # include <unistd.h>
 # include <fcntl.h>
-# include <stdio.h>
 # include <signal.h>
 # include <stdbool.h>
-# include "libft/libft.h"
 # include <readline/readline.h>
 # include <readline/history.h>
-# include <sys/types.h>
 # include <sys/wait.h>
 # include <sys/stat.h>
 # include <errno.h>
@@ -33,7 +43,7 @@
 # define ERR_EXECVE "%s: Unknown failure\n"
 # define ERR_EOF "syntax error: unexpected end of file\n"
 # define ERR_FORMAT "%s: cannot execute binary file: Exec format error\n"
-# define ERR_UNLINK "unlink: failed to remove file minishell_tmpfile\n"
+# define ERR_UNLINK "unlink: failed to remove file (minishell_tmpfile)\n"
 
 extern volatile sig_atomic_t	g_signum;
 
