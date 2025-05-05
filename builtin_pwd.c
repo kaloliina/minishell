@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:00 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:10:01 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 16:05:13 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,19 +20,13 @@ static void	free_envp_array(char **envp, int i)
 	if (envp)
 	{
 		while (envp[j])
-		{
-			if (envp[j])
-				free (envp[j++]);
-		}
+			free (envp[j++]);
 		if (j == i)
 			j++;
 		while (envp[j])
-		{
-			if (envp[j])
-				free (envp[j++]);
-		}
+			free (envp[j++]);
+		free (envp);
 	}
-	free (envp);
 }
 
 void	fatal_pwd_error(char *msg, t_pipes *my_pipes, int i, t_exp *expand)
@@ -72,11 +66,13 @@ void	execute_pwd(t_pipes *my_pipes, char ***envp, int i, t_exp *expand)
 	if (!buf)
 		fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 	if (!getcwd(buf, 4096))
-		perror("minishell: pwd");
+		perror("minishell: getcwd");
 	else if (!envp && !i)
 		ft_printf(1, "%s\n", buf);
 	else
 	{
+		free ((*envp)[i]);
+		(*envp)[i] = NULL;
 		(*envp)[i] = ft_strjoin("PWD=", buf);
 		if (!(*envp)[i])
 		{
