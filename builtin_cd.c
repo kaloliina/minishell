@@ -6,11 +6,30 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:26 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 15:58:50 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 18:07:45 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
+
+static int	update_oldpwd(char ***envp, char *old_pwd, int i)
+{
+	int	unset;
+
+	unset = 0;
+	free ((*envp)[i]);
+	if (old_pwd)
+	{
+		(*envp)[i] = ft_strjoin("OLD", old_pwd);
+		free (old_pwd);
+	}
+	else
+	{
+		(*envp)[i] = ft_strdup("OLDPWD");
+		unset = -1;
+	}
+	return (unset);
+}
 
 static int	find_and_update_oldpwd(char ***envp, char *old_pwd,
 	t_pipes *my_pipes, t_exp *expand)
@@ -24,17 +43,7 @@ static int	find_and_update_oldpwd(char ***envp, char *old_pwd,
 	{
 		if (!ft_strncmp((*envp)[i], "OLDPWD=", 7))
 		{
-			free ((*envp)[i]);
-			if (old_pwd)
-			{
-				(*envp)[i] = ft_strjoin("OLD", old_pwd);
-				free (old_pwd);
-			}
-			else
-			{
-				(*envp)[i] = ft_strdup("OLDPWD");
-				unset = -1;
-			}
+			unset = update_oldpwd(envp, old_pwd, i);
 			if (!(*envp)[i])
 				fatal_pwd_error(ERR_MALLOC, my_pipes, i, expand);
 			break ;
@@ -42,7 +51,10 @@ static int	find_and_update_oldpwd(char ***envp, char *old_pwd,
 		i++;
 	}
 	if (!(*envp)[i])
+	{
+		unset = -1;
 		free (old_pwd);
+	}
 	return (unset);
 }
 
@@ -50,13 +62,11 @@ void	update_envp(t_pipes *my_pipes, t_exp *expand)
 {
 	int		i;
 	int		old_pwd_i;
-	bool	unset;
 	char	*old_pwd;
 	char	***envp;
 
 	i = 0;
 	old_pwd_i = 0;
-	unset = 0;
 	old_pwd = NULL;
 	envp = my_pipes->my_envp;
 	while ((*envp)[i])
@@ -71,9 +81,7 @@ void	update_envp(t_pipes *my_pipes, t_exp *expand)
 		}
 		i++;
 	}
-	if (find_and_update_oldpwd(envp, old_pwd, my_pipes, expand) < 0)
-		unset = 1;
-	if (!unset)
+	if (find_and_update_oldpwd(envp, old_pwd, my_pipes, expand) != -1)
 		execute_pwd(my_pipes, envp, old_pwd_i, expand);
 }
 
@@ -115,7 +123,6 @@ void	execute_cd(char **cmd, t_pipes *my_pipes)
 	{
 		if (chdir(cmd[1]) < 0)
 		{
-			ft_printf(2, "here??\n");
 			print_error("cd: %s: ", cmd[1], NULL);
 			perror("");
 			my_pipes->exit_status = 1;

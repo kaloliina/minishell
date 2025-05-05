@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:07 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 14:05:15 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 18:28:49 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,15 +61,13 @@ static int	is_expandable(char *arg, int i, int quote)
 static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 {
 	int		i;
-	int		quote;
+	int		s_quote;
 	int		d_quote;
 
 	i = 0;
-	quote = 0;
+	s_quote = 0;
 	d_quote = 0;
-	expand->new_cmd[*new_arg] = ft_strdup("");
-	if (!expand->new_cmd[*new_arg])
-		fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
+	init_new_arg(expand, new_arg);
 	while (cmd[*arg][i])
 	{
 		if (is_only_dollar(cmd[*arg], i))
@@ -77,11 +75,11 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 			append_char(&expand->new_cmd[*new_arg], '$', expand);
 			i += 3;
 		}
-		else if (is_expandable(cmd[*arg], i, quote))
+		else if (is_expandable(cmd[*arg], i, s_quote))
 			i = expand_cmd_helper(cmd[*arg], expand, *new_arg, i + 1);
 		else
 		{
-			update_single_quote(cmd[*arg][i], &quote, &d_quote);
+			update_single_quote(cmd[*arg][i], &s_quote, &d_quote);
 			append_char(&expand->new_cmd[*new_arg], cmd[*arg][i], expand);
 			i++;
 		}
@@ -96,9 +94,7 @@ char	**handle_cmd_helper(char **cmd, t_data *parser, int status, int arg)
 
 	new_arg = 0;
 	init_exp(&expand, status, parser, NULL);
-	expand.new_cmd = ft_calloc((count_elements(cmd) + 1), sizeof(char *));
-	if (!expand.new_cmd)
-		fatal_parsing_error(parser, &expand, NULL, ERR_MALLOC);
+	init_new_cmd(cmd, parser, &expand);
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))

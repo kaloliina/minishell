@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:12:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 13:34:39 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 18:24:10 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,6 +154,8 @@ char	**split_freearray(char **array, int j, int *error);
 //parsing
 void	handle_cmd(t_node *tmp, t_data *parser, int status);
 char	**handle_cmd_helper(char **cmd, t_data *parser, int status, int arg);
+void	init_new_cmd(char **cmd, t_data *parser, t_exp *expand);
+void	init_new_arg(t_exp *expand, int *new_arg);
 void	handle_filename(t_node *tmp, t_data *parser, int status);
 char	*handle_filename_helper(char *file, t_data *parser, int status);
 char	*handle_check_quotes(char *s, t_data *parser, t_exp *expand, int arg);
