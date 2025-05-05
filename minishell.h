@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:12:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 21:18:54 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 13:34:39 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ void	update_quote(char c, int *quote);
 int		is_missing_pre_space(char *input, int i, int quote);
 int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
-int		is_triple_redirection(char *input, int i);
+int		is_invalid_redirections(char *input);
 char	*check_pipes(char *line, t_data *parser, int i, int *status);
 void	end_pipe_ctrld(char *temp, t_data *parser, char *line, int backup_fd);
 int		end_pipe_sigint(char *temp, char *line, int *status, int backup_fd);
@@ -156,6 +156,7 @@ void	handle_cmd(t_node *tmp, t_data *parser, int status);
 char	**handle_cmd_helper(char **cmd, t_data *parser, int status, int arg);
 void	handle_filename(t_node *tmp, t_data *parser, int status);
 char	*handle_filename_helper(char *file, t_data *parser, int status);
+char	*handle_check_quotes(char *s, t_data *parser, t_exp *expand, int arg);
 char	*handle_quotes(char *s, t_data *parser, t_exp *expand);
 char	*find_envp(t_exp *expand, int i);
 void	init_exp(t_exp *exp, int status, t_data *parser, t_pipes *my_pipes);
@@ -170,7 +171,7 @@ int		expand_line_helper(char *line, char **new_line, t_exp *expand, int i);
 int		is_redirection(char *token);
 void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
-void	update_single_quote(char c, int *quote);
+void	update_single_quote(char c, int *quote, int *d_quote);
 
 //cleanup
 void	free_array(char **array);

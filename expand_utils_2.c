@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 21:36:10 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 13:34:24 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,8 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 	{
 		if (!expand->expanded)
 		{
-			temp = handle_quotes(expand->new_cmd[*new_arg],
-					expand->parser, expand);
+			temp = handle_check_quotes(expand->new_cmd[*new_arg],
+					expand->parser, expand, *new_arg);
 			if (temp)
 			{
 				free (expand->new_cmd[*new_arg]);
@@ -75,8 +75,27 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg)
 	(*arg)++;
 }
 
-void	update_single_quote(char c, int *quote)
+void	update_single_quote(char c, int *quote, int *d_quote)
 {
-	if (c == '\'')
+	if (c == '\'' && !(*d_quote))
 		*quote = !(*quote);
+	if (c == '"')
+		*d_quote = !(*d_quote);
+}
+
+char	*handle_check_quotes(char *s, t_data *parser,
+	t_exp *expand, int arg)
+{
+	char	*new;
+
+	new = handle_quotes(s, parser, expand);
+	if (new[0] == '\0' && arg == 0)
+	{
+		free (new);
+		new = NULL;
+		new = ft_strdup("''");
+		if (!new)
+			fatal_parsing_error(parser, expand, NULL, ERR_MALLOC);
+	}
+	return (new);
 }

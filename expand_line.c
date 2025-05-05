@@ -6,16 +6,18 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:11 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:11:12 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 13:53:05 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static int	invalid_exp_line(char *line, int k)
+static int	invalid_exp_line(char *line, int k, char *replacer)
 {
 	int	i;
 
+	if (replacer)
+		free (replacer);
 	i = ft_strlen(line);
 	if (k == 1)
 		print_error(ERR_AMB, line, NULL);
@@ -31,7 +33,7 @@ int	expand_line_helper(char *line, char **new_line, t_exp *expand, int i)
 	if ((expand->exp && *expand->exp) || (line[i] == '?' && line[i - 1] == '$'))
 	{
 		replacer = find_replacer(line, i, expand);
-		if (replacer)
+		if (replacer && *replacer)
 		{
 			if (!is_quote(line))
 				expand->expanded = 1;
@@ -44,7 +46,7 @@ int	expand_line_helper(char *line, char **new_line, t_exp *expand, int i)
 		else if (line[i] && line[i + 1])
 			i = k + ft_strlen(expand->exp);
 		else
-			i = invalid_exp_line(line, k);
+			i = invalid_exp_line(line, k, replacer);
 		free (expand->exp);
 	}
 	return (i);
@@ -56,7 +58,7 @@ static char	*handle_quotes_in_line(char *new_line, t_exp *expand)
 
 	if (!expand->expanded && new_line && *new_line)
 	{
-		temp = handle_quotes(new_line, expand->parser, expand);
+		temp = handle_check_quotes(new_line, expand->parser, expand, 0);
 		if (temp)
 		{
 			new_line = temp;
@@ -97,7 +99,7 @@ char	*handle_filename_helper(char *line, t_data *parser, int status)
 
 	init_exp(&expand, status, parser, NULL);
 	if (!ft_strchr(line, '$'))
-		expand.new_line = handle_quotes(line, parser, NULL);
+		expand.new_line = handle_check_quotes(line, parser, NULL, 0);
 	else
 		expand.new_line = expand_line(line, &expand);
 	return (expand.new_line);

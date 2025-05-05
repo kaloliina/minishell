@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:07 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:11:08 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 14:05:15 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,8 @@ static int	is_only_dollar(char *arg, int i)
 static int	is_expandable(char *arg, int i, int quote)
 {
 	if (arg[i] == '$' && arg[i + 1]
-		&& !quote && !is_whitespace(arg[i + 1]))
+		&& !quote && !is_whitespace(arg[i + 1])
+		&& (!is_exp_delimiter(arg[i + 1]) || arg[i + 1] == '?'))
 		return (1);
 	return (0);
 }
@@ -61,9 +62,11 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 {
 	int		i;
 	int		quote;
+	int		d_quote;
 
 	i = 0;
 	quote = 0;
+	d_quote = 0;
 	expand->new_cmd[*new_arg] = ft_strdup("");
 	if (!expand->new_cmd[*new_arg])
 		fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
@@ -78,7 +81,7 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 			i = expand_cmd_helper(cmd[*arg], expand, *new_arg, i + 1);
 		else
 		{
-			update_single_quote(cmd[*arg][i], &quote);
+			update_single_quote(cmd[*arg][i], &quote, &d_quote);
 			append_char(&expand->new_cmd[*new_arg], cmd[*arg][i], expand);
 			i++;
 		}
@@ -99,8 +102,11 @@ char	**handle_cmd_helper(char **cmd, t_data *parser, int status, int arg)
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			expand.new_cmd[new_arg++]
-				= handle_quotes(cmd[arg++], parser, &expand);
+		{
+			expand.new_cmd[new_arg]
+				= handle_check_quotes(cmd[arg++], parser, &expand, new_arg);
+			new_arg++;
+		}
 		else
 			expand_cmd(cmd, &expand, &arg, &new_arg);
 	}

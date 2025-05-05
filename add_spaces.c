@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:21 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:09:22 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 13:15:35 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,23 +19,15 @@ static int	count_missing_spaces(char *input, int i)
 	extras = 0;
 	while (input[i])
 	{
-		if (is_triple_redirection(input, i))
-		{
+		if (i > 0 && is_char_redirection(input[i])
+			&& !is_whitespace(input[i - 1])
+			&& !is_char_redirection(input[i - 1]))
 			extras++;
-			i += 2;
-		}
-		else
-		{
-			if (i > 0 && is_char_redirection(input[i])
-				&& !is_whitespace(input[i - 1])
-				&& !is_char_redirection(input[i - 1]))
-				extras++;
-			if (is_char_redirection(input[i]) && input[i + 1]
-				&& !is_whitespace(input[i + 1])
-				&& !is_char_redirection(input[i + 1]))
-				extras++;
-			i++;
-		}
+		if (is_char_redirection(input[i]) && input[i + 1]
+			&& !is_whitespace(input[i + 1])
+			&& !is_char_redirection(input[i + 1]))
+			extras++;
+		i++;
 	}
 	return (extras);
 }
@@ -110,6 +102,8 @@ char	*add_spaces(char *input, t_data *parser)
 	int		extras;
 	char	*line;
 
+	if (is_invalid_redirections(input))
+		return (NULL);
 	extras = count_missing_spaces(input, 0);
 	line = malloc(ft_strlen(input) + extras + 1);
 	if (!line)

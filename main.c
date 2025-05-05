@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:12:03 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:12:04 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 14:35:37 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ static int	minishell(char *input, char ***envp, int status)
 		return (2);
 	line = add_spaces(input, &parser);
 	exit_status = 2;
+	if (!line)
+		return (exit_status);
 	line = check_pipes(line, &parser, 0, &exit_status);
 	if (!line)
 		return (exit_status);

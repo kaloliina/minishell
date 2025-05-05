@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:26 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:11:27 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/05 10:48:18 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,12 +21,12 @@ static char	*handle_quotes_helper(char *new, char *s, int i, int j)
 	d_quote = 0;
 	while (s[i])
 	{
-		if ((s[i] == '"' && d_quote) || (s[i] == '\'' && s_quote))
+		if ((s[i] == '"' && s_quote) || (s[i] == '\'' && d_quote))
 			new[j++] = s[i];
-		else if (s[i] == '"' && !d_quote)
-			s_quote = !s_quote;
-		else if (s[i] == '\'' && !s_quote)
+		else if (s[i] == '"' && !s_quote)
 			d_quote = !d_quote;
+		else if (s[i] == '\'' && !d_quote)
+			s_quote = !s_quote;
 		else
 			new[j++] = s[i];
 		i++;

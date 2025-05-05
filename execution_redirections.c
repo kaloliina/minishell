@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execution_redirections.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:51 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 19:47:57 by khiidenh         ###   ########.fr       */
+/*   Updated: 2025/05/05 11:07:36 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,8 @@ void	handle_redirections(t_pipes *my_pipes)
 void	open_infile(char *file, t_pipes *my_pipes)
 {
 	if (*file == '\0')
-	{
 		my_pipes->exit_status = 1;
-		return ;
-	}
-	if (my_pipes->exit_status == 0)
+	else if (my_pipes->exit_status == 0)
 	{
 		if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
 			print_error(ERR_CLOSE, NULL, NULL);
@@ -54,7 +51,12 @@ void	open_infile(char *file, t_pipes *my_pipes)
 	if (my_pipes->infile_fd == -1 && my_pipes->exit_status == 0)
 	{
 		if (errno == ENOENT)
-			print_error(ERR_INVFILE, file, NULL);
+		{
+			if (is_only_quotes(file))
+				print_error(ERR_INVFILE, "", NULL);
+			else
+				print_error(ERR_INVFILE, file, NULL);
+		}
 		else if (errno == EACCES)
 			print_error(ERR_INVPERMS, file, NULL);
 		else if (errno == EISDIR)
