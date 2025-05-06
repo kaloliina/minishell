@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   execution_redirections.c                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*   By: khiidenh <khiidenh@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:51 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 11:07:36 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 11:32:43 by khiidenh         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,8 @@ void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes)
 	}
 	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
 		print_error(ERR_CLOSE, NULL, NULL);
+	else
+		my_pipes->outfile_fd = -1;
 	if (redir_type == REDIR_OUTF && my_pipes->exit_status == 0)
 		my_pipes->outfile_fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (redir_type == REDIR_APPEND && my_pipes->exit_status == 0)
