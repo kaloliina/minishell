@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:39 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:09:40 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 11:38:25 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,5 +100,5 @@ void	execute_exit(char **cmd, t_pipes *my_pipes)
 	if (!my_pipes->pipe_amount && !error)
 		ft_printf(1, "exit\n");
 	cleanup_in_exec(my_pipes, NULL);
-	exit ((unsigned int) status);
+	exit ((unsigned char) status);
 }
