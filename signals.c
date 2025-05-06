@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   signals.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:12:21 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 12:03:05 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 volatile sig_atomic_t	g_signum = 0;
@@ -20,7 +32,8 @@ void	heredoc_signal(int sig)
 	{
 		write(1, "\n", 1);
 		rl_on_new_line();
-		close (STDIN_FILENO);
+		if (close(STDIN_FILENO) < 0)
+			print_error(ERR_CLOSE, NULL, NULL);
 		g_signum = SIGINT;
 	}
 }
@@ -28,15 +41,9 @@ void	heredoc_signal(int sig)
 void	parent_signal(int sig)
 {
 	if (sig == SIGQUIT)
-	{
 		write(1, "Quit (core dumped)\n", 20);
-		g_signum = SIGQUIT;
-	}
 	if (sig == SIGINT)
-	{
 		write(1, "\n", 1);
-		g_signum = SIGINT;
-	}
 }
 
 void	listen_to_signals(int in_parent)
@@ -45,7 +52,6 @@ void	listen_to_signals(int in_parent)
 	{
 		signal(SIGQUIT, parent_signal);
 		signal(SIGINT, parent_signal);
-		g_signum = 0;
 	}
 	else
 	{

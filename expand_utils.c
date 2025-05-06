@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   expand_utils.c                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:11:20 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 11:47:27 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 char	*find_exp(char *arg, int *i, int *k, t_exp *expand)
@@ -9,40 +21,62 @@ char	*find_exp(char *arg, int *i, int *k, t_exp *expand)
 	*k = *i;
 	count_expandable(arg, i, &j);
 	exp = ft_substr(arg, *k, j);
-	if (!exp)
-		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
+	if (!exp && expand->parsing)
+		fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
+	else if (!exp)
+	{
+		free (expand->new_line);
+		expand->new_line = NULL;
+		fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
+	}
 	return (exp);
 }
 
 char	*find_replacer(char *arg, int i, t_exp *expand)
 {
+	char	*status;
+
 	if (arg[i] == '?' && arg[i - 1] == '$')
-		return (ft_itoa(expand->status));
+	{
+		status = ft_itoa(expand->status);
+		if (!status && expand->parsing)
+			fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
+		else if (!status)
+		{
+			free (expand->exp);
+			expand->exp = NULL;
+			free (expand->new_line);
+			expand->new_line = NULL;
+			fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
+		}
+		return (status);
+	}
 	else
 		return (find_envp(expand, 0));
 }
 
 static char	**find_envp_source(t_exp *expand)
 {
-	if (!expand->data)
+	if (!expand->parser)
 		return (*expand->my_pipes->my_envp);
 	else
-		return (expand->data->envp);
+		return (expand->parser->envp);
 }
 
 static void	find_envp_failure(t_exp *expand)
 {
 	if (expand->parsing)
-	{
-		free (expand->new_line);
-		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
-	}
+		fatal_parsing_error(expand->parser, expand, NULL, ERR_MALLOC);
 	else
 	{
 		free (expand->new_line);
+		expand->new_line = NULL;
 		if (expand->exp)
+		{
 			free (expand->exp);
-		handle_fatal_exit(MALLOC, expand->my_pipes, NULL, NULL);
+			expand->exp = NULL;
+		}
+		fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
 	}
 }
 

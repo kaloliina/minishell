@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execution_handler.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:10:47 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 12:15:27 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../minishell.h"
 
 static void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
@@ -8,31 +20,27 @@ static void	initialize_struct(t_pipes *my_pipes, t_node *list, char ***envp)
 		1, -1, -1, -1, -1, 0, 1, 0, 0, NULL, NULL, envp, NULL, NULL};
 	if (my_pipes->pipe_amount > 0)
 	{
-		my_pipes->pipes = malloc(sizeof(int) * (my_pipes->pipe_amount * 2));
+		my_pipes->pipes = ft_calloc((my_pipes->pipe_amount * 2), sizeof(int));
 		if (my_pipes->pipes == NULL)
-			handle_fatal_exit(MALLOC, my_pipes, list, NULL);
+			fatal_exec_error(ERR_MALLOC, my_pipes, list, NULL);
 		i = 0;
 		while (i < my_pipes->pipe_amount)
 		{
 			if (pipe(&my_pipes->pipes[(i++) * 2]) < 0)
-				handle_fatal_exit(ERR_PIPE, my_pipes, list, NULL);
+				fatal_exec_error(ERR_PIPE, my_pipes, list, NULL);
 		}
 	}
-	my_pipes->childpids = ft_calloc(sizeof(pid_t), (my_pipes->pipe_amount + 1));
+	my_pipes->childpids = ft_calloc((my_pipes->pipe_amount + 1), sizeof(pid_t));
 	if (my_pipes->childpids == NULL)
-		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, list, NULL);
 	my_pipes->stdoutfd = dup(STDOUT_FILENO);
 	if (my_pipes->stdoutfd == -1)
-		handle_fatal_exit(ERR_FD, my_pipes, list, NULL);
+		fatal_exec_error(ERR_FD, my_pipes, list, NULL);
 	my_pipes->stdinfd = dup(STDIN_FILENO);
 	if (my_pipes->stdinfd == -1)
-		handle_fatal_exit(ERR_FD, my_pipes, list, NULL);
+		fatal_exec_error(ERR_FD, my_pipes, list, NULL);
 }
 
-/*
-There might be a situation with sleep where you explicitly have to
-mark the last process but I was unable to repro the behaviour
-*/
 static int	finalize_execution(int amount, t_pipes *my_pipes)
 {
 	int	exit_status;
@@ -45,7 +53,7 @@ static int	finalize_execution(int amount, t_pipes *my_pipes)
 		if (my_pipes->childpids[i] > 0)
 		{
 			if (waitpid(my_pipes->childpids[i], &exit_status, 0) < 0)
-				handle_fatal_exit(ERR_WAITPID, my_pipes, NULL, NULL);
+				fatal_exec_error(ERR_WAITPID, my_pipes, NULL, NULL);
 			if (WIFEXITED(exit_status))
 				exit_status = WEXITSTATUS(exit_status);
 			else if (WIFSIGNALED(exit_status))
@@ -57,7 +65,7 @@ static int	finalize_execution(int amount, t_pipes *my_pipes)
 	}
 	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0
 		|| dup2(my_pipes->stdoutfd, STDOUT_FILENO) < 0)
-		handle_fatal_exit(ERR_FD, my_pipes, NULL, NULL);
+		fatal_exec_error(ERR_FD, my_pipes, NULL, NULL);
 	free_my_pipes(my_pipes);
 	return (exit_status);
 }
@@ -98,7 +106,7 @@ int	begin_execution(t_node *list, char ***envp, int status)
 	if (my_pipes == NULL)
 	{
 		free_array(*envp);
-		handle_fatal_exit(MALLOC, my_pipes, list, NULL);
+		fatal_exec_error(ERR_MALLOC, my_pipes, list, NULL);
 	}
 	initialize_struct(my_pipes, list, envp);
 	while (list != NULL)

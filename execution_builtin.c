@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execution_builtin.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:10:29 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/04 18:10:31 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../minishell.h"
 
 static void	run_builtin_command(t_node *node, t_pipes *my_pipes)
@@ -5,7 +17,7 @@ static void	run_builtin_command(t_node *node, t_pipes *my_pipes)
 	if (!ft_strcmp(node->cmd[0], "echo"))
 		execute_echo(node);
 	else if (!ft_strcmp(node->cmd[0], "pwd"))
-		execute_pwd(my_pipes);
+		execute_pwd(my_pipes, NULL, 0, NULL);
 	else if (!ft_strcmp(node->cmd[0], "env"))
 		execute_env(my_pipes->my_envp);
 	else if (!ft_strcmp(node->cmd[0], "export"))
@@ -33,7 +45,7 @@ static void	execute_builtin_child(t_node *node, t_pipes *my_pipes)
 	free_nodes(my_pipes->command_node);
 	free_array(*my_pipes->my_envp);
 	free_my_pipes(my_pipes);
-	exit(0);
+	exit (0);
 }
 
 int	execute_builtin(t_node *node, t_pipes *my_pipes)
@@ -44,7 +56,7 @@ int	execute_builtin(t_node *node, t_pipes *my_pipes)
 	{
 		pid = fork();
 		if (pid < 0)
-			handle_fatal_exit(ERR_FORK, my_pipes, NULL, NULL);
+			fatal_exec_error(ERR_FORK, my_pipes, NULL, NULL);
 		if (pid == 0)
 			execute_builtin_child(node, my_pipes);
 		else

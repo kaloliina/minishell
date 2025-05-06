@@ -1,35 +1,31 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strjoin.c                                       :+:      :+:    :+:   */
+/*   utils_2.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/30 10:29:55 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/02 19:15:13 by sojala           ###   ########.fr       */
+/*   Created: 2025/05/04 18:12:40 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/04 18:12:41 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-char	*ft_strjoin(char const *s1, char const *s2)
+int	is_whitespace(char c)
 {
-	char	*string;
-	size_t	i;
-	size_t	j;
+	if ((c <= 13 && c >= 9) || c == 32)
+		return (1);
+	return (0);
+}
 
-	if (!s1 || !s2)
-		return (NULL);
-	string = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
-	if (string == NULL)
-		return (NULL);
-	i = 0;
-	j = 0;
-	while (s1[i] != '\0')
-		string[j++] = s1[i++];
-	i = 0;
-	while (s2[i] != '\0')
-		string[j++] = s2[i++];
-	string[j] = '\0';
-	return (string);
+void	print_error(char *msg, char *conversion_1, char *conversion_2)
+{
+	ft_printf(2, "minishell: ");
+	if (conversion_1 && !conversion_2)
+		ft_printf(2, msg, conversion_1);
+	else if (conversion_1 && conversion_2)
+		ft_printf(2, msg, conversion_1, conversion_2);
+	else
+		ft_printf(2, msg);
 }

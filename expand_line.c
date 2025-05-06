@@ -1,15 +1,29 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   expand_line.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:11:11 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 09:57:53 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-static int	invalid_exp_line(char *line, int k)
+static int	invalid_exp_line(char *line, int k, char *replacer)
 {
 	int	i;
 
+	if (replacer)
+	{
+		free (replacer);
+		replacer = NULL;
+	}
 	i = ft_strlen(line);
 	if (k == 1)
-	{
-		ft_printf(2, "minishell: ");
-		ft_printf(2, ERR_AMB, line);
-	}
+		print_error(ERR_AMB, line, NULL);
 	return (i);
 }
 
@@ -22,7 +36,7 @@ int	expand_line_helper(char *line, char **new_line, t_exp *expand, int i)
 	if ((expand->exp && *expand->exp) || (line[i] == '?' && line[i - 1] == '$'))
 	{
 		replacer = find_replacer(line, i, expand);
-		if (replacer)
+		if (replacer && *replacer)
 		{
 			if (!is_quote(line))
 				expand->expanded = 1;
@@ -35,8 +49,9 @@ int	expand_line_helper(char *line, char **new_line, t_exp *expand, int i)
 		else if (line[i] && line[i + 1])
 			i = k + ft_strlen(expand->exp);
 		else
-			i = invalid_exp_line(line, k);
+			i = invalid_exp_line(line, k, replacer);
 		free (expand->exp);
+		expand->exp = NULL;
 	}
 	return (i);
 }
@@ -47,9 +62,10 @@ static char	*handle_quotes_in_line(char *new_line, t_exp *expand)
 
 	if (!expand->expanded && new_line && *new_line)
 	{
-		temp = handle_quotes(new_line, expand->data, expand);
+		temp = handle_check_quotes(new_line, expand->parser, expand, 0);
 		if (temp)
 		{
+			free (new_line);
 			new_line = temp;
 			temp = NULL;
 		}
@@ -66,7 +82,7 @@ static char	*expand_line(char *line, t_exp *expand)
 	quote = 0;
 	expand->new_line = ft_strdup("");
 	if (!expand->new_line)
-		fatal_parsing_exit(expand->data, NULL, NULL, MALLOC);
+		fatal_parsing_error(expand->parser, NULL, NULL, ERR_MALLOC);
 	while (line[i])
 	{
 		if (line[i] == '$' && line[i + 1] && !quote)
@@ -82,13 +98,13 @@ static char	*expand_line(char *line, t_exp *expand)
 	return (handle_quotes_in_line(expand->new_line, expand));
 }
 
-char	*handle_filename_helper(char *line, t_data *data, int status)
+char	*handle_filename_helper(char *line, t_data *parser, int status)
 {
 	t_exp	expand;
 
-	init_exp(&expand, status, data, NULL);
+	init_exp(&expand, status, parser, NULL);
 	if (!ft_strchr(line, '$'))
-		expand.new_line = handle_quotes(line, data, NULL);
+		expand.new_line = handle_check_quotes(line, parser, NULL, 0);
 	else
 		expand.new_line = expand_line(line, &expand);
 	return (expand.new_line);

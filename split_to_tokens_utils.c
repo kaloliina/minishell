@@ -1,33 +1,40 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strdup.c                                        :+:      :+:    :+:   */
+/*   split_to_tokens_utils.c                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/29 18:04:28 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/02 19:15:18 by sojala           ###   ########.fr       */
+/*   Created: 2025/05/04 18:12:33 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/04 18:12:34 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-char	*ft_strdup(const char *s)
+int	tokensplit_strings(char const *s, int i)
 {
-	char	*string;
-	int		len;
-	int		i;
+	int		strings;
+	int		quote;
 
-	len = ft_strlen(s);
-	string = malloc(sizeof(char) * len + 1);
-	if (string == NULL)
-		return (NULL);
-	i = 0;
-	while (s[i] != '\0')
+	strings = 0;
+	quote = 0;
+	while (s[i])
 	{
-		string[i] = s[i];
-		i++;
+		if (!is_whitespace(s[i]))
+		{
+			strings++;
+			while (s[i] && (!is_whitespace(s[i]) || quote))
+			{
+				if ((s[i] == '"' || s[i] == '\'') && !quote)
+					quote = s[i];
+				else if (quote && s[i] == quote)
+					quote = 0;
+				i++;
+			}
+		}
+		else
+			i++;
 	}
-	string[i] = '\0';
-	return (string);
+	return (strings);
 }

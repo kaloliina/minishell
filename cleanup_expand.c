@@ -1,35 +1,37 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strjoin.c                                       :+:      :+:    :+:   */
+/*   cleanup_expand.c                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/30 10:29:55 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/02 19:15:13 by sojala           ###   ########.fr       */
+/*   Created: 2025/05/06 10:44:19 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 10:48:21 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-char	*ft_strjoin(char const *s1, char const *s2)
+void	free_expand(t_exp *expand)
 {
-	char	*string;
-	size_t	i;
-	size_t	j;
-
-	if (!s1 || !s2)
-		return (NULL);
-	string = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
-	if (string == NULL)
-		return (NULL);
-	i = 0;
-	j = 0;
-	while (s1[i] != '\0')
-		string[j++] = s1[i++];
-	i = 0;
-	while (s2[i] != '\0')
-		string[j++] = s2[i++];
-	string[j] = '\0';
-	return (string);
+	if (expand)
+	{
+		if (expand->exp)
+		{
+			free (expand->exp);
+			expand->exp = NULL;
+		}
+		if (expand->expansion)
+		{
+			free (expand->expansion);
+			expand->expansion = NULL;
+		}
+		if (expand->new_cmd)
+			free_array(expand->new_cmd);
+		if (expand->new_line)
+		{
+			free (expand->new_line);
+			expand->new_line = NULL;
+		}
+	}
 }

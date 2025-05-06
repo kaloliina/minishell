@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   expand_cmd.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:11:07 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/05 18:28:49 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static int	expand_cmd_helper(char *arg, t_exp *expand, int new_arg, int i)
@@ -40,7 +52,8 @@ static int	is_only_dollar(char *arg, int i)
 static int	is_expandable(char *arg, int i, int quote)
 {
 	if (arg[i] == '$' && arg[i + 1]
-		&& !quote && arg[i + 1] != ' ')
+		&& !quote && !is_whitespace(arg[i + 1])
+		&& (!is_exp_delimiter(arg[i + 1]) || arg[i + 1] == '?'))
 		return (1);
 	return (0);
 }
@@ -48,13 +61,13 @@ static int	is_expandable(char *arg, int i, int quote)
 static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 {
 	int		i;
-	int		quote;
+	int		s_quote;
+	int		d_quote;
 
 	i = 0;
-	quote = 0;
-	expand->new_cmd[*new_arg] = ft_strdup("");
-	if (!expand->new_cmd[*new_arg])
-		fatal_parsing_exit(expand->data, expand, NULL, MALLOC);
+	s_quote = 0;
+	d_quote = 0;
+	init_new_arg(expand, new_arg);
 	while (cmd[*arg][i])
 	{
 		if (is_only_dollar(cmd[*arg], i))
@@ -62,11 +75,11 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 			append_char(&expand->new_cmd[*new_arg], '$', expand);
 			i += 3;
 		}
-		else if (is_expandable(cmd[*arg], i, quote))
+		else if (is_expandable(cmd[*arg], i, s_quote))
 			i = expand_cmd_helper(cmd[*arg], expand, *new_arg, i + 1);
 		else
 		{
-			update_single_quote(cmd[*arg][i], &quote);
+			update_single_quote(cmd[*arg][i], &s_quote, &d_quote);
 			append_char(&expand->new_cmd[*new_arg], cmd[*arg][i], expand);
 			i++;
 		}
@@ -74,22 +87,22 @@ static void	expand_cmd(char **cmd, t_exp *expand, int *arg, int *new_arg)
 	handle_quotes_in_expansion(expand, new_arg, arg);
 }
 
-char	**handle_cmd_helper(char **cmd, t_data *data, int status, int arg)
+char	**handle_cmd_helper(char **cmd, t_data *parser, int status, int arg)
 {
 	int		new_arg;
 	t_exp	expand;
 
 	new_arg = 0;
-	init_exp(&expand, status, data, NULL);
-	expand.new_cmd = ft_calloc(sizeof(char *), count_elements(cmd) + 1);
-	if (!expand.new_cmd)
-		fatal_parsing_exit(data, &expand, NULL, MALLOC);
-	expand.new_cmd[0] = NULL;
+	init_exp(&expand, status, parser, NULL);
+	init_new_cmd(cmd, parser, &expand);
 	while (cmd[arg])
 	{
 		if (!ft_strchr(cmd[arg], '$'))
-			expand.new_cmd[new_arg++]
-				= handle_quotes(cmd[arg++], data, &expand);
+		{
+			expand.new_cmd[new_arg]
+				= handle_check_quotes(cmd[arg++], parser, &expand, new_arg);
+			new_arg++;
+		}
 		else
 			expand_cmd(cmd, &expand, &arg, &new_arg);
 	}
@@ -97,7 +110,7 @@ char	**handle_cmd_helper(char **cmd, t_data *data, int status, int arg)
 	{
 		expand.new_cmd[new_arg++] = ft_strdup("");
 		if (!expand.new_cmd[new_arg - 1])
-			fatal_parsing_exit(data, &expand, NULL, MALLOC);
+			fatal_parsing_error(parser, &expand, NULL, ERR_MALLOC);
 	}
 	expand.new_cmd[new_arg] = NULL;
 	return (expand.new_cmd);

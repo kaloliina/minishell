@@ -1,35 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strjoin.c                                       :+:      :+:    :+:   */
+/*   builtin_env.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/30 10:29:55 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/02 19:15:13 by sojala           ###   ########.fr       */
+/*   Created: 2025/05/04 18:09:34 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/04 20:00:40 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-char	*ft_strjoin(char const *s1, char const *s2)
+void	execute_env(char ***envp)
 {
-	char	*string;
-	size_t	i;
-	size_t	j;
+	int	i;
 
-	if (!s1 || !s2)
-		return (NULL);
-	string = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
-	if (string == NULL)
-		return (NULL);
 	i = 0;
-	j = 0;
-	while (s1[i] != '\0')
-		string[j++] = s1[i++];
-	i = 0;
-	while (s2[i] != '\0')
-		string[j++] = s2[i++];
-	string[j] = '\0';
-	return (string);
+	while ((*envp)[i])
+	{
+		if (ft_strchr((*envp)[i], '='))
+			ft_printf(1, "%s\n", (*envp)[i]);
+		i++;
+	}
 }

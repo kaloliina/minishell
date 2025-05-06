@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execution_close_and_reset.c                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:10:37 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/04 18:10:38 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../minishell.h"
 
 void	close_all_fds(t_pipes *my_pipes)
@@ -7,25 +19,25 @@ void	close_all_fds(t_pipes *my_pipes)
 	i = 0;
 	while (my_pipes->pipes && i < my_pipes->pipe_amount * 2)
 	{
-		if (my_pipes->pipes[i] != -1)
+		if (my_pipes->pipes[i] > 0)
 		{
 			if (close(my_pipes->pipes[i]) < 0)
-				ft_printf(2, "minishell: %s", ERR_CLOSE);
+				print_error(ERR_CLOSE, NULL, NULL);
 			my_pipes->pipes[i] = -1;
 		}
 		i++;
 	}
 	if (my_pipes->stdinfd != -1 && (close(my_pipes->stdinfd) < 0))
-		ft_printf(2, "minishell: %s", ERR_CLOSE);
+		print_error(ERR_CLOSE, NULL, NULL);
 	my_pipes->stdinfd = -1;
 	if (my_pipes->stdoutfd != -1 && (close(my_pipes->stdoutfd) < 0))
-		ft_printf(2, "minishell: %s", ERR_CLOSE);
+		print_error(ERR_CLOSE, NULL, NULL);
 	my_pipes->stdoutfd = -1;
 	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
-		ft_printf(2, "minishell: %s", ERR_CLOSE);
+		print_error(ERR_CLOSE, NULL, NULL);
 	my_pipes->outfile_fd = -1;
 	if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
-		ft_printf(2, "minishell: %s", ERR_CLOSE);
+		print_error(ERR_CLOSE, NULL, NULL);
 	my_pipes->infile_fd = -1;
 }
 
@@ -55,8 +67,6 @@ void	free_my_pipes(t_pipes *my_pipes)
 	}
 }
 
-//Double check the if statement here
-//I removed && ft_strcmp(my_pipes->command_path, my_pipes->command_node->cmd[0])), double check this
 void	reset_properties(t_pipes *my_pipes)
 {
 	if (my_pipes->command_path != NULL)
@@ -82,22 +92,39 @@ void	close_pipeline_fds(t_pipes *my_pipes)
 		if (my_pipes->current_section <= my_pipes->pipe_amount)
 		{
 			if (close(my_pipes->pipes[my_pipes->write_end]) < 0)
-				ft_printf(2, "minishell: %s", ERR_CLOSE);
+				print_error(ERR_CLOSE, NULL, NULL);
 			my_pipes->pipes[my_pipes->write_end] = -1;
 		}
 		if (my_pipes->current_section != 1)
 		{
 			if (close(my_pipes->pipes[my_pipes->read_end]) < 0)
-				ft_printf(2, "minishell: %s", ERR_CLOSE);
+				print_error(ERR_CLOSE, NULL, NULL);
 			my_pipes->pipes[my_pipes->read_end] = -1;
 		}
 	}
 	if (my_pipes->outfile_fd != -1 && (close(my_pipes->outfile_fd) < 0))
-		ft_printf(2, "minishell: %s", ERR_CLOSE);
+		print_error(ERR_CLOSE, NULL, NULL);
 	my_pipes->outfile_fd = -1;
 	if (my_pipes->infile_fd != -1 && (close(my_pipes->infile_fd) < 0))
-		ft_printf(2, "minishell: %s", ERR_CLOSE);
+		print_error(ERR_CLOSE, NULL, NULL);
 	my_pipes->infile_fd = -1;
 	if (my_pipes->current_section != (my_pipes->pipe_amount + 1))
 		reset_properties(my_pipes);
+}
+
+void	cleanup_in_exec(t_pipes *my_pipes, t_node *list)
+{
+	if (!list && my_pipes->command_node)
+		free_nodes(my_pipes->command_node);
+	else if (!list)
+		free_nodes(my_pipes->heredoc_node);
+	else
+		free_nodes(list);
+	if (my_pipes)
+	{
+		if (my_pipes->hd_dir)
+			handle_tmpfile(my_pipes);
+		free_array(*my_pipes->my_envp);
+		free_my_pipes(my_pipes);
+	}
 }

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   execution_utils.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:10:58 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/04 18:10:59 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../minishell.h"
 
 int	get_pipe_amount(t_node *list)
@@ -52,11 +64,11 @@ char	**get_paths(t_pipes *my_pipes)
 			string = ft_substr((*my_pipes->my_envp)[i], 5,
 					(ft_strlen((*my_pipes->my_envp)[i]) - 5));
 			if (string == NULL)
-				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+				fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 			paths = ft_split(string, ':');
 			free (string);
 			if (paths == NULL)
-				handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+				fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 			return (paths);
 		}
 		i++;
@@ -73,18 +85,18 @@ char	*get_absolute_path(char **paths, char *command, t_pipes *my_pipes)
 	{
 		path = ft_strdup(command);
 		if (path == NULL)
-			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+			fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 		return (path);
 	}
 	while (paths != NULL && *paths != NULL)
 	{
 		path_helper = ft_strjoin(*paths, "/");
 		if (path_helper == NULL)
-			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+			fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 		path = ft_strjoin(path_helper, command);
 		free (path_helper);
 		if (path == NULL)
-			handle_fatal_exit(MALLOC, my_pipes, NULL, NULL);
+			fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
 		if (access(path, F_OK | X_OK) == 0)
 			return (path);
 		free (path);

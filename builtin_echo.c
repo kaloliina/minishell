@@ -1,35 +1,36 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strjoin.c                                       :+:      :+:    :+:   */
+/*   builtin_echo.c                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/10/30 10:29:55 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/02 19:15:13 by sojala           ###   ########.fr       */
+/*   Created: 2025/05/04 18:09:31 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/04 18:09:32 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "libft.h"
+#include "minishell.h"
 
-char	*ft_strjoin(char const *s1, char const *s2)
+void	execute_echo(t_node *node)
 {
-	char	*string;
-	size_t	i;
-	size_t	j;
+	int		i;
 
-	if (!s1 || !s2)
-		return (NULL);
-	string = malloc(sizeof(char) * (ft_strlen(s1) + ft_strlen(s2) + 1));
-	if (string == NULL)
-		return (NULL);
-	i = 0;
-	j = 0;
-	while (s1[i] != '\0')
-		string[j++] = s1[i++];
-	i = 0;
-	while (s2[i] != '\0')
-		string[j++] = s2[i++];
-	string[j] = '\0';
-	return (string);
+	i = 1;
+	if (!node->cmd[i])
+	{
+		ft_printf(1, "\n");
+		return ;
+	}
+	if (node->cmd[i] && !ft_strcmp(node->cmd[i], "-n"))
+		i++;
+	while (node->cmd[i])
+	{
+		ft_printf(1, "%s", node->cmd[i]);
+		if (node->cmd[i + 1])
+			ft_printf(1, " ");
+		i++;
+	}
+	if (ft_strcmp(node->cmd[1], "-n"))
+		ft_printf(1, "\n");
 }

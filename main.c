@@ -1,22 +1,34 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:12:03 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 11:00:16 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-static void	handle_exp_and_quotes(t_data *data, int status)
+static void	handle_exp_and_quotes(t_data *parser, int status)
 {
 	t_node	*tmp;
 	char	*new_line;
 
-	tmp = data->first;
+	tmp = parser->first;
 	while (tmp)
 	{
 		if (tmp->cmd)
-			handle_cmd(tmp, data, status);
+			handle_cmd(tmp, parser, status);
 		if (tmp->file)
-			handle_filename(tmp, data, status);
+			handle_filename(tmp, parser, status);
 		if (tmp->delimiter)
 		{
 			if (is_quote(tmp->delimiter))
 				tmp->delimiter_quote = 1;
-			new_line = handle_quotes(tmp->delimiter, data, NULL);
+			new_line = handle_quotes(tmp->delimiter, parser, NULL);
 			if (new_line)
 			{
 				free (tmp->delimiter);
@@ -30,27 +42,41 @@ static void	handle_exp_and_quotes(t_data *data, int status)
 
 static int	minishell(char *input, char ***envp, int status)
 {
-	t_data	data;
+	t_data	parser;
 	char	*line;
 	int		exit_status;
 
-	init_data(&data, envp);
-	line = add_spaces(input, &data);
-	if (!line) //unclosed quotes
+	init_parser(&parser, envp);
+	if (is_unclosed_quote(input) || is_only_pipes(input))
 		return (2);
+	line = add_spaces(input, &parser);
 	exit_status = 2;
-	line = check_pipes(line, &data, 0, &exit_status);
-	if (!line) //only whitespace between two pipes
+	if (!line)
 		return (exit_status);
-	init_sections(&data, line);
-	init_tokens(&data);
-	if (lexer(&data) < 0) //missing filename or delimiter
+	line = check_pipes(line, &parser, 0, &exit_status);
+	if (!line)
+		return (exit_status);
+	init_sections(&parser, line);
+	init_tokens(&parser);
+	if (lexer(&parser) < 0)
 		return (2);
-	handle_exp_and_quotes(&data, status);
-	status = begin_execution(data.first, &data.envp, status);
-	*envp = data.envp;
-	free_nodes(data.first);
+	handle_exp_and_quotes(&parser, status);
+	status = begin_execution(parser.first, &parser.envp, status);
+	*envp = parser.envp;
+	free_nodes(parser.first);
 	return (status);
+}
+
+static int	is_only_space(char *input)
+{
+	int	i;
+
+	i = 0;
+	while (is_whitespace(input[i]))
+		i++;
+	if (input[i] == '\0')
+		return (1);
+	return (0);
 }
 
 static void	start_minishell(char ***my_envp)
@@ -74,7 +100,7 @@ static void	start_minishell(char ***my_envp)
 			ft_printf(1, "exit\n");
 			return ;
 		}
-		else if (input[0] != '\0')
+		else if (input[0] != '\0' && !is_only_space(input))
 			status = minishell(input, my_envp, status);
 		if (input)
 			add_history(input);
@@ -91,7 +117,7 @@ int	main(int ac, char **av, char **envp)
 	status = 0;
 	if (ac != 1)
 	{
-		ft_printf(2, "minishell: expected format: <./minishell>\n");
+		print_error("expected format: <./minishell>\n", NULL, NULL);
 		return (0);
 	}
 	my_envp = copy_envp(envp);

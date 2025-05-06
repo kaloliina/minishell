@@ -1,28 +1,60 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   check_pipes_utils.c                                :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:10:09 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 10:09:48 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-void	check_for_ctrld(char *temp, t_data *data, char *line, int backup_fd)
+void	end_pipe_ctrld(char *temp, t_data *parser, char *line, int backup_fd)
 {
 	if (!temp)
 	{
-		close (backup_fd);
-		ft_printf(2, "minishell: ");
-		ft_printf(2, ERR_EOF);
-		ft_printf(2, "exit\n");
-		fatal_parsing_exit(data, NULL, line, NULL);
+		if (backup_fd != -1 && close(backup_fd) < 0)
+			print_error(ERR_CLOSE, NULL, NULL);
+		else
+			backup_fd = -1;
+		print_error(ERR_EOF, NULL, NULL);
+		ft_printf(1, "exit\n");
+		fatal_parsing_error(parser, NULL, line, NULL);
 	}
 }
 
-int	end_pipe_sigint(int backup_fd, char *temp, char *line, int *status)
+int	end_pipe_sigint(char *temp, char *line, int *status, int backup_fd)
 {
 	if (g_signum == SIGINT)
 	{
 		*status = g_signum + 128;
 		g_signum = 0;
-		dup2(backup_fd, STDIN_FILENO);
-		close(backup_fd);
+		if (dup2(backup_fd, STDIN_FILENO) < 0)
+		{
+			*status = 1;
+			print_error(ERR_FD, NULL, NULL);
+		}
+		if (backup_fd != -1 && close(backup_fd) < 0)
+			print_error(ERR_CLOSE, NULL, NULL);
+		else
+			backup_fd = -1;
 		free (temp);
+		temp = NULL;
 		free (line);
+		line = NULL;
 		return (1);
 	}
 	return (0);
+}
+
+void	end_pipe_helper(char **line, char *temp, char **new_line)
+{
+	free (*line);
+	*line = *new_line;
+	*new_line = NULL;
+	free (temp);
+	temp = NULL;
 }

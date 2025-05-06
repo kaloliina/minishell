@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   expand.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:11:26 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/05 10:48:18 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static char	*handle_quotes_helper(char *new, char *s, int i, int j)
@@ -9,12 +21,12 @@ static char	*handle_quotes_helper(char *new, char *s, int i, int j)
 	d_quote = 0;
 	while (s[i])
 	{
-		if ((s[i] == '"' && d_quote) || (s[i] == '\'' && s_quote))
+		if ((s[i] == '"' && s_quote) || (s[i] == '\'' && d_quote))
 			new[j++] = s[i];
-		else if (s[i] == '"' && !d_quote)
-			s_quote = !s_quote;
-		else if (s[i] == '\'' && !s_quote)
+		else if (s[i] == '"' && !s_quote)
 			d_quote = !d_quote;
+		else if (s[i] == '\'' && !d_quote)
+			s_quote = !s_quote;
 		else
 			new[j++] = s[i];
 		i++;
@@ -23,49 +35,21 @@ static char	*handle_quotes_helper(char *new, char *s, int i, int j)
 	return (new);
 }
 
-char	*handle_quotes(char *s, t_data *data, t_exp *expand)
+char	*handle_quotes(char *s, t_data *parser, t_exp *expand)
 {
 	char	*new;
 
 	new = malloc(ft_strlen(s) + 1);
 	if (!new)
-		fatal_parsing_exit(data, expand, NULL, MALLOC);
+		fatal_parsing_error(parser, expand, NULL, ERR_MALLOC);
 	return (handle_quotes_helper(new, s, 0, 0));
 }
 
-char	*expand_heredoc(char *line, t_pipes *my_pipes, int status,
-	t_node *heredoc_node)
-{
-	int		i;
-	t_exp	expand;
-
-	i = 0;
-	init_exp(&expand, status, NULL, my_pipes);
-	expand.new_line = ft_strdup("");
-	if (!expand.new_line)
-	{
-		my_pipes->exit_status = 1;
-		handle_fatal_exit(MALLOC, my_pipes, my_pipes->heredoc_node, NULL);
-	}
-	while (line[i])
-	{
-		if (line[i] == '$' && line[i + 1])
-			i = expand_line_helper(line, &expand.new_line, &expand, i + 1);
-		else
-		{
-			append_char_heredoc(&expand.new_line, line[i],
-				my_pipes, heredoc_node);
-			i++;
-		}
-	}
-	return (expand.new_line);
-}
-
-void	handle_cmd(t_node *tmp, t_data *data, int status)
+void	handle_cmd(t_node *tmp, t_data *parser, int status)
 {
 	char	**new_cmd;
 
-	new_cmd = handle_cmd_helper(tmp->cmd, data, status, 0);
+	new_cmd = handle_cmd_helper(tmp->cmd, parser, status, 0);
 	if (new_cmd)
 	{
 		free_array(tmp->cmd);
@@ -74,11 +58,11 @@ void	handle_cmd(t_node *tmp, t_data *data, int status)
 	}
 }
 
-void	handle_filename(t_node *tmp, t_data *data, int status)
+void	handle_filename(t_node *tmp, t_data *parser, int status)
 {
 	char	*new_file;
 
-	new_file = handle_filename_helper(tmp->file, data, status);
+	new_file = handle_filename_helper(tmp->file, parser, status);
 	if (new_file)
 	{
 		free (tmp->file);

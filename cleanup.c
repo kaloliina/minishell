@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   cleanup.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:10:21 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 11:11:27 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 void	free_array(char **array)
@@ -10,6 +22,7 @@ void	free_array(char **array)
 		while (array[i])
 			free (array[i++]);
 		free (array);
+		array = NULL;
 	}
 }
 
@@ -26,78 +39,81 @@ void	free_nodes(t_node *node)
 		free_array(tmp->cmd);
 		if (tmp->file)
 			free (tmp->file);
+		tmp->file = NULL;
 		if (tmp->delimiter)
 			free (tmp->delimiter);
+		tmp->delimiter = NULL;
 		if (tmp->hd_fd != -1)
 		{
-			close (tmp->hd_fd);
+			if (close(tmp->hd_fd) < 0)
+				print_error(ERR_CLOSE, NULL, NULL);
 			tmp->hd_fd = -1;
 		}
 		free (tmp);
+		tmp = NULL;
 	}
 }
 
-void	free_sections_tokens(t_data *data)
+void	free_sections_tokens(t_data *parser)
 {
 	int	i;
 
 	i = 0;
-	if (data->sections)
+	if (parser->sections)
 	{
-		while (data->sections[i])
-			free (data->sections[i++]);
-		free (data->sections);
-		data->sections = NULL;
+		while (parser->sections[i])
+			free (parser->sections[i++]);
+		free (parser->sections);
+		parser->sections = NULL;
 	}
 	i = 0;
-	if (data->tokens)
+	if (parser->tokens)
 	{
-		while (data->tokens[i])
-			free_array(data->tokens[i++]);
-		free (data->tokens);
-		data->tokens = NULL;
+		while (parser->tokens[i])
+			free_array(parser->tokens[i++]);
+		free (parser->tokens);
+		parser->tokens = NULL;
 	}
 }
 
-void	fatal_parsing_exit(t_data *data, t_exp *expand, char *input, char *msg)
+void	fatal_parsing_error(t_data *parser, t_exp *expand,
+	char *input, char *msg)
 {
 	if (msg)
-		ft_printf(2, "%s", msg);
+		print_error(msg, NULL, NULL);
 	if (input)
-		free (input);
-	if (data)
 	{
-		free_array(data->envp);
-		free_sections_tokens(data);
-		if (data->first)
-			free_nodes(data->first);
+		free (input);
+		input = NULL;
+	}
+	if (parser)
+	{
+		free_array(parser->envp);
+		free_sections_tokens(parser);
+		if (parser->first)
+			free_nodes(parser->first);
 	}
 	if (expand)
 	{
 		if (expand->my_pipes)
 			free_my_pipes(expand->my_pipes);
-		if (expand->new_cmd)
-			free_array(expand->new_cmd);
-		if (expand->exp)
-			free (expand->exp);
+		free_expand(expand);
 	}
 	if (!msg)
 		exit (2);
 	exit (1);
 }
 
-void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
+void	fatal_exec_error(char *msg, t_pipes *my_pipes, t_node *list,
 	char *conversion)
 {
 	int	exit_status;
 
 	exit_status = 1;
 	if (msg)
-		ft_printf(2, "minishell: ");
-	if (!conversion)
-		ft_printf(2, msg);
-	else
-		ft_printf(2, msg, conversion);
+		print_error(msg, conversion, NULL);
+	if (my_pipes && my_pipes->hd_dir)
+		handle_tmpfile(my_pipes);
 	if (!list && my_pipes->command_node)
 		free_nodes(my_pipes->command_node);
 	else if (!list)
@@ -107,8 +123,6 @@ void	handle_fatal_exit(char *msg, t_pipes *my_pipes, t_node *list,
 	if (my_pipes)
 	{
 		exit_status = my_pipes->exit_status;
-		if (my_pipes->hd_dir)
-			handle_tmpfile(my_pipes);
 		free_array(*my_pipes->my_envp);
 		free_my_pipes(my_pipes);
 	}

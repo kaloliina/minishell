@@ -1,10 +1,22 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   init.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/05/04 18:11:46 by sojala            #+#    #+#             */
+/*   Updated: 2025/05/06 10:02:07 by sojala           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-t_node	*init_new_node(t_data *data, t_node *new_node)
+t_node	*init_new_node(t_data *parser, t_node *new_node)
 {
-	new_node = malloc(sizeof(t_node));
+	new_node = ft_calloc(1, sizeof(t_node));
 	if (!new_node)
-		fatal_parsing_exit(data, NULL, NULL, MALLOC);
+		fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
 	new_node->cmd = NULL;
 	new_node->file = NULL;
 	new_node->delimiter = NULL;
@@ -15,63 +27,61 @@ t_node	*init_new_node(t_data *data, t_node *new_node)
 	return (new_node);
 }
 
-void	init_sections(t_data *data, char *line)
+void	init_sections(t_data *parser, char *line)
 {
 	int	error;
 
 	error = 0;
-	data->sections = ft_ms_split(line, '|', &error);
-	if (!data->sections && error)
-		fatal_parsing_exit(data, NULL, line, MALLOC);
-	data->sections_amount = count_elements(data->sections);
+	parser->sections = split_to_sections(line, '|', &error);
+	if (!parser->sections && error)
+		fatal_parsing_error(parser, NULL, line, ERR_MALLOC);
+	parser->sections_amount = count_elements(parser->sections);
 	free (line);
+	line = NULL;
 }
 
-static char	**init_only_quotes_section(t_data *data, int i)
+static char	**init_only_quotes_section(t_data *parser, int i)
 {
-	data->tokens[i] = malloc(sizeof(char *) * 2);
-	if (!data->tokens[i])
-		fatal_parsing_exit(data, NULL, NULL, MALLOC);
-	data->tokens[i][0] = ft_strdup(data->sections[i]);
-	if (!data->tokens[i][0])
-	{
-		data->tokens[i + 1] = NULL;
-		fatal_parsing_exit(data, NULL, NULL, MALLOC);
-	}
-	data->tokens[i][1] = NULL;
-	return (data->tokens[i]);
+	parser->tokens[i] = ft_calloc(2, sizeof(char *));
+	if (!parser->tokens[i])
+		fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
+	parser->tokens[i][0] = ft_strdup(parser->sections[i]);
+	if (!parser->tokens[i][0])
+		fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
+	parser->tokens[i][1] = NULL;
+	return (parser->tokens[i]);
 }
 
-void	init_tokens(t_data *data)
+void	init_tokens(t_data *parser)
 {
-	int	i;
-	int	error;
+	int		i;
+	int		error;
 
-	data->tokens = malloc(sizeof(char **) * (data->sections_amount + 1));
-	if (!data->tokens)
-		fatal_parsing_exit(data, NULL, NULL, MALLOC);
+	parser->tokens = ft_calloc((parser->sections_amount + 1), sizeof(char **));
+	if (!parser->tokens)
+		fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
 	i = 0;
 	error = 0;
-	while (data->sections[i])
+	while (parser->sections[i])
 	{
-		if (!is_only_quotes(data->sections[i]))
+		if (!is_only_quotes(parser->sections[i]))
 		{
-			data->tokens[i] = ft_ms_split(data->sections[i], ' ', &error);
-			if (!data->tokens[i] && error)
-				fatal_parsing_exit(data, NULL, NULL, MALLOC);
+			parser->tokens[i] = split_to_tokens(parser->sections[i], &error);
+			if (!parser->tokens[i] && error)
+				fatal_parsing_error(parser, NULL, NULL, ERR_MALLOC);
 		}
 		else
-			data->tokens[i] = init_only_quotes_section(data, i);
+			parser->tokens[i] = init_only_quotes_section(parser, i);
 		i++;
 	}
-	data->tokens[i] = NULL;
+	parser->tokens[i] = NULL;
 }
 
-void	init_data(t_data *data, char ***envp)
+void	init_parser(t_data *parser, char ***envp)
 {
-	data->envp = *envp;
-	data->first = NULL;
-	data->sections = NULL;
-	data->sections_amount = 0;
-	data->tokens = NULL;
+	parser->envp = *envp;
+	parser->first = NULL;
+	parser->sections = NULL;
+	parser->sections_amount = 0;
+	parser->tokens = NULL;
 }
