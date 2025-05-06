@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:55 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 21:18:58 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 17:59:09 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,8 @@ static void	export_no_args(char **envp, t_pipes *my_pipes)
 	char	**export;
 
 	elements = count_elements(envp) - 1;
+	if (elements == -1)
+		return ;
 	export = ft_calloc((elements + 1), sizeof(char *));
 	if (!export)
 		fatal_exec_error(ERR_MALLOC, my_pipes, NULL, NULL);
