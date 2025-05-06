@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:42 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/06 10:01:49 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 12:04:36 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 
 static int	heredoc_sigint(t_pipes *my_pipes, char *line)
 {
-	g_signum = 0;
 	if (dup2(my_pipes->stdinfd, STDIN_FILENO) < 0)
 	{
 		my_pipes->exit_status = 1;
@@ -24,7 +23,8 @@ static int	heredoc_sigint(t_pipes *my_pipes, char *line)
 		&& close(my_pipes->stdinfd) < 0)
 		print_error(ERR_CLOSE, NULL, NULL);
 	my_pipes->stdinfd = -1;
-	my_pipes->exit_status = 130;
+	my_pipes->exit_status = 128 + g_signum;
+	g_signum = 0;
 	free (line);
 	line = NULL;
 	if (my_pipes->heredoc_node->hd_fd != -1
