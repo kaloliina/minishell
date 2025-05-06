@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/06 19:48:27 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/02 19:15:22 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:16:24 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,11 +47,9 @@ static	char	**ft_freearray(char **array, size_t k)
 
 	i = 0;
 	while (i <= k)
-	{
-		free (array[i]);
-		i++;
-	}
+		free (array[i++]);
 	free (array);
+	array = NULL;
 	return (NULL);
 }
 

@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:21 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 13:15:35 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 08:47:55 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,39 +60,46 @@ static char	*add_spaces_helper(char *line, char *input, int i, int j)
 	return (line);
 }
 
-static int	check_closing_quote(char *s, int i, int quote)
+static void	set_unexpected_token(char *input, int i)
 {
-	while (s[i])
+	char	token[3];
+
+	token[0] = input[i];
+	if (input[i + 1] && (input[i + 1] == input[i]))
 	{
-		if (s[i] == quote)
-			return (i + 1);
-		i++;
+		token[1] = input[i + 1];
+		token[2] = '\0';
 	}
-	return (0);
+	else
+		token[1] = '\0';
+	print_error(ERR_SYNTAX, token, NULL);
 }
 
-int	is_unclosed_quote(char *input)
+static int	is_invalid_redirections(char *input)
 {
-	int	i;
-	int	temp;
+	int		i;
+	int		quote;
 
 	i = 0;
-	temp = 0;
+	quote = 0;
 	while (input[i])
 	{
-		if (input[i] == '"' || input[i] == '\'')
+		if (!quote && (input[i] == '>' || input[i] == '<'))
 		{
-			temp = check_closing_quote(input, i + 1, input[i]);
-			if (!temp)
+			i++;
+			if (input[i] && input[i] == input[i - 1])
+				i++;
+			while (input[i] && is_whitespace(input[i]))
+				i++;
+			if (input[i] && (input[i] == '>' || input[i] == '<'))
 			{
-				print_error("unclosed quotes\n", NULL, NULL);
-				return (-1);
+				set_unexpected_token(input, i);
+				return (1);
 			}
-			else
-				i = temp;
 		}
 		else
-			i++;
+			update_quote(input[i], &quote);
+		i++;
 	}
 	return (0);
 }

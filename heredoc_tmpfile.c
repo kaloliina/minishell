@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:36 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:11:37 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:01:15 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@ static void	heredoc_mkdir_child(t_pipes *my_pipes, char **envp)
 	mkdir_cmd[2] = NULL;
 	execve(mkdir_path, mkdir_cmd, envp);
 	free (mkdir_path);
+	mkdir_path = NULL;
 	execve_fail_hd(my_pipes, "mkdir");
 }
 
@@ -99,6 +100,7 @@ void	heredoc_rmdir(char **envp, t_pipes *my_pipes)
 		execve(rmdir_path, rmdir_cmd, envp);
 		my_pipes->hd_dir = 0;
 		free (rmdir_path);
+		rmdir_path = NULL;
 		execve_fail_hd(my_pipes, "rmdir");
 	}
 	check_rmdir_success(my_pipes, rmdir_pid);

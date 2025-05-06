@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:09 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:10:10 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:09:48 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,9 @@ int	end_pipe_sigint(char *temp, char *line, int *status, int backup_fd)
 		else
 			backup_fd = -1;
 		free (temp);
+		temp = NULL;
 		free (line);
+		line = NULL;
 		return (1);
 	}
 	return (0);
@@ -51,8 +53,8 @@ int	end_pipe_sigint(char *temp, char *line, int *status, int backup_fd)
 void	end_pipe_helper(char **line, char *temp, char **new_line)
 {
 	free (*line);
-	free (temp);
 	*line = *new_line;
 	*new_line = NULL;
+	free (temp);
 	temp = NULL;
 }

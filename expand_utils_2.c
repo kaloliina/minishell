@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 13:34:24 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 09:59:17 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ char	*handle_check_quotes(char *s, t_data *parser,
 	if (new[0] == '\0' && arg == 0)
 	{
 		free (new);
-		new = NULL;
 		new = ft_strdup("''");
 		if (!new)
 			fatal_parsing_error(parser, expand, NULL, ERR_MALLOC);

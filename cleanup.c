@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:21 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:10:22 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 11:11:27 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,10 @@ void	free_nodes(t_node *node)
 		free_array(tmp->cmd);
 		if (tmp->file)
 			free (tmp->file);
+		tmp->file = NULL;
 		if (tmp->delimiter)
 			free (tmp->delimiter);
+		tmp->delimiter = NULL;
 		if (tmp->hd_fd != -1)
 		{
 			if (close(tmp->hd_fd) < 0)
@@ -48,6 +50,7 @@ void	free_nodes(t_node *node)
 			tmp->hd_fd = -1;
 		}
 		free (tmp);
+		tmp = NULL;
 	}
 }
 
@@ -79,7 +82,10 @@ void	fatal_parsing_error(t_data *parser, t_exp *expand,
 	if (msg)
 		print_error(msg, NULL, NULL);
 	if (input)
+	{
 		free (input);
+		input = NULL;
+	}
 	if (parser)
 	{
 		free_array(parser->envp);
@@ -91,12 +97,7 @@ void	fatal_parsing_error(t_data *parser, t_exp *expand,
 	{
 		if (expand->my_pipes)
 			free_my_pipes(expand->my_pipes);
-		if (expand->new_cmd)
-			free_array(expand->new_cmd);
-		if (expand->new_line)
-			free (expand->new_line);
-		if (expand->exp)
-			free (expand->exp);
+		free_expand(expand);
 	}
 	if (!msg)
 		exit (2);

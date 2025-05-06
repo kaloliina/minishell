@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:14 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:10:15 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 09:41:36 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,7 @@ static char	*check_pipes_helper(char *line, t_data *parser, int i, int j)
 	{
 		print_error(ERR_SYNTAX, "|", NULL);
 		free (line);
+		line = NULL;
 		return (NULL);
 	}
 	new_line = ft_substr(line, 0, (j - 1));

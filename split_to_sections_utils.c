@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:12:25 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:12:26 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:15:50 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,9 @@ char	**split_freearray(char **array, int j, int *error)
 
 	i = 0;
 	while (i <= j)
-	{
-		free (array[i]);
-		i++;
-	}
+		free (array[i++]);
 	free (array);
+	array = NULL;
 	*error = 1;
 	return (NULL);
 }

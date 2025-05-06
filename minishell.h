@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:12:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 18:24:10 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 11:19:12 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,6 +119,7 @@ typedef struct s_pipes
 	struct s_node	*heredoc_node;
 }					t_pipes;
 
+//0. parsing
 //init and input validation
 char	**copy_envp(char **envp);
 void	init_parser(t_data *parser, char ***envp);
@@ -128,7 +129,6 @@ void	update_quote(char c, int *quote);
 int		is_missing_pre_space(char *input, int i, int quote);
 int		is_missing_post_after_pre_space(char *input, int i);
 int		is_missing_post_space(char *input, int i, int quote);
-int		is_invalid_redirections(char *input);
 char	*check_pipes(char *line, t_data *parser, int i, int *status);
 void	end_pipe_ctrld(char *temp, t_data *parser, char *line, int backup_fd);
 int		end_pipe_sigint(char *temp, char *line, int *status, int backup_fd);
@@ -175,30 +175,6 @@ void	handle_quotes_in_expansion(t_exp *expand, int *new_arg, int *arg);
 void	count_expandable(char *arg, int *i, int *j);
 void	update_single_quote(char c, int *quote, int *d_quote);
 
-//cleanup
-void	free_array(char **array);
-void	free_nodes(t_node *node);
-void	free_sections_tokens(t_data *parser);
-void	fatal_parsing_error(t_data *parser, t_exp *expand,
-			char *input, char *msg);
-void	fatal_exec_error(char *msg, t_pipes *my_pipes,
-			t_node *list, char *conversion);
-
-//utils
-int		count_elements(char **tokens);
-int		is_quote(char *s);
-int		is_only_quotes(char *s);
-int		is_exp_delimiter(char c);
-int		is_char_redirection(char c);
-int		is_whitespace(char c);
-void	print_error(char *msg, char *conversion_1, char *conversion_2);
-
-//signals
-void	init_signal_handler(int sig);
-void	heredoc_signal(int sig);
-void	parent_signal(int sig);
-void	listen_to_signals(int in_parent);
-
 //heredoc
 int		heredoc(t_node *curr, t_pipes *my_pipes, int status);
 void	heredoc_mkdir(char **envp, t_pipes *my_pipes, int status);
@@ -207,7 +183,24 @@ void	handle_tmpfile(t_pipes *my_pipes);
 void	check_tmp_dir(t_pipes *my_pipes);
 void	check_rmdir_success(t_pipes *my_pipes, pid_t pid);
 
+//1. execution
+//execution handler
+int		begin_execution(t_node *list, char ***envp, int status);
+
+//close, free and reset
+void	close_pipeline_fds(t_pipes *my_pipes);
+void	reset_properties(t_pipes *my_pipes);
+void	free_my_pipes(t_pipes *my_pipes);
+void	close_all_fds(t_pipes *my_pipes);
+void	cleanup_in_exec(t_pipes *my_pipes, t_node *list);
+
+//redirections
+void	handle_redirections(t_pipes *my_pipes);
+void	open_infile(char *file, t_pipes *my_pipes);
+void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
+
 //builtins
+int		execute_builtin(t_node *node, t_pipes *my_pipes);
 void	execute_echo(t_node *node);
 void	execute_env(char ***envp);
 void	execute_pwd(t_pipes *my_pipes, char ***envp, int i, t_exp *expand);
@@ -216,7 +209,6 @@ void	execute_cd(char **cmd, t_pipes *my_pipes);
 void	execute_unset(char **cmd, char ***envp, t_pipes *my_pipes);
 void	execute_exit(char **cmd, t_pipes *my_pipes);
 char	*add_quotes_export(char **envp, int i);
-void	update_envp(t_pipes *my_pipes, t_exp *expand);
 int		is_replacer_envp(char ***envp, char *arg);
 int		export_fill_envp(char ***new_envp, char **cmd, char **envp,
 			t_pipes *my_pipes);
@@ -236,27 +228,39 @@ void	fatal_sort_for_export_error(char **export, int elements,
 void	fatal_export_unset_error(char **new_envp, t_pipes *my_pipes);
 void	fatal_pwd_error(char *msg, t_pipes *my_pipes, int i, t_exp *expand);
 
-//execution
-//execution handler
-int		begin_execution(t_node *list, char ***envp, int status);
-//execution - close free and reset
-void	close_pipeline_fds(t_pipes *my_pipes);
-void	reset_properties(t_pipes *my_pipes);
-void	free_my_pipes(t_pipes *my_pipes);
-void	close_all_fds(t_pipes *my_pipes);
-void	cleanup_in_exec(t_pipes *my_pipes, t_node *list);
-//execution redirections
-void	handle_redirections(t_pipes *my_pipes);
-void	open_infile(char *file, t_pipes *my_pipes);
-void	set_outfile(char *file, enum s_type redir_type, t_pipes *my_pipes);
-//execution_builtin
-int		execute_builtin(t_node *node, t_pipes *my_pipes);
 //execution external
 int		execute_executable(t_node *node, t_pipes *my_pipes);
+
 //execution utils
 char	**get_paths(t_pipes *my_pipes);
 char	*get_absolute_path(char **paths, char *command, t_pipes *my_pipes);
 int		is_builtin(char *command);
 int		get_pipe_amount(t_node *list);
+
+//2. other
+//cleanup
+void	free_array(char **array);
+void	free_nodes(t_node *node);
+void	free_sections_tokens(t_data *parser);
+void	free_expand(t_exp *expand);
+void	fatal_parsing_error(t_data *parser, t_exp *expand,
+			char *input, char *msg);
+void	fatal_exec_error(char *msg, t_pipes *my_pipes,
+			t_node *list, char *conversion);
+
+//utils
+int		count_elements(char **tokens);
+int		is_quote(char *s);
+int		is_only_quotes(char *s);
+int		is_exp_delimiter(char c);
+int		is_char_redirection(char c);
+int		is_whitespace(char c);
+void	print_error(char *msg, char *conversion_1, char *conversion_2);
+
+//signals
+void	init_signal_handler(int sig);
+void	heredoc_signal(int sig);
+void	parent_signal(int sig);
+void	listen_to_signals(int in_parent);
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:46 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:11:47 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:02:07 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ void	init_sections(t_data *parser, char *line)
 		fatal_parsing_error(parser, NULL, line, ERR_MALLOC);
 	parser->sections_amount = count_elements(parser->sections);
 	free (line);
+	line = NULL;
 }
 
 static char	**init_only_quotes_section(t_data *parser, int i)

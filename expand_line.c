@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:11 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 13:53:05 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 09:57:53 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,10 @@ static int	invalid_exp_line(char *line, int k, char *replacer)
 	int	i;
 
 	if (replacer)
+	{
 		free (replacer);
+		replacer = NULL;
+	}
 	i = ft_strlen(line);
 	if (k == 1)
 		print_error(ERR_AMB, line, NULL);
@@ -48,6 +51,7 @@ int	expand_line_helper(char *line, char **new_line, t_exp *expand, int i)
 		else
 			i = invalid_exp_line(line, k, replacer);
 		free (expand->exp);
+		expand->exp = NULL;
 	}
 	return (i);
 }
@@ -61,6 +65,7 @@ static char	*handle_quotes_in_line(char *new_line, t_exp *expand)
 		temp = handle_check_quotes(new_line, expand->parser, expand, 0);
 		if (temp)
 		{
+			free (new_line);
 			new_line = temp;
 			temp = NULL;
 		}

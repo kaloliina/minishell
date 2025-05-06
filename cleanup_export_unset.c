@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   builtin_export_unset_errors.c                      :+:      :+:    :+:   */
+/*   cleanup_export_unset.c                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:45 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:09:46 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:06:41 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,10 @@ void	fatal_sort_for_export_error(char **export, int elements,
 	while (i < elements)
 	{
 		if (export[i])
+		{
 			free (export[i]);
+			export[i] = NULL;
+		}
 		i++;
 	}
 	free (export);

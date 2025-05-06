@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:42 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:11:43 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:01:49 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ static int	heredoc_sigint(t_pipes *my_pipes, char *line)
 	my_pipes->stdinfd = -1;
 	my_pipes->exit_status = 130;
 	free (line);
+	line = NULL;
 	if (my_pipes->heredoc_node->hd_fd != -1
 		&& close(my_pipes->heredoc_node->hd_fd) < 0)
 		print_error(ERR_CLOSE, NULL, NULL);
@@ -36,7 +37,10 @@ static int	heredoc_sigint(t_pipes *my_pipes, char *line)
 static void	heredoc_free_close(char *line, t_pipes *my_pipes)
 {
 	if (line)
+	{
 		free (line);
+		line = NULL;
+	}
 	if (my_pipes->heredoc_node->hd_fd != -1
 		&& close(my_pipes->heredoc_node->hd_fd) < 0)
 		print_error(ERR_CLOSE, NULL, NULL);
@@ -94,6 +98,7 @@ static int	heredoc_read(t_node *heredoc_node,
 			expand_heredoc(&line, my_pipes, status, heredoc_node);
 		ft_printf(heredoc_node->hd_fd, "%s\n", line);
 		free (line);
+		line = NULL;
 	}
 	heredoc_free_close(line, my_pipes);
 	open_infile("minishell_tmpfile", my_pipes);

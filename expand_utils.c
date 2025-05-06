@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:20 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 13:56:31 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:00:17 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ char	*find_exp(char *arg, int *i, int *k, t_exp *expand)
 	else if (!exp)
 	{
 		free (expand->new_line);
+		expand->new_line = NULL;
 		fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
 	}
 	return (exp);
@@ -43,7 +44,9 @@ char	*find_replacer(char *arg, int i, t_exp *expand)
 		else if (!status)
 		{
 			free (expand->exp);
+			expand->exp = NULL;
 			free (expand->new_line);
+			expand->new_line = NULL;
 			fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
 		}
 		return (status);
@@ -67,8 +70,12 @@ static void	find_envp_failure(t_exp *expand)
 	else
 	{
 		free (expand->new_line);
+		expand->new_line = NULL;
 		if (expand->exp)
+		{
 			free (expand->exp);
+			expand->exp = NULL;
+		}
 		fatal_exec_error(ERR_MALLOC, expand->my_pipes, NULL, NULL);
 	}
 }

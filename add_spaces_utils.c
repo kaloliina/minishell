@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:09:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:09:16 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 08:47:15 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,20 +46,4 @@ int	is_missing_post_space(char *input, int i, int quote)
 		&& input[i - 1] == input[i] && input[i + 1] == input[i])
 		return (1);
 	return (0);
-}
-
-int	is_only_pipes(char *input)
-{
-	int	i;
-
-	i = 0;
-	while (is_whitespace(input[i]))
-		i++;
-	if (input[i] != '|')
-		return (0);
-	if (input[i] == '|' && input[i + 1] == '|')
-		print_error(ERR_SYNTAX, "||", NULL);
-	else
-		print_error(ERR_SYNTAX, "|", NULL);
-	return (1);
 }

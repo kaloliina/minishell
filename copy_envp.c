@@ -6,15 +6,16 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:25 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/04 18:10:26 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 10:17:01 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-static void	convert_new_shlvl(int i, int level, char ***my_envp,
-	char *level_nbr)
+static void	convert_new_shlvl(int i, int level, char ***my_envp)
 {
+	char	*level_nbr;
+
 	level_nbr = ft_itoa(level);
 	if (!level_nbr)
 	{
@@ -24,6 +25,7 @@ static void	convert_new_shlvl(int i, int level, char ***my_envp,
 	}
 	(*my_envp)[i] = ft_strjoin("SHLVL=", level_nbr);
 	free (level_nbr);
+	level_nbr = NULL;
 	if (!(*my_envp)[i])
 	{
 		print_error(ERR_MALLOC, NULL, NULL);
@@ -50,7 +52,7 @@ static int	handle_shlvl(char **envp, int i, char ***my_envp)
 		level++;
 		free (level_nbr);
 		level_nbr = NULL;
-		convert_new_shlvl(i, level, my_envp, level_nbr);
+		convert_new_shlvl(i, level, my_envp);
 		i++;
 	}
 	return (i);

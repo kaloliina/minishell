@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/05 14:08:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/05 14:08:17 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 09:01:41 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ char	*add_quotes_export_helper(char **envp, int i, int j, char *temp2)
 	if (!res)
 	{
 		free (temp2);
+		temp2 = NULL;
 		return (NULL);
 	}
 	temp3 = ft_strjoin(temp2, res);
@@ -41,7 +42,6 @@ char	*add_quotes_export(char **envp, int i)
 	int		j;
 	char	*temp1;
 	char	*temp2;
-	char	*res;
 
 	j = 0;
 	while (envp[i][j] && envp[i][j] != '=')
@@ -57,6 +57,5 @@ char	*add_quotes_export(char **envp, int i)
 	if (!temp2)
 		return (NULL);
 	j++;
-	res = add_quotes_export_helper(envp, i, j, temp2);
-	return (res);
+	return (add_quotes_export_helper(envp, i, j, temp2));
 }
