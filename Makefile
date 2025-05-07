@@ -14,8 +14,8 @@ SRC = add_spaces.c add_spaces_utils.c input_validation.c \
 	execution_external.c execution_handler.c execution_redirections.c \
 	execution_utils.c expand_append.c expand_cmd.c expand_cmd_utils.c \
 	expand_line.c expand_utils.c expand_utils_2.c expand.c heredoc.c \
-	heredoc_tmpfile.c heredoc_tmpfile_utils.c init.c lexing_cmd.c \
-	lexing_redir.c lexing.c main.c signals.c split_to_sections.c \
+	heredoc_tmpfile.c heredoc_tmpfile_utils.c heredoc_utils.c init.c \
+	lexing_cmd.c lexing_redir.c lexing.c main.c signals.c split_to_sections.c \
 	split_to_sections_utils.c split_to_tokens.c split_to_tokens_utils.c \
 	utils.c utils_2.c
 OBJ = $(SRC:.c=.o)

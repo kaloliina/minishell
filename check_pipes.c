@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:10:14 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/06 09:41:36 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 17:44:56 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,6 +105,8 @@ char	*check_pipes(char *line, t_data *parser, int i, int *status)
 		{
 			j = i;
 			while (line[i] == '|')
+				i++;
+			while (is_whitespace(line[i]))
 				i++;
 			if (line[i] != '\0')
 				return (check_pipes_helper(line, parser, i, j));

@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:12:15 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/06 11:19:12 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 17:58:58 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -182,6 +182,8 @@ void	heredoc_rmdir(char **envp, t_pipes *my_pipes);
 void	handle_tmpfile(t_pipes *my_pipes);
 void	check_tmp_dir(t_pipes *my_pipes);
 void	check_rmdir_success(t_pipes *my_pipes, pid_t pid);
+int		hd_expand_line_helper(char *line, char **new_line,
+			t_exp *expand, int i);
 
 //1. execution
 //execution handler

@@ -6,7 +6,7 @@
 /*   By: sojala <sojala@student.hive.fi>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/05/04 18:11:42 by sojala            #+#    #+#             */
-/*   Updated: 2025/05/06 12:04:36 by sojala           ###   ########.fr       */
+/*   Updated: 2025/05/06 17:42:34 by sojala           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ static void	expand_heredoc(char **line, t_pipes *my_pipes, int status,
 	while ((*line)[i])
 	{
 		if ((*line)[i] == '$' && (*line)[i + 1])
-			i = expand_line_helper(*line, &expand.new_line, &expand, i + 1);
+			i = hd_expand_line_helper(*line, &expand.new_line, &expand, i + 1);
 		else
 		{
 			append_char_heredoc(&expand.new_line, (*line)[i],
